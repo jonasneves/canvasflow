@@ -21,6 +21,12 @@ const LOG_FILE = path.join(process.env.HOME || process.env.USERPROFILE, 'canvas-
 let canvasData = {
   courses: [],
   assignments: {},
+  allAssignments: [],
+  calendarEvents: [],
+  upcomingEvents: [],
+  submissions: {},
+  modules: {},
+  analytics: {},
   lastUpdate: null
 };
 
@@ -73,6 +79,36 @@ function handleRequest(req, res) {
         if (data.assignments) {
           Object.assign(canvasData.assignments, data.assignments);
           log(`Received assignments for ${Object.keys(data.assignments).length} courses`);
+        }
+
+        if (data.allAssignments) {
+          canvasData.allAssignments = data.allAssignments;
+          log(`Received ${data.allAssignments.length} total assignments`);
+        }
+
+        if (data.calendarEvents) {
+          canvasData.calendarEvents = data.calendarEvents;
+          log(`Received ${data.calendarEvents.length} calendar events`);
+        }
+
+        if (data.upcomingEvents) {
+          canvasData.upcomingEvents = data.upcomingEvents;
+          log(`Received ${data.upcomingEvents.length} upcoming events`);
+        }
+
+        if (data.submissions) {
+          Object.assign(canvasData.submissions, data.submissions);
+          log(`Received submissions for course ${Object.keys(data.submissions).join(', ')}`);
+        }
+
+        if (data.modules) {
+          Object.assign(canvasData.modules, data.modules);
+          log(`Received modules for course ${Object.keys(data.modules).join(', ')}`);
+        }
+
+        if (data.analytics) {
+          Object.assign(canvasData.analytics, data.analytics);
+          log(`Received analytics for course ${Object.keys(data.analytics).join(', ')}`);
         }
 
         canvasData.lastUpdate = new Date().toISOString();
@@ -183,6 +219,102 @@ async function handleMCPRequest(request) {
                 },
                 required: ["course_id"]
               }
+            },
+            {
+              name: "list_all_assignments",
+              description: "Get all assignments across all courses with submission status - ideal for dashboard views",
+              inputSchema: {
+                type: "object",
+                properties: {},
+                required: []
+              }
+            },
+            {
+              name: "get_assignment_details",
+              description: "Get detailed information about a specific assignment including description, rubrics, and submission status",
+              inputSchema: {
+                type: "object",
+                properties: {
+                  course_id: {
+                    type: "string",
+                    description: "The Canvas course ID"
+                  },
+                  assignment_id: {
+                    type: "string",
+                    description: "The Canvas assignment ID"
+                  }
+                },
+                required: ["course_id", "assignment_id"]
+              }
+            },
+            {
+              name: "list_calendar_events",
+              description: "Get calendar events and assignments within a date range",
+              inputSchema: {
+                type: "object",
+                properties: {
+                  start_date: {
+                    type: "string",
+                    description: "Start date in ISO 8601 format (optional)"
+                  },
+                  end_date: {
+                    type: "string",
+                    description: "End date in ISO 8601 format (optional)"
+                  }
+                },
+                required: []
+              }
+            },
+            {
+              name: "get_user_submissions",
+              description: "Get all submissions for the current user in a specific course",
+              inputSchema: {
+                type: "object",
+                properties: {
+                  course_id: {
+                    type: "string",
+                    description: "The Canvas course ID"
+                  }
+                },
+                required: ["course_id"]
+              }
+            },
+            {
+              name: "list_course_modules",
+              description: "Get all modules and module items for a course",
+              inputSchema: {
+                type: "object",
+                properties: {
+                  course_id: {
+                    type: "string",
+                    description: "The Canvas course ID"
+                  }
+                },
+                required: ["course_id"]
+              }
+            },
+            {
+              name: "list_upcoming_events",
+              description: "Get upcoming events and assignments for the current user",
+              inputSchema: {
+                type: "object",
+                properties: {},
+                required: []
+              }
+            },
+            {
+              name: "get_course_analytics",
+              description: "Get analytics data for a course (page views, participations, tardiness) - may not be available on all Canvas instances",
+              inputSchema: {
+                type: "object",
+                properties: {
+                  course_id: {
+                    type: "string",
+                    description: "The Canvas course ID"
+                  }
+                },
+                required: ["course_id"]
+              }
             }
           ]
         };
@@ -229,6 +361,139 @@ async function handleMCPRequest(request) {
               text: JSON.stringify(assignmentsData, null, 2)
             }]
           };
+
+        } else if (toolName === 'list_all_assignments') {
+          const allAssignmentsData = {
+            assignments: canvasData.allAssignments,
+            count: canvasData.allAssignments.length,
+            lastUpdate: canvasData.lastUpdate
+          };
+
+          if (canvasData.allAssignments.length === 0) {
+            allAssignmentsData.note = "No assignments data available. Make sure the Chrome extension has fetched all assignments.";
+          }
+
+          result = {
+            content: [{
+              type: "text",
+              text: JSON.stringify(allAssignmentsData, null, 2)
+            }]
+          };
+
+        } else if (toolName === 'get_assignment_details') {
+          // For assignment details, the extension would need to fetch this on-demand
+          // This is a placeholder that indicates the data needs to be fetched
+          result = {
+            content: [{
+              type: "text",
+              text: JSON.stringify({
+                note: "Assignment details need to be fetched on-demand. Use the Chrome extension to fetch specific assignment details.",
+                requestedCourseId: params.arguments.course_id,
+                requestedAssignmentId: params.arguments.assignment_id
+              }, null, 2)
+            }]
+          };
+
+        } else if (toolName === 'list_calendar_events') {
+          const eventsData = {
+            events: canvasData.calendarEvents,
+            count: canvasData.calendarEvents.length,
+            lastUpdate: canvasData.lastUpdate
+          };
+
+          if (canvasData.calendarEvents.length === 0) {
+            eventsData.note = "No calendar events available. Make sure the Chrome extension has fetched calendar data.";
+          }
+
+          result = {
+            content: [{
+              type: "text",
+              text: JSON.stringify(eventsData, null, 2)
+            }]
+          };
+
+        } else if (toolName === 'get_user_submissions') {
+          const courseId = params.arguments.course_id;
+          const submissions = canvasData.submissions[courseId] || [];
+
+          const submissionsData = {
+            courseId: courseId,
+            submissions: submissions,
+            count: submissions.length
+          };
+
+          if (submissions.length === 0) {
+            submissionsData.note = "No submissions found for this course. Make sure the Chrome extension has fetched submission data.";
+          }
+
+          result = {
+            content: [{
+              type: "text",
+              text: JSON.stringify(submissionsData, null, 2)
+            }]
+          };
+
+        } else if (toolName === 'list_course_modules') {
+          const courseId = params.arguments.course_id;
+          const modules = canvasData.modules[courseId] || [];
+
+          const modulesData = {
+            courseId: courseId,
+            modules: modules,
+            count: modules.length
+          };
+
+          if (modules.length === 0) {
+            modulesData.note = "No modules found for this course. Make sure the Chrome extension has fetched module data.";
+          }
+
+          result = {
+            content: [{
+              type: "text",
+              text: JSON.stringify(modulesData, null, 2)
+            }]
+          };
+
+        } else if (toolName === 'list_upcoming_events') {
+          const upcomingData = {
+            upcomingEvents: canvasData.upcomingEvents,
+            count: canvasData.upcomingEvents.length,
+            lastUpdate: canvasData.lastUpdate
+          };
+
+          if (canvasData.upcomingEvents.length === 0) {
+            upcomingData.note = "No upcoming events available. Make sure the Chrome extension has fetched upcoming events.";
+          }
+
+          result = {
+            content: [{
+              type: "text",
+              text: JSON.stringify(upcomingData, null, 2)
+            }]
+          };
+
+        } else if (toolName === 'get_course_analytics') {
+          const courseId = params.arguments.course_id;
+          const analytics = canvasData.analytics[courseId] || null;
+
+          if (analytics) {
+            result = {
+              content: [{
+                type: "text",
+                text: JSON.stringify(analytics, null, 2)
+              }]
+            };
+          } else {
+            result = {
+              content: [{
+                type: "text",
+                text: JSON.stringify({
+                  courseId: courseId,
+                  note: "Analytics data not available for this course. Analytics may not be enabled on this Canvas instance."
+                }, null, 2)
+              }]
+            };
+          }
 
         } else {
           throw new Error(`Unknown tool: ${toolName}`);

@@ -106,8 +106,109 @@ tail -f ~/canvas-mcp-host.log
 
 ## Available MCP Tools
 
-- `list_courses` - Get all Canvas courses for the current user
-- `get_course_assignments` - Get assignments for a specific course (requires course_id)
+### Course Information
+- **`list_courses`** - Get all Canvas courses for the current user
+  - No parameters required
+  - Returns: List of courses with ID, name, code, term, and URL
+
+### Assignments
+- **`get_course_assignments`** - Get assignments for a specific course
+  - Parameters: `course_id` (required)
+  - Returns: List of assignments with basic information
+
+- **`list_all_assignments`** - Get all assignments across all courses with submission status
+  - No parameters required
+  - Returns: Comprehensive list of all assignments with:
+    - Course information
+    - Due dates and lock dates
+    - Submission status (submitted, late, missing, grade)
+    - Points possible and grading type
+  - **Ideal for dashboard views and AI-powered insights**
+
+- **`get_assignment_details`** - Get detailed information about a specific assignment
+  - Parameters: `course_id` (required), `assignment_id` (required)
+  - Returns: Full assignment details including:
+    - Description and instructions
+    - Rubrics and grading criteria
+    - Submission information
+    - Allowed attempts
+    - All dates (due, lock, unlock)
+
+### Calendar & Events
+- **`list_calendar_events`** - Get calendar events and assignments within a date range
+  - Parameters: `start_date` (optional, ISO 8601), `end_date` (optional, ISO 8601)
+  - Returns: Calendar events and assignment due dates
+  - Use for timeline views and deadline tracking
+
+- **`list_upcoming_events`** - Get upcoming events and assignments for the current user
+  - No parameters required
+  - Returns: Upcoming assignments and events sorted by date
+  - **Perfect for "What's due soon?" queries**
+
+### Submissions & Progress
+- **`get_user_submissions`** - Get all submissions for the current user in a specific course
+  - Parameters: `course_id` (required)
+  - Returns: Detailed submission information including:
+    - Submission status and timestamps
+    - Grades and scores
+    - Late/missing/excused status
+    - Attempt numbers
+
+### Course Structure
+- **`list_course_modules`** - Get all modules and module items for a course
+  - Parameters: `course_id` (required)
+  - Returns: Course modules with:
+    - Module names and positions
+    - Module items (assignments, pages, quizzes, etc.)
+    - Sequential progress requirements
+    - Published status
+
+### Analytics (Optional)
+- **`get_course_analytics`** - Get analytics data for a course
+  - Parameters: `course_id` (required)
+  - Returns: Student analytics including:
+    - Page views
+    - Participations
+    - Tardiness breakdown
+  - **Note:** May not be available on all Canvas instances
+
+## Use Cases for AI-Powered Dashboard
+
+These new endpoints enable powerful AI-driven features:
+
+1. **Smart Assignment Prioritization**
+   - Use `list_all_assignments` to get all assignments with submission status
+   - AI can analyze due dates, workload, and submission status to suggest priorities
+
+2. **Workload Analysis**
+   - Combine `list_all_assignments` with `list_calendar_events` to identify busy periods
+   - AI can warn about multiple assignments due in the same week
+
+3. **Progress Tracking**
+   - Use `get_user_submissions` to track completion and grades
+   - Calculate completion rates per course
+
+4. **Time Estimation**
+   - `get_assignment_details` provides full context for complexity estimation
+   - AI can suggest time needed based on description and rubrics
+
+5. **Course Health Overview**
+   - Combine multiple endpoints to create comprehensive course dashboards
+   - Track missing assignments, upcoming deadlines, and overall progress
+
+## Example Queries for Claude
+
+With these new endpoints, you can now ask Claude:
+
+- "Show me all my upcoming assignments across all courses"
+- "Which assignments are due this week?"
+- "What assignments am I missing?"
+- "Give me details about assignment [ID] in course [ID]"
+- "What's my workload looking like for the next two weeks?"
+- "Show me my submission status for [course name]"
+- "What modules are in my [course name] course?"
+- "Help me prioritize my assignments based on due dates and complexity"
+- "Create a study schedule based on my Canvas assignments"
 
 ## License
 

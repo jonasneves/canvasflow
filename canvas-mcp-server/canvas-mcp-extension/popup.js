@@ -321,9 +321,11 @@ document.getElementById('saveCanvasUrl').addEventListener('click', async () => {
   }
 });
 
-// Auto-detect Canvas URL
-document.getElementById('autoDetectUrl').addEventListener('click', async () => {
-  showStatusMessage('canvasUrlStatus', 'Detecting...', 'success');
+// Auto-detect Canvas URL from open tabs
+async function autoDetectCanvasUrl(showMessages = true) {
+  if (showMessages) {
+    showStatusMessage('canvasUrlStatus', 'Detecting...', 'success');
+  }
 
   try {
     const tabs = await chrome.tabs.query({});
@@ -351,23 +353,60 @@ document.getElementById('autoDetectUrl').addEventListener('click', async () => {
     }
 
     if (detectedUrls.length === 0) {
-      showStatusMessage('canvasUrlStatus', '✗ No Canvas URLs found in open tabs', 'error');
-      return;
+      if (showMessages) {
+        showStatusMessage('canvasUrlStatus', '✗ No Canvas URLs found in open tabs', 'error');
+      }
+      return null;
     }
 
     const canvasUrlInput = document.getElementById('canvasUrlInput');
-    canvasUrlInput.value = detectedUrls[0];
+    if (canvasUrlInput) {
+      canvasUrlInput.value = detectedUrls[0];
+    }
     await chrome.storage.local.set({ canvasUrl: detectedUrls[0] });
-    showStatusMessage('canvasUrlStatus', `✓ Detected: ${detectedUrls[0]}`, 'success');
+
+    if (showMessages) {
+      showStatusMessage('canvasUrlStatus', `✓ Detected: ${detectedUrls[0]}`, 'success');
+    }
+
+    return detectedUrls[0];
   } catch (error) {
-    showStatusMessage('canvasUrlStatus', '✗ Detection failed', 'error');
+    if (showMessages) {
+      showStatusMessage('canvasUrlStatus', '✗ Detection failed', 'error');
+    }
+    return null;
   }
+}
+
+// Auto-detect button click handler
+document.getElementById('autoDetectUrl').addEventListener('click', async () => {
+  await autoDetectCanvasUrl(true);
 });
 
 // Initial load
-updateCanvasUrl();
-updateStatus();
-loadAssignments();
+async function initialize() {
+  await updateCanvasUrl();
+  updateStatus();
+
+  // Auto-detect Canvas URL if not already configured
+  const result = await chrome.storage.local.get(['canvasUrl']);
+  if (!result.canvasUrl) {
+    console.log('No Canvas URL configured, attempting auto-detect...');
+    const detected = await autoDetectCanvasUrl(false);
+    if (detected) {
+      console.log('Auto-detected Canvas URL:', detected);
+      // Update the input field with detected URL
+      const canvasUrlInput = document.getElementById('canvasUrlInput');
+      if (canvasUrlInput) {
+        canvasUrlInput.value = detected;
+      }
+    }
+  }
+
+  loadAssignments();
+}
+
+initialize();
 
 // Periodic updates
 setInterval(updateStatus, 5000);

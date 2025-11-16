@@ -616,23 +616,28 @@ body {
 }
 
 .modal-content {
-  position: relative;
-  max-width: 600px;
-  margin: 80px auto;
+  position: fixed;
+  right: 0;
+  top: 0;
+  bottom: 0;
+  width: 100%;
+  max-width: 480px;
+  height: 100vh;
+  margin: 0;
   background: white;
-  border-radius: 12px;
-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
-  animation: modalSlideIn 0.3s ease-out;
+  border-radius: 12px 0 0 12px;
+  box-shadow: -4px 0 24px rgba(0, 0, 0, 0.15);
+  animation: slideInFromRight 0.3s ease-out;
+  display: flex;
+  flex-direction: column;
 }
 
-@keyframes modalSlideIn {
+@keyframes slideInFromRight {
   from {
-    opacity: 0;
-    transform: translateY(-20px);
+    transform: translateX(100%);
   }
   to {
-    opacity: 1;
-    transform: translateY(0);
+    transform: translateX(0);
   }
 }
 
@@ -671,6 +676,8 @@ body {
 
 .modal-body {
   padding: 24px;
+  flex: 1;
+  overflow-y: auto;
 }
 
 .modal-footer {
@@ -754,6 +761,11 @@ body {
 
 /* Responsive */
 @media (max-width: 768px) {
+  .modal-content {
+    max-width: 100%;
+    border-radius: 0;
+  }
+
   .header {
     padding: 20px;
   }

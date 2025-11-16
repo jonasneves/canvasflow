@@ -399,9 +399,35 @@
       promise
         .then(data => {
           sendResponse({ success: true, data });
+
+          // Send data to background - determine type based on message type
+          let canvasDataPayload;
+          switch (type) {
+            case 'FETCH_COURSES':
+              canvasDataPayload = { courses: data };
+              break;
+            case 'FETCH_ALL_ASSIGNMENTS':
+              canvasDataPayload = { allAssignments: data };
+              break;
+            case 'FETCH_CALENDAR_EVENTS':
+              canvasDataPayload = { calendarEvents: data };
+              break;
+            case 'FETCH_UPCOMING_EVENTS':
+              canvasDataPayload = { upcomingEvents: data };
+              break;
+            case 'FETCH_ASSIGNMENTS':
+              canvasDataPayload = { assignments: { [courseId]: data } };
+              break;
+            case 'FETCH_ALL_DATA':
+              canvasDataPayload = data; // Already structured correctly
+              break;
+            default:
+              canvasDataPayload = data;
+          }
+
           chrome.runtime.sendMessage({
             type: 'CANVAS_DATA',
-            data: Array.isArray(data) ? { courses: data } : data
+            data: canvasDataPayload
           });
         })
         .catch(error => {

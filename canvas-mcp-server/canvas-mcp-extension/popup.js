@@ -64,11 +64,18 @@ document.getElementById('testListCourses').addEventListener('click', async () =>
     arguments: {}
   });
 
-  if (response && response.result) {
-    const data = JSON.parse(response.result.content[0].text);
-    showOutput(`✓ Connected\n\nCourses: ${data.count}\nLast update: ${data.lastUpdate || 'Unknown'}`);
-  } else {
-    showOutput(`✗ Connection failed\n\n${JSON.stringify(response, null, 2)}`);
+  try {
+    // Handle both response.result.content and response.content structures
+    const content = response?.result?.content || response?.content;
+
+    if (content && content[0] && content[0].text) {
+      const data = JSON.parse(content[0].text);
+      showOutput(`✓ Connected\n\nCourses: ${data.count}\nLast update: ${data.lastUpdate || 'Unknown'}`);
+    } else {
+      showOutput(`✗ Connection failed\n\n${JSON.stringify(response, null, 2)}`);
+    }
+  } catch (error) {
+    showOutput(`✗ Parse error\n\n${error.message}\n\nResponse: ${JSON.stringify(response, null, 2)}`);
   }
 });
 

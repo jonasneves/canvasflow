@@ -812,4 +812,9 @@ checkMCPServerHealth().then(connected => {
   }
 });
 
+// Handle extension icon click to open side panel
+chrome.action.onClicked.addListener((tab) => {
+  chrome.sidePanel.open({ windowId: tab.windowId });
+});
+
 console.log('Canvas MCP Server initialized');

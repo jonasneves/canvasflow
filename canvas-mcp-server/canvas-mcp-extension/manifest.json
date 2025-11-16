@@ -9,7 +9,8 @@
     "tabs",
     "alarms",
     "scripting",
-    "nativeMessaging"
+    "nativeMessaging",
+    "sidePanel"
   ],
   "host_permissions": [
     "<all_urls>"
@@ -26,8 +27,10 @@
     "run_at": "document_idle"
   }],
   "action": {
-    "default_popup": "popup.html",
     "default_title": "Canvas MCP Server"
+  },
+  "side_panel": {
+    "default_path": "popup.html"
   },
   "icons": {
     "16": "icon.png",

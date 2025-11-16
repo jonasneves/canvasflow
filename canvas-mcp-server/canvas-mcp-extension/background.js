@@ -336,7 +336,16 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     });
     return true; // Keep channel open for async response
   }
-  
+
+  if (request.type === 'GET_CANVAS_DATA') {
+    sendResponse({
+      success: true,
+      data: canvasData,
+      dataLastUpdate: canvasData.lastUpdate
+    });
+    return true;
+  }
+
   if (request.type === 'REFRESH_DATA') {
     getCanvasTab()
       .then(async (tab) => {

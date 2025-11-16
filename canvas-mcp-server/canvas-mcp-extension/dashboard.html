@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Canvas AI Dashboard</title>
+  <link rel="stylesheet" href="dashboard.css">
+</head>
+<body>
+  <!-- Header -->
+  <header class="header">
+    <div class="header-content">
+      <div class="header-left">
+        <h1 class="header-title">Canvas AI Dashboard</h1>
+        <p class="header-subtitle">AI-powered assignment insights and analytics</p>
+      </div>
+      <div class="header-right">
+        <button class="btn-icon" id="refreshBtn" title="Refresh data">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M21.5 2v6h-6M2.5 22v-6h6M2 11.5a10 10 0 0 1 18.8-4.3M22 12.5a10 10 0 0 1-18.8 4.2"/>
+          </svg>
+        </button>
+        <button class="btn-icon" id="settingsBtn" title="Settings">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="3"/>
+            <path d="M12 1v6m0 6v6m9-9h-6m-6 0H3m15.4 6.4l-4.2-4.2m-6 0l-4.2 4.2M18.4 5.6l-4.2 4.2m-6 0L3.8 5.6"/>
+          </svg>
+        </button>
+      </div>
+    </div>
+    <div class="header-status">
+      <span class="status-indicator" id="statusIndicator">
+        <span class="status-dot"></span>
+        <span class="status-text">Loading...</span>
+      </span>
+      <span class="last-sync" id="lastSync">Last synced: Never</span>
+    </div>
+  </header>
+
+  <!-- Main Content -->
+  <main class="main-content">
+    <!-- Summary Cards -->
+    <section class="summary-section">
+      <div class="summary-card">
+        <div class="summary-icon total">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+            <polyline points="14 2 14 8 20 8"/>
+          </svg>
+        </div>
+        <div class="summary-content">
+          <div class="summary-label">Total Assignments</div>
+          <div class="summary-value" id="totalAssignments">0</div>
+        </div>
+      </div>
+
+      <div class="summary-card">
+        <div class="summary-icon upcoming">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="10"/>
+            <polyline points="12 6 12 12 16 14"/>
+          </svg>
+        </div>
+        <div class="summary-content">
+          <div class="summary-label">Due This Week</div>
+          <div class="summary-value" id="upcomingAssignments">0</div>
+        </div>
+      </div>
+
+      <div class="summary-card">
+        <div class="summary-icon overdue">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="10"/>
+            <line x1="12" y1="8" x2="12" y2="12"/>
+            <line x1="12" y1="16" x2="12.01" y2="16"/>
+          </svg>
+        </div>
+        <div class="summary-content">
+          <div class="summary-label">Overdue</div>
+          <div class="summary-value" id="overdueAssignments">0</div>
+        </div>
+      </div>
+
+      <div class="summary-card">
+        <div class="summary-icon completed">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
+            <polyline points="22 4 12 14.01 9 11.01"/>
+          </svg>
+        </div>
+        <div class="summary-content">
+          <div class="summary-label">Completed</div>
+          <div class="summary-value" id="completedAssignments">0</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- AI Insights Section -->
+    <section class="insights-section" id="insightsSection">
+      <div class="section-header">
+        <h2 class="section-title">AI Insights</h2>
+        <button class="btn-secondary" id="generateInsightsBtn">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>
+          </svg>
+          Generate Insights
+        </button>
+      </div>
+      <div class="insights-content" id="insightsContent">
+        <div class="insights-placeholder">
+          <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>
+          </svg>
+          <p>Click "Generate Insights" to get AI-powered recommendations and analysis</p>
+          <p class="insights-placeholder-note">Requires Claude API key in settings</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- Assignments Section -->
+    <section class="assignments-section">
+      <div class="section-header">
+        <h2 class="section-title">Assignments</h2>
+        <div class="assignment-filters">
+          <button class="filter-btn active" data-filter="all">All</button>
+          <button class="filter-btn" data-filter="upcoming">Upcoming</button>
+          <button class="filter-btn" data-filter="overdue">Overdue</button>
+          <button class="filter-btn" data-filter="completed">Completed</button>
+        </div>
+      </div>
+      <div class="assignments-list" id="assignmentsList">
+        <div class="assignments-loading">
+          <div class="spinner"></div>
+          <p>Loading assignments...</p>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- Settings Modal -->
+  <div class="modal" id="settingsModal">
+    <div class="modal-overlay"></div>
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2 class="modal-title">Settings</h2>
+        <button class="modal-close" id="closeSettingsBtn">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="18" y1="6" x2="6" y2="18"/>
+            <line x1="6" y1="6" x2="18" y2="18"/>
+          </svg>
+        </button>
+      </div>
+      <div class="modal-body">
+        <div class="settings-group">
+          <label class="settings-label" for="claudeApiKey">Claude API Key</label>
+          <input
+            type="password"
+            class="settings-input"
+            id="claudeApiKey"
+            placeholder="sk-ant-api03-..."
+          />
+          <p class="settings-help">
+            Get your API key from <a href="https://console.anthropic.com/" target="_blank">console.anthropic.com</a>
+          </p>
+        </div>
+
+        <div class="settings-group">
+          <label class="settings-label" for="canvasUrlDisplay">Canvas Instance</label>
+          <input
+            type="text"
+            class="settings-input"
+            id="canvasUrlDisplay"
+            readonly
+            placeholder="Not configured"
+          />
+          <p class="settings-help">
+            Configure your Canvas URL in the extension popup
+          </p>
+        </div>
+
+        <div class="settings-group">
+          <label class="settings-checkbox">
+            <input type="checkbox" id="autoRefresh" />
+            <span>Auto-refresh data every 5 minutes</span>
+          </label>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn-secondary" id="cancelSettingsBtn">Cancel</button>
+        <button class="btn-primary" id="saveSettingsBtn">Save Settings</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="dashboard.js"></script>
+</body>
+</html>

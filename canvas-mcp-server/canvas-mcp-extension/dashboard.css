@@ -7,8 +7,8 @@
 
 body {
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', sans-serif;
-  background: #F9FAFB;
-  color: #111827;
+  background: #F3F2F1;
+  color: #262626;
   line-height: 1.6;
   min-height: 100vh;
 }
@@ -42,7 +42,7 @@ body {
   font-weight: 700;
   color: #111827;
   margin-bottom: 4px;
-  background: linear-gradient(135deg, #F97316 0%, #EA580C 100%);
+  background: linear-gradient(135deg, #012169 0%, #00539B 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
@@ -110,7 +110,7 @@ body {
   width: 8px;
   height: 8px;
   border-radius: 50%;
-  background: #10B981;
+  background: #339898;
   animation: pulse 2s ease-in-out infinite;
 }
 
@@ -175,23 +175,23 @@ body {
 }
 
 .summary-icon.total {
-  background: #EFF6FF;
-  color: #2563EB;
+  background: #E2E6ED;
+  color: #00539B;
 }
 
 .summary-icon.upcoming {
-  background: #FEF3C7;
-  color: #F59E0B;
+  background: #FCF7E5;
+  color: #E89923;
 }
 
 .summary-icon.overdue {
   background: #FEE2E2;
-  color: #EF4444;
+  color: #C84E00;
 }
 
 .summary-icon.completed {
-  background: #D1FAE5;
-  color: #10B981;
+  background: rgba(51, 152, 152, 0.15);
+  color: #1D6363;
 }
 
 .summary-content {
@@ -250,12 +250,12 @@ body {
 }
 
 .btn-primary {
-  background: #F97316;
+  background: #00539B;
   color: white;
 }
 
 .btn-primary:hover {
-  background: #EA580C;
+  background: #012169;
 }
 
 .btn-secondary {
@@ -378,9 +378,9 @@ body {
 }
 
 .filter-btn.active {
-  background: #F97316;
+  background: #00539B;
   color: white;
-  border-color: #F97316;
+  border-color: #00539B;
 }
 
 /* Assignments List */
@@ -401,8 +401,8 @@ body {
   width: 40px;
   height: 40px;
   margin: 0 auto 16px;
-  border: 3px solid #F3F4F6;
-  border-top-color: #F97316;
+  border: 3px solid #E2E6ED;
+  border-top-color: #00539B;
   border-radius: 50%;
   animation: spin 0.8s linear infinite;
 }
@@ -431,15 +431,15 @@ body {
 }
 
 .assignment-status.upcoming {
-  background: #F59E0B;
+  background: #E89923;
 }
 
 .assignment-status.overdue {
-  background: #EF4444;
+  background: #C84E00;
 }
 
 .assignment-status.completed {
-  background: #10B981;
+  background: #339898;
 }
 
 .assignment-status.none {
@@ -485,11 +485,11 @@ body {
 }
 
 .assignment-due.overdue {
-  color: #EF4444;
+  color: #C84E00;
 }
 
 .assignment-due.soon {
-  color: #F59E0B;
+  color: #E89923;
 }
 
 .assignment-badge {
@@ -500,23 +500,23 @@ body {
 }
 
 .assignment-badge.completed {
-  background: #D1FAE5;
-  color: #059669;
+  background: rgba(51, 152, 152, 0.15);
+  color: #1D6363;
 }
 
 .assignment-badge.submitted {
-  background: #DBEAFE;
-  color: #1D4ED8;
+  background: #E2E6ED;
+  color: #005587;
 }
 
 .assignment-badge.late {
-  background: #FEE2E2;
-  color: #DC2626;
+  background: rgba(200, 78, 0, 0.15);
+  color: #C84E00;
 }
 
 .assignment-badge.missing {
-  background: #FEF3C7;
-  color: #D97706;
+  background: #FCF7E5;
+  color: #E89923;
 }
 
 /* Modal */
@@ -641,8 +641,8 @@ body {
 
 .settings-input:focus {
   outline: none;
-  border-color: #F97316;
-  box-shadow: 0 0 0 3px rgba(249, 115, 22, 0.1);
+  border-color: #00539B;
+  box-shadow: 0 0 0 3px rgba(0, 83, 155, 0.1);
 }
 
 .settings-input:read-only {
@@ -657,7 +657,7 @@ body {
 }
 
 .settings-help a {
-  color: #F97316;
+  color: #00539B;
   text-decoration: none;
 }
 
@@ -678,7 +678,7 @@ body {
   width: 18px;
   height: 18px;
   cursor: pointer;
-  accent-color: #F97316;
+  accent-color: #00539B;
 }
 
 /* Responsive */

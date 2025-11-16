@@ -88,12 +88,21 @@ document.getElementById('refreshData').addEventListener('click', async () => {
 
     if (response && response.success) {
       const coursesCount = response.data.courses?.length || 0;
-      const assignmentsCount = Object.keys(response.data.assignments || {}).length;
-      showOutput(`✓ Sync complete\n\nCourses: ${coursesCount}\nAssignments loaded: ${assignmentsCount}`);
+      const allAssignmentsCount = response.data.allAssignments?.length || 0;
+      const calendarEventsCount = response.data.calendarEvents?.length || 0;
+      const upcomingEventsCount = response.data.upcomingEvents?.length || 0;
+
+      showOutput(
+        `✓ Sync complete\n\n` +
+        `Courses: ${coursesCount}\n` +
+        `All Assignments: ${allAssignmentsCount}\n` +
+        `Calendar Events: ${calendarEventsCount}\n` +
+        `Upcoming Events: ${upcomingEventsCount}`
+      );
       updateStatus();
 
-      // Hide output after 3 seconds
-      setTimeout(hideOutput, 3000);
+      // Hide output after 4 seconds
+      setTimeout(hideOutput, 4000);
     } else {
       showOutput(`✗ Sync failed\n\n${response?.error || 'Unknown error'}`);
     }

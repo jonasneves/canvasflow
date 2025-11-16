@@ -129,6 +129,9 @@ const MCP_SERVER_URL = 'http://localhost:8765/canvas-data';
 let canvasData = {
   courses: [],
   assignments: {},
+  allAssignments: [],
+  calendarEvents: [],
+  upcomingEvents: [],
   lastUpdate: null
 };
 
@@ -145,7 +148,10 @@ async function sendDataToMCPServer() {
       },
       body: JSON.stringify({
         courses: canvasData.courses,
-        assignments: canvasData.assignments
+        assignments: canvasData.assignments,
+        allAssignments: canvasData.allAssignments || [],
+        calendarEvents: canvasData.calendarEvents || [],
+        upcomingEvents: canvasData.upcomingEvents || []
       })
     });
 
@@ -340,12 +346,48 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
             files: ['content.js']
           });
           await new Promise(resolve => setTimeout(resolve, 500));
-          const response = await sendMessageToContent(tab.id, { type: 'FETCH_ALL_DATA' });
-          if (response && response.success) {
-            sendResponse({ success: true, data: response.data });
-          } else {
-            sendResponse({ success: false, error: response?.error || 'Failed to fetch data' });
+
+          // Fetch all data types in parallel
+          const [
+            coursesResponse,
+            allAssignmentsResponse,
+            calendarEventsResponse,
+            upcomingEventsResponse
+          ] = await Promise.all([
+            sendMessageToContent(tab.id, { type: 'FETCH_COURSES' }),
+            sendMessageToContent(tab.id, { type: 'FETCH_ALL_ASSIGNMENTS' }),
+            sendMessageToContent(tab.id, { type: 'FETCH_CALENDAR_EVENTS' }),
+            sendMessageToContent(tab.id, { type: 'FETCH_UPCOMING_EVENTS' })
+          ]);
+
+          // Build comprehensive response
+          const data = {
+            courses: coursesResponse?.success ? coursesResponse.data : [],
+            allAssignments: allAssignmentsResponse?.success ? allAssignmentsResponse.data : [],
+            calendarEvents: calendarEventsResponse?.success ? calendarEventsResponse.data : [],
+            upcomingEvents: upcomingEventsResponse?.success ? upcomingEventsResponse.data : [],
+            assignments: {} // Legacy format for backwards compatibility
+          };
+
+          // Update in-memory cache
+          if (data.courses.length > 0) {
+            canvasData.courses = data.courses;
           }
+          if (data.allAssignments.length > 0) {
+            canvasData.allAssignments = data.allAssignments;
+          }
+          if (data.calendarEvents.length > 0) {
+            canvasData.calendarEvents = data.calendarEvents;
+          }
+          if (data.upcomingEvents.length > 0) {
+            canvasData.upcomingEvents = data.upcomingEvents;
+          }
+          canvasData.lastUpdate = new Date().toISOString();
+
+          // Send to MCP server
+          sendDataToMCPServer();
+
+          sendResponse({ success: true, data: data });
         } catch (error) {
           console.error('Error refreshing data:', error);
           sendResponse({ success: false, error: error.message });

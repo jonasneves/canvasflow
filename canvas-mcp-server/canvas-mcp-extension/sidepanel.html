@@ -96,40 +96,93 @@
     }
 
     .summary-card {
-      padding: 16px;
-      background: #FAFAFA;
+      background: white;
       border: 1px solid #E5E7EB;
-      border-radius: 8px;
-      text-align: center;
-      border-left: 3px solid #00539B;
+      border-radius: 12px;
+      padding: 16px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      cursor: pointer;
+      position: relative;
+      overflow: hidden;
     }
 
-    .summary-card.overdue {
-      border-left-color: #DC2626;
+    .summary-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(135deg, rgba(0, 83, 155, 0.03) 0%, transparent 100%);
+      opacity: 0;
+      transition: opacity 0.3s ease;
     }
 
-    .summary-card.due-today {
-      border-left-color: #E89923;
+    .summary-card:hover::before {
+      opacity: 1;
     }
 
-    .summary-card.upcoming {
-      border-left-color: #00539B;
+    .summary-card:hover {
+      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.12);
+      transform: translateY(-2px);
+      border-color: #00539B;
     }
 
-    .summary-count {
-      font-size: 28px;
-      font-weight: 700;
-      color: #111827;
-      line-height: 1;
-      margin-bottom: 4px;
+    .summary-card:active {
+      transform: translateY(-1px);
+    }
+
+    .summary-card.active {
+      border-color: #00539B;
+      box-shadow: 0 4px 12px rgba(0, 83, 155, 0.15);
+    }
+
+    .summary-icon {
+      width: 40px;
+      height: 40px;
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      font-size: 18px;
+    }
+
+    .summary-card.overdue .summary-icon {
+      background: #FEE2E2;
+      color: #C84E00;
+    }
+
+    .summary-card.due-today .summary-icon {
+      background: #FCF7E5;
+      color: #E89923;
+    }
+
+    .summary-card.upcoming .summary-icon {
+      background: #E2E6ED;
+      color: #00539B;
+    }
+
+    .summary-content {
+      flex: 1;
+      min-width: 0;
     }
 
     .summary-label {
       font-size: 11px;
-      font-weight: 500;
       color: #6B7280;
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
+      margin-bottom: 2px;
+      font-weight: 500;
+    }
+
+    .summary-value {
+      font-size: 24px;
+      font-weight: 700;
+      color: #111827;
+      line-height: 1;
     }
 
     .assignments-section {
@@ -560,17 +613,26 @@
   <div class="tab-content active" id="canvas-data">
     <!-- Summary Cards -->
     <div class="summary-cards">
-      <div class="summary-card overdue">
-        <div class="summary-count" id="overdueCount">-</div>
-        <div class="summary-label">Overdue</div>
+      <div class="summary-card overdue" data-filter="overdue">
+        <div class="summary-icon">⚠️</div>
+        <div class="summary-content">
+          <div class="summary-label">Overdue</div>
+          <div class="summary-value" id="overdueCount">-</div>
+        </div>
       </div>
-      <div class="summary-card due-today">
-        <div class="summary-count" id="dueTodayCount">-</div>
-        <div class="summary-label">Due Today</div>
+      <div class="summary-card due-today" data-filter="due-today">
+        <div class="summary-icon">⏰</div>
+        <div class="summary-content">
+          <div class="summary-label">Due Today</div>
+          <div class="summary-value" id="dueTodayCount">-</div>
+        </div>
       </div>
-      <div class="summary-card upcoming">
-        <div class="summary-count" id="upcomingCount">-</div>
-        <div class="summary-label">Upcoming</div>
+      <div class="summary-card upcoming" data-filter="upcoming">
+        <div class="summary-icon">📅</div>
+        <div class="summary-content">
+          <div class="summary-label">Upcoming</div>
+          <div class="summary-value" id="upcomingCount">-</div>
+        </div>
       </div>
     </div>
 

@@ -1,3 +1,7 @@
+// Global state
+let allAssignments = [];
+let currentFilter = 'all';
+
 // Tab switching
 const tabButtons = document.querySelectorAll('.tab-button');
 const tabContents = document.querySelectorAll('.tab-content');
@@ -66,6 +70,100 @@ async function updateStatus() {
   });
 }
 
+// Render assignments based on current filter
+function renderAssignments() {
+  const assignmentsList = document.getElementById('assignmentsList');
+  const now = new Date();
+  const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  const todayEnd = new Date(todayStart.getTime() + 24 * 60 * 60 * 1000);
+
+  if (allAssignments.length === 0) {
+    assignmentsList.innerHTML = `
+      <div class="empty-state">
+        <div class="empty-state-icon">📚</div>
+        <div class="empty-state-text">No assignments found</div>
+        <div style="font-size: 12px; margin-top: 8px;">Click "Refresh Canvas Data" in MCP Server tab</div>
+      </div>
+    `;
+    return;
+  }
+
+  // Filter assignments based on currentFilter
+  let filteredAssignments = allAssignments.filter(a => a.due_at);
+
+  if (currentFilter === 'overdue') {
+    filteredAssignments = filteredAssignments.filter(a => {
+      return new Date(a.due_at) < now && !a.has_submitted_submissions;
+    });
+  } else if (currentFilter === 'due-today') {
+    filteredAssignments = filteredAssignments.filter(a => {
+      const dueDate = new Date(a.due_at);
+      return dueDate >= todayStart && dueDate < todayEnd && !a.has_submitted_submissions;
+    });
+  } else if (currentFilter === 'upcoming') {
+    filteredAssignments = filteredAssignments.filter(a => {
+      return new Date(a.due_at) >= todayEnd && !a.has_submitted_submissions;
+    });
+  }
+
+  // Sort by due date (closest first)
+  filteredAssignments.sort((a, b) => new Date(a.due_at) - new Date(b.due_at));
+
+  // Limit to 20 assignments
+  filteredAssignments = filteredAssignments.slice(0, 20);
+
+  if (filteredAssignments.length === 0) {
+    const filterText = currentFilter === 'all' ? 'with due dates' :
+                      currentFilter === 'overdue' ? 'overdue' :
+                      currentFilter === 'due-today' ? 'due today' : 'upcoming';
+    assignmentsList.innerHTML = `
+      <div class="empty-state">
+        <div class="empty-state-icon">✅</div>
+        <div class="empty-state-text">No ${filterText} assignments</div>
+      </div>
+    `;
+    return;
+  }
+
+  // Render assignments
+  assignmentsList.innerHTML = filteredAssignments.map(assignment => {
+    const dueDate = new Date(assignment.due_at);
+    const isOverdue = dueDate < now;
+    const isDueSoon = !isOverdue && (dueDate - now) < 24 * 60 * 60 * 1000;
+    const isCompleted = assignment.has_submitted_submissions;
+
+    let cardClass = 'assignment-card';
+    if (isCompleted) cardClass += ' completed';
+    else if (isOverdue) cardClass += ' overdue';
+
+    let dueDateText = dueDate.toLocaleDateString('en-US', {
+      month: 'short',
+      day: 'numeric',
+      hour: 'numeric',
+      minute: '2-digit'
+    });
+
+    let dueDateClass = 'assignment-due';
+    if (isDueSoon) dueDateClass += ' soon';
+
+    let statusText = '';
+    if (isCompleted) statusText = '✓ Submitted';
+    else if (isOverdue) statusText = '⚠ Overdue';
+    else if (isDueSoon) statusText = '⏰ Due soon';
+
+    return `
+      <div class="${cardClass}">
+        <div class="assignment-title">${escapeHtml(assignment.name || 'Untitled Assignment')}</div>
+        <div class="assignment-meta">
+          <span>${escapeHtml(assignment.course_name || 'Unknown Course')}</span>
+          <span class="${dueDateClass}">Due: ${dueDateText}</span>
+          ${statusText ? `<span>${statusText}</span>` : ''}
+        </div>
+      </div>
+    `;
+  }).join('');
+}
+
 // Load and display assignments
 async function loadAssignments() {
   const assignmentsList = document.getElementById('assignmentsList');
@@ -78,7 +176,7 @@ async function loadAssignments() {
     });
 
     if (response && response.success) {
-      const allAssignments = response.data.allAssignments || [];
+      allAssignments = response.data.allAssignments || [];
 
       // Calculate summary counts
       const now = new Date();
@@ -99,78 +197,8 @@ async function loadAssignments() {
       document.getElementById('dueTodayCount').textContent = dueTodayCount;
       document.getElementById('upcomingCount').textContent = upcomingCount;
 
-      if (allAssignments.length === 0) {
-        // Reset counts to 0
-        document.getElementById('overdueCount').textContent = '0';
-        document.getElementById('dueTodayCount').textContent = '0';
-        document.getElementById('upcomingCount').textContent = '0';
-
-        assignmentsList.innerHTML = `
-          <div class="empty-state">
-            <div class="empty-state-icon">📚</div>
-            <div class="empty-state-text">No assignments found</div>
-            <div style="font-size: 12px; margin-top: 8px;">Click "Refresh Canvas Data" in Settings</div>
-          </div>
-        `;
-        return;
-      }
-
-      // Sort by due date (closest first)
-      const sortedAssignments = allAssignments
-        .filter(a => a.due_at)
-        .sort((a, b) => new Date(a.due_at) - new Date(b.due_at));
-
-      // Only show next 20 assignments
-      const upcomingAssignments = sortedAssignments.slice(0, 20);
-
-      if (upcomingAssignments.length === 0) {
-        assignmentsList.innerHTML = `
-          <div class="empty-state">
-            <div class="empty-state-icon">✅</div>
-            <div class="empty-state-text">No upcoming assignments with due dates</div>
-          </div>
-        `;
-        return;
-      }
-
-      // Render assignments
-      assignmentsList.innerHTML = upcomingAssignments.map(assignment => {
-        const dueDate = new Date(assignment.due_at);
-        const now = new Date();
-        const isOverdue = dueDate < now;
-        const isDueSoon = !isOverdue && (dueDate - now) < 24 * 60 * 60 * 1000; // Within 24 hours
-        const isCompleted = assignment.has_submitted_submissions;
-
-        let cardClass = 'assignment-card';
-        if (isCompleted) cardClass += ' completed';
-        else if (isOverdue) cardClass += ' overdue';
-
-        let dueDateText = dueDate.toLocaleDateString('en-US', {
-          month: 'short',
-          day: 'numeric',
-          hour: 'numeric',
-          minute: '2-digit'
-        });
-
-        let dueDateClass = 'assignment-due';
-        if (isDueSoon) dueDateClass += ' soon';
-
-        let statusText = '';
-        if (isCompleted) statusText = '✓ Submitted';
-        else if (isOverdue) statusText = '⚠ Overdue';
-        else if (isDueSoon) statusText = '⏰ Due soon';
-
-        return `
-          <div class="${cardClass}">
-            <div class="assignment-title">${escapeHtml(assignment.name || 'Untitled Assignment')}</div>
-            <div class="assignment-meta">
-              <span>${escapeHtml(assignment.course_name || 'Unknown Course')}</span>
-              <span class="${dueDateClass}">Due: ${dueDateText}</span>
-              ${statusText ? `<span>${statusText}</span>` : ''}
-            </div>
-          </div>
-        `;
-      }).join('');
+      // Render assignments with current filter
+      renderAssignments();
 
     } else {
       assignmentsList.innerHTML = `
@@ -287,6 +315,26 @@ document.getElementById('refreshData').addEventListener('click', async () => {
 // Refresh assignments button
 document.getElementById('refreshAssignments').addEventListener('click', () => {
   loadAssignments();
+});
+
+// Summary card filters
+document.querySelectorAll('.summary-card').forEach(card => {
+  card.addEventListener('click', () => {
+    const filter = card.getAttribute('data-filter');
+
+    // Toggle filter - if clicking the same card, reset to 'all'
+    if (currentFilter === filter) {
+      currentFilter = 'all';
+      document.querySelectorAll('.summary-card').forEach(c => c.classList.remove('active'));
+    } else {
+      currentFilter = filter;
+      document.querySelectorAll('.summary-card').forEach(c => c.classList.remove('active'));
+      card.classList.add('active');
+    }
+
+    // Re-render with new filter
+    renderAssignments();
+  });
 });
 
 // Listen for storage changes to update Canvas URL

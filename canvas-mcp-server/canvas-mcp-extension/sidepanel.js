@@ -89,25 +89,25 @@ function renderAssignments() {
   }
 
   // Filter assignments based on currentFilter
-  let filteredAssignments = allAssignments.filter(a => a.due_at);
+  let filteredAssignments = allAssignments.filter(a => a.dueDate);
 
   if (currentFilter === 'overdue') {
     filteredAssignments = filteredAssignments.filter(a => {
-      return new Date(a.due_at) < now && !a.has_submitted_submissions;
+      return new Date(a.dueDate) < now && !a.submitted;
     });
   } else if (currentFilter === 'due-today') {
     filteredAssignments = filteredAssignments.filter(a => {
-      const dueDate = new Date(a.due_at);
-      return dueDate >= todayStart && dueDate < todayEnd && !a.has_submitted_submissions;
+      const dueDate = new Date(a.dueDate);
+      return dueDate >= todayStart && dueDate < todayEnd && !a.submitted;
     });
   } else if (currentFilter === 'upcoming') {
     filteredAssignments = filteredAssignments.filter(a => {
-      return new Date(a.due_at) >= todayEnd && !a.has_submitted_submissions;
+      return new Date(a.dueDate) >= todayEnd && !a.submitted;
     });
   }
 
   // Sort by due date (closest first)
-  filteredAssignments.sort((a, b) => new Date(a.due_at) - new Date(b.due_at));
+  filteredAssignments.sort((a, b) => new Date(a.dueDate) - new Date(b.dueDate));
 
   // Limit to 20 assignments
   filteredAssignments = filteredAssignments.slice(0, 20);
@@ -127,10 +127,10 @@ function renderAssignments() {
 
   // Render assignments
   assignmentsList.innerHTML = filteredAssignments.map(assignment => {
-    const dueDate = new Date(assignment.due_at);
+    const dueDate = new Date(assignment.dueDate);
     const isOverdue = dueDate < now;
     const isDueSoon = !isOverdue && (dueDate - now) < 24 * 60 * 60 * 1000;
-    const isCompleted = assignment.has_submitted_submissions;
+    const isCompleted = assignment.submitted;
 
     let cardClass = 'assignment-card';
     if (isCompleted) cardClass += ' completed';
@@ -155,7 +155,7 @@ function renderAssignments() {
       <div class="${cardClass}">
         <div class="assignment-title">${escapeHtml(assignment.name || 'Untitled Assignment')}</div>
         <div class="assignment-meta">
-          <span>${escapeHtml(assignment.course_name || 'Unknown Course')}</span>
+          <span>${escapeHtml(assignment.courseName || 'Unknown Course')}</span>
           <span class="${dueDateClass}">Due: ${dueDateText}</span>
           ${statusText ? `<span>${statusText}</span>` : ''}
         </div>
@@ -186,14 +186,14 @@ async function loadAssignments() {
       const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate());
       const todayEnd = new Date(todayStart.getTime() + 24 * 60 * 60 * 1000);
 
-      const assignmentsWithDates = allAssignments.filter(a => a.due_at && !a.has_submitted_submissions);
+      const assignmentsWithDates = allAssignments.filter(a => a.dueDate && !a.submitted);
 
-      const overdueCount = assignmentsWithDates.filter(a => new Date(a.due_at) < now).length;
+      const overdueCount = assignmentsWithDates.filter(a => new Date(a.dueDate) < now).length;
       const dueTodayCount = assignmentsWithDates.filter(a => {
-        const dueDate = new Date(a.due_at);
+        const dueDate = new Date(a.dueDate);
         return dueDate >= todayStart && dueDate < todayEnd;
       }).length;
-      const upcomingCount = assignmentsWithDates.filter(a => new Date(a.due_at) >= todayEnd).length;
+      const upcomingCount = assignmentsWithDates.filter(a => new Date(a.dueDate) >= todayEnd).length;
 
       console.log('Counts - Overdue:', overdueCount, 'Due Today:', dueTodayCount, 'Upcoming:', upcomingCount);
 

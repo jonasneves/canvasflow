@@ -611,7 +611,6 @@ Be realistic with time estimates. Consider assignment complexity and point value
         type: 'json_schema',
         json_schema: {
           name: 'assignment_insights',
-          strict: true,
           schema: {
             type: 'object',
             properties: {

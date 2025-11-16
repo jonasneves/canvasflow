@@ -13,11 +13,16 @@ async function sendMCPRequest(method, params = {}) {
 async function updateCanvasUrl() {
   try {
     const result = await chrome.storage.local.get(['canvasUrl']);
-    const canvasUrl = result.canvasUrl || 'https://canvas.instructure.com (default)';
-    document.getElementById('canvasUrl').textContent = canvasUrl;
+    const canvasUrl = result.canvasUrl || '';
+    const canvasUrlInput = document.getElementById('canvasUrlInput');
+    if (canvasUrlInput) {
+      canvasUrlInput.value = canvasUrl;
+      if (!canvasUrl) {
+        canvasUrlInput.placeholder = 'https://canvas.instructure.com';
+      }
+    }
   } catch (error) {
     console.error('Error loading Canvas URL:', error);
-    document.getElementById('canvasUrl').textContent = 'Error loading URL';
   }
 }
 
@@ -94,7 +99,6 @@ document.getElementById('refreshData').addEventListener('click', async () => {
 chrome.storage.onChanged.addListener((changes, namespace) => {
   if (namespace === 'local' && changes.canvasUrl) {
     updateCanvasUrl();
-    loadSettingsIntoForm();
   }
 });
 
@@ -108,38 +112,17 @@ claudeConfigToggle.addEventListener('click', () => {
   setupChevron.classList.toggle('open', isOpen);
 });
 
-// Settings toggle
-const settingsToggle = document.getElementById('settingsToggle');
-const settingsContent = document.getElementById('settingsContent');
-const settingsChevron = settingsToggle.querySelector('.chevron');
-
-settingsToggle.addEventListener('click', () => {
-  const isOpen = settingsContent.classList.toggle('open');
-  settingsChevron.classList.toggle('open', isOpen);
-});
-
-// Settings functionality
+// Canvas URL inline editing
 const canvasUrlInput = document.getElementById('canvasUrlInput');
-const settingsStatus = document.getElementById('settingsStatus');
+const canvasUrlStatus = document.getElementById('canvasUrlStatus');
 
-async function loadSettingsIntoForm() {
-  try {
-    const result = await chrome.storage.local.get(['canvasUrl']);
-    if (result.canvasUrl) {
-      canvasUrlInput.value = result.canvasUrl;
-    }
-  } catch (error) {
-    console.error('Error loading settings:', error);
-  }
-}
-
-function showSettingsStatus(message, type) {
-  settingsStatus.textContent = message;
-  settingsStatus.className = `settings-status show ${type}`;
+function showCanvasUrlStatus(message, type) {
+  canvasUrlStatus.textContent = message;
+  canvasUrlStatus.className = `canvas-url-status show ${type}`;
 
   if (type === 'success') {
     setTimeout(() => {
-      settingsStatus.classList.remove('show');
+      canvasUrlStatus.classList.remove('show');
     }, 3000);
   }
 }
@@ -159,32 +142,31 @@ function isValidCanvasUrl(url) {
   }
 }
 
-// Save settings
-document.getElementById('saveSettings').addEventListener('click', async () => {
+// Save Canvas URL
+document.getElementById('saveCanvasUrl').addEventListener('click', async () => {
   const url = canvasUrlInput.value.trim();
 
   if (!url) {
-    showSettingsStatus('Please enter a Canvas URL', 'error');
+    showCanvasUrlStatus('Please enter a Canvas URL', 'error');
     return;
   }
 
   if (!isValidCanvasUrl(url)) {
-    showSettingsStatus('Please enter a valid HTTPS URL', 'error');
+    showCanvasUrlStatus('Please enter a valid HTTPS URL', 'error');
     return;
   }
 
   try {
     await chrome.storage.local.set({ canvasUrl: url });
-    showSettingsStatus('✓ Saved', 'success');
-    updateCanvasUrl();
+    showCanvasUrlStatus('✓ Saved', 'success');
   } catch (error) {
-    showSettingsStatus('✗ Save failed', 'error');
+    showCanvasUrlStatus('✗ Save failed', 'error');
   }
 });
 
 // Auto-detect Canvas URL
-document.getElementById('autoDetect').addEventListener('click', async () => {
-  showSettingsStatus('Detecting...', 'success');
+document.getElementById('autoDetectUrl').addEventListener('click', async () => {
+  showCanvasUrlStatus('Detecting...', 'success');
 
   try {
     const tabs = await chrome.tabs.query({});
@@ -212,21 +194,19 @@ document.getElementById('autoDetect').addEventListener('click', async () => {
     }
 
     if (detectedUrls.length === 0) {
-      showSettingsStatus('✗ No Canvas URLs found in open tabs', 'error');
+      showCanvasUrlStatus('✗ No Canvas URLs found in open tabs', 'error');
       return;
     }
 
     canvasUrlInput.value = detectedUrls[0];
     await chrome.storage.local.set({ canvasUrl: detectedUrls[0] });
-    showSettingsStatus(`✓ Detected: ${detectedUrls[0]}`, 'success');
-    updateCanvasUrl();
+    showCanvasUrlStatus(`✓ Detected: ${detectedUrls[0]}`, 'success');
   } catch (error) {
-    showSettingsStatus('✗ Detection failed', 'error');
+    showCanvasUrlStatus('✗ Detection failed', 'error');
   }
 });
 
 // Initial load
 updateCanvasUrl();
-loadSettingsIntoForm();
 updateStatus();
 setInterval(updateStatus, 2000);

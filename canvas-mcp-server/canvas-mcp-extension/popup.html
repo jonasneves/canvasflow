@@ -47,14 +47,59 @@
       color: #6B7280;
       text-transform: uppercase;
       letter-spacing: 0.5px;
-      margin-bottom: 4px;
+      margin-bottom: 6px;
     }
 
-    .canvas-url-value {
+    .canvas-url-input {
+      width: 100%;
+      padding: 8px 12px;
       font-size: 13px;
-      color: #111827;
+      border: 1px solid #E5E7EB;
+      border-radius: 6px;
       font-family: ui-monospace, 'SF Mono', Monaco, monospace;
-      word-break: break-all;
+      color: #111827;
+      background: #fff;
+      transition: all 0.15s ease;
+      margin-bottom: 8px;
+    }
+
+    .canvas-url-input:focus {
+      outline: none;
+      border-color: #F97316;
+      box-shadow: 0 0 0 3px rgba(249, 115, 22, 0.1);
+    }
+
+    .canvas-url-buttons {
+      display: flex;
+      gap: 8px;
+    }
+
+    .canvas-url-buttons button {
+      flex: 1;
+    }
+
+    .canvas-url-status {
+      margin-top: 8px;
+      padding: 8px 12px;
+      border-radius: 6px;
+      font-size: 12px;
+      display: none;
+    }
+
+    .canvas-url-status.show {
+      display: block;
+    }
+
+    .canvas-url-status.success {
+      background: #ECFDF5;
+      color: #059669;
+      border: 1px solid #D1FAE5;
+    }
+
+    .canvas-url-status.error {
+      background: #FEF2F2;
+      color: #DC2626;
+      border: 1px solid #FEE2E2;
     }
 
     /* Status Section */
@@ -345,7 +390,12 @@
 
   <div class="canvas-url">
     <div class="canvas-url-label">Canvas Instance</div>
-    <div class="canvas-url-value" id="canvasUrl">Loading...</div>
+    <input type="text" class="canvas-url-input" id="canvasUrlInput" placeholder="https://canvas.instructure.com">
+    <div class="canvas-url-buttons">
+      <button class="secondary small" id="saveCanvasUrl">Save</button>
+      <button class="ghost small" id="autoDetectUrl">Auto-Detect</button>
+    </div>
+    <div class="canvas-url-status" id="canvasUrlStatus"></div>
   </div>
 
   <div class="status-section">
@@ -387,24 +437,6 @@
     </div>
   </div>
 
-  <div class="setup-card">
-    <div class="setup-header" id="settingsToggle">
-      <span>Settings</span>
-      <span class="chevron">▶</span>
-    </div>
-    <div class="setup-content" id="settingsContent">
-      <div class="settings-field">
-        <label class="settings-label">Canvas URL</label>
-        <input type="text" class="settings-input" id="canvasUrlInput" placeholder="https://canvas.instructure.com">
-        <div class="settings-help">Your institution's Canvas URL</div>
-      </div>
-      <div class="settings-buttons">
-        <button class="primary" id="saveSettings">Save</button>
-        <button class="secondary" id="autoDetect">Auto-Detect</button>
-      </div>
-      <div class="settings-status" id="settingsStatus"></div>
-    </div>
-  </div>
 
   <div class="output" id="output"></div>
 

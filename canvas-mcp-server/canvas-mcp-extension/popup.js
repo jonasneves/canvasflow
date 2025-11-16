@@ -80,7 +80,31 @@ async function loadAssignments() {
     if (response && response.success) {
       const allAssignments = response.data.allAssignments || [];
 
+      // Calculate summary counts
+      const now = new Date();
+      const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+      const todayEnd = new Date(todayStart.getTime() + 24 * 60 * 60 * 1000);
+
+      const assignmentsWithDates = allAssignments.filter(a => a.due_at && !a.has_submitted_submissions);
+
+      const overdueCount = assignmentsWithDates.filter(a => new Date(a.due_at) < now).length;
+      const dueTodayCount = assignmentsWithDates.filter(a => {
+        const dueDate = new Date(a.due_at);
+        return dueDate >= todayStart && dueDate < todayEnd;
+      }).length;
+      const upcomingCount = assignmentsWithDates.filter(a => new Date(a.due_at) >= todayEnd).length;
+
+      // Update summary cards
+      document.getElementById('overdueCount').textContent = overdueCount;
+      document.getElementById('dueTodayCount').textContent = dueTodayCount;
+      document.getElementById('upcomingCount').textContent = upcomingCount;
+
       if (allAssignments.length === 0) {
+        // Reset counts to 0
+        document.getElementById('overdueCount').textContent = '0';
+        document.getElementById('dueTodayCount').textContent = '0';
+        document.getElementById('upcomingCount').textContent = '0';
+
         assignmentsList.innerHTML = `
           <div class="empty-state">
             <div class="empty-state-icon">📚</div>

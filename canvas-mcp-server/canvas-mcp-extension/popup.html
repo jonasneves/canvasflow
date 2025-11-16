@@ -87,6 +87,51 @@
     }
 
     /* Canvas Data Tab */
+    /* Summary Cards */
+    .summary-cards {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 12px;
+      margin-bottom: 20px;
+    }
+
+    .summary-card {
+      padding: 16px;
+      background: #FAFAFA;
+      border: 1px solid #E5E7EB;
+      border-radius: 8px;
+      text-align: center;
+      border-left: 3px solid #00539B;
+    }
+
+    .summary-card.overdue {
+      border-left-color: #DC2626;
+    }
+
+    .summary-card.due-today {
+      border-left-color: #E89923;
+    }
+
+    .summary-card.upcoming {
+      border-left-color: #00539B;
+    }
+
+    .summary-count {
+      font-size: 28px;
+      font-weight: 700;
+      color: #111827;
+      line-height: 1;
+      margin-bottom: 4px;
+    }
+
+    .summary-label {
+      font-size: 11px;
+      font-weight: 500;
+      color: #6B7280;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
     .assignments-section {
       margin-bottom: 24px;
     }
@@ -513,6 +558,22 @@
 
   <!-- Canvas Data Tab -->
   <div class="tab-content active" id="canvas-data">
+    <!-- Summary Cards -->
+    <div class="summary-cards">
+      <div class="summary-card overdue">
+        <div class="summary-count" id="overdueCount">-</div>
+        <div class="summary-label">Overdue</div>
+      </div>
+      <div class="summary-card due-today">
+        <div class="summary-count" id="dueTodayCount">-</div>
+        <div class="summary-label">Due Today</div>
+      </div>
+      <div class="summary-card upcoming">
+        <div class="summary-count" id="upcomingCount">-</div>
+        <div class="summary-label">Upcoming</div>
+      </div>
+    </div>
+
     <div class="assignments-section">
       <div class="section-header">
         <span>Upcoming Assignments</span>

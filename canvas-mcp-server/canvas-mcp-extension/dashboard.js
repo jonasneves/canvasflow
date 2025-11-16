@@ -338,8 +338,7 @@ function openSettingsModal() {
   modal.classList.add('open');
 
   // Load current settings
-  chrome.storage.local.get(['claudeApiKey', 'canvasUrl', 'autoRefresh'], (result) => {
-    document.getElementById('claudeApiKey').value = result.claudeApiKey || '';
+  chrome.storage.local.get(['canvasUrl', 'autoRefresh'], (result) => {
     document.getElementById('canvasUrlDisplay').value = result.canvasUrl || 'Not configured';
     document.getElementById('autoRefresh').checked = result.autoRefresh || false;
   });
@@ -351,12 +350,10 @@ function closeSettingsModal() {
 }
 
 async function saveSettings() {
-  const claudeApiKey = document.getElementById('claudeApiKey').value.trim();
   const autoRefresh = document.getElementById('autoRefresh').checked;
 
   try {
     await chrome.storage.local.set({
-      claudeApiKey: claudeApiKey,
       autoRefresh: autoRefresh
     });
 
@@ -395,52 +392,37 @@ function setupAutoRefresh(enabled) {
 
 // AI Insights
 async function generateAIInsights() {
-  const btn = document.getElementById('generateInsightsBtn');
   const insightsContent = document.getElementById('insightsContent');
 
-  // Check if API key is set
-  const result = await chrome.storage.local.get(['claudeApiKey']);
-  if (!result.claudeApiKey) {
-    insightsContent.innerHTML = `
-      <div class="insights-error">
-        Please configure your Claude API key in settings to generate AI insights.
-      </div>
-    `;
-    return;
-  }
+  // Prepare summary data
+  const assignmentsData = prepareAssignmentsForAI();
 
-  // Disable button and show loading
-  btn.disabled = true;
+  // Show insights guidance
   insightsContent.innerHTML = `
-    <div class="insights-loading">
-      <div class="spinner"></div>
-      <p>Generating AI insights...</p>
+    <div class="insights-loaded">
+      <h3>Ask Claude for AI-Powered Insights</h3>
+      <p style="margin-bottom: 16px; color: #6B7280;">Claude Desktop already has access to all your Canvas data via MCP. Open Claude and try asking:</p>
+
+      <div style="background: #F9FAFB; padding: 16px; border-radius: 8px; border-left: 4px solid #00539B; margin-bottom: 12px;">
+        <strong style="color: #00539B;">💡 Priority Recommendations</strong>
+        <p style="margin: 8px 0 4px 0; font-size: 14px; color: #374151;">"What assignments should I focus on first based on due dates and importance?"</p>
+      </div>
+
+      <div style="background: #F9FAFB; padding: 16px; border-radius: 8px; border-left: 4px solid #00539B; margin-bottom: 12px;">
+        <strong style="color: #00539B;">📊 Workload Analysis</strong>
+        <p style="margin: 8px 0 4px 0; font-size: 14px; color: #374151;">"Analyze my current workload and help me create a study schedule"</p>
+      </div>
+
+      <div style="background: #F9FAFB; padding: 16px; border-radius: 8px; border-left: 4px solid #00539B; margin-bottom: 16px;">
+        <strong style="color: #00539B;">🎯 Study Strategy</strong>
+        <p style="margin: 8px 0 4px 0; font-size: 14px; color: #374151;">"What's the best strategy to catch up on my ${assignmentsData.overdue.length} overdue assignments?"</p>
+      </div>
+
+      <p style="font-size: 13px; color: #9CA3AF;">
+        <strong>Tip:</strong> Claude can see all ${assignmentsData.totalAssignments} assignments across your ${assignmentsData.courses.length} courses, including submission status, due dates, and points. Ask follow-up questions for personalized advice!
+      </p>
     </div>
   `;
-
-  try {
-    // Prepare data for Claude
-    const assignmentsData = prepareAssignmentsForAI();
-
-    // Call Claude API
-    const insights = await callClaudeAPI(result.claudeApiKey, assignmentsData);
-
-    // Display insights
-    insightsContent.innerHTML = `
-      <div class="insights-loaded">
-        ${formatInsights(insights)}
-      </div>
-    `;
-  } catch (error) {
-    console.error('Error generating insights:', error);
-    insightsContent.innerHTML = `
-      <div class="insights-error">
-        Failed to generate insights: ${escapeHtml(error.message)}
-      </div>
-    `;
-  } finally {
-    btn.disabled = false;
-  }
 }
 
 function prepareAssignmentsForAI() {
@@ -477,68 +459,3 @@ function prepareAssignmentsForAI() {
   };
 }
 
-async function callClaudeAPI(apiKey, assignmentsData) {
-  const response = await fetch('https://api.anthropic.com/v1/messages', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'x-api-key': apiKey,
-      'anthropic-version': '2023-06-01'
-    },
-    body: JSON.stringify({
-      model: 'claude-3-5-sonnet-20241022',
-      max_tokens: 1024,
-      messages: [{
-        role: 'user',
-        content: `You are an AI study assistant analyzing a student's Canvas assignments. Based on the following data, provide concise, actionable insights and recommendations.
-
-Assignment Data:
-- Total Assignments: ${assignmentsData.totalAssignments}
-- Courses: ${assignmentsData.courses.join(', ')}
-- Upcoming (due within 7 days): ${assignmentsData.upcoming.length}
-- Overdue: ${assignmentsData.overdue.length}
-- Completed: ${assignmentsData.completed}
-
-Upcoming Assignments:
-${assignmentsData.upcoming.map(a => `- ${a.name} (${a.course}) - Due: ${new Date(a.dueDate).toLocaleDateString()}, ${a.points || 0} pts`).join('\n')}
-
-Overdue Assignments:
-${assignmentsData.overdue.map(a => `- ${a.name} (${a.course}) - Due: ${new Date(a.dueDate).toLocaleDateString()}, ${a.points || 0} pts`).join('\n')}
-
-Please provide:
-1. Priority Recommendations: Which assignments should be tackled first and why
-2. Workload Analysis: Assessment of the current workload balance
-3. Study Tips: Specific recommendations based on the due dates and assignment distribution
-
-Keep your response concise and formatted in markdown. Use headings (###) and bullet points.`
-      }]
-    })
-  });
-
-  if (!response.ok) {
-    const error = await response.json();
-    throw new Error(error.error?.message || 'Failed to call Claude API');
-  }
-
-  const data = await response.json();
-  return data.content[0].text;
-}
-
-function formatInsights(insights) {
-  // Convert markdown to HTML (basic implementation)
-  let html = insights
-    // Headers
-    .replace(/### (.*?)$/gm, '<h3>$1</h3>')
-    // Bold
-    .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
-    // Bullet points
-    .replace(/^- (.*?)$/gm, '<li>$1</li>')
-    // Line breaks
-    .replace(/\n\n/g, '</p><p>')
-    .replace(/\n/g, '<br>');
-
-  // Wrap list items in ul
-  html = html.replace(/(<li>.*?<\/li>)/gs, '<ul>$1</ul>');
-
-  return html;
-}

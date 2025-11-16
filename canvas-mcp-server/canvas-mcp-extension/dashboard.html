@@ -98,12 +98,12 @@
     <!-- AI Insights Section -->
     <section class="insights-section" id="insightsSection">
       <div class="section-header">
-        <h2 class="section-title">AI Insights</h2>
+        <h2 class="section-title">AI Insights with Claude</h2>
         <button class="btn-secondary" id="generateInsightsBtn">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>
           </svg>
-          Generate Insights
+          Show Question Suggestions
         </button>
       </div>
       <div class="insights-content" id="insightsContent">
@@ -111,8 +111,8 @@
           <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>
           </svg>
-          <p>Click "Generate Insights" to get AI-powered recommendations and analysis</p>
-          <p class="insights-placeholder-note">Requires Claude API key in settings</p>
+          <p>Click "Show Question Suggestions" to see example questions you can ask Claude</p>
+          <p class="insights-placeholder-note">Claude Desktop has full access to your Canvas data via MCP</p>
         </div>
       </div>
     </section>
@@ -152,19 +152,6 @@
       </div>
       <div class="modal-body">
         <div class="settings-group">
-          <label class="settings-label" for="claudeApiKey">Claude API Key</label>
-          <input
-            type="password"
-            class="settings-input"
-            id="claudeApiKey"
-            placeholder="sk-ant-api03-..."
-          />
-          <p class="settings-help">
-            Get your API key from <a href="https://console.anthropic.com/" target="_blank">console.anthropic.com</a>
-          </p>
-        </div>
-
-        <div class="settings-group">
           <label class="settings-label" for="canvasUrlDisplay">Canvas Instance</label>
           <input
             type="text"
@@ -183,6 +170,13 @@
             <input type="checkbox" id="autoRefresh" />
             <span>Auto-refresh data every 5 minutes</span>
           </label>
+        </div>
+
+        <div class="settings-group" style="background: #F9FAFB; padding: 16px; border-radius: 8px; border-left: 4px solid #00539B;">
+          <h4 style="margin: 0 0 8px 0; color: #00539B; font-size: 14px;">💡 AI Insights with Claude</h4>
+          <p style="margin: 0; font-size: 13px; color: #6B7280; line-height: 1.6;">
+            This dashboard works with Claude Desktop via MCP (Model Context Protocol). Claude has full access to your Canvas data and can provide personalized study advice. No API key needed!
+          </p>
         </div>
       </div>
       <div class="modal-footer">

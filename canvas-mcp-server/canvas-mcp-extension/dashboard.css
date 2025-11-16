@@ -613,16 +613,17 @@ body {
   bottom: 0;
   background: rgba(0, 0, 0, 0.5);
   backdrop-filter: blur(4px);
+  z-index: 1;
 }
 
 .modal-content {
-  position: fixed;
+  position: absolute;
   right: 0;
   top: 0;
   bottom: 0;
   width: 100%;
   max-width: 480px;
-  height: 100vh;
+  height: 100%;
   margin: 0;
   background: white;
   border-radius: 12px 0 0 12px;
@@ -630,6 +631,7 @@ body {
   animation: slideInFromRight 0.3s ease-out;
   display: flex;
   flex-direction: column;
+  z-index: 2;
 }
 
 @keyframes slideInFromRight {

@@ -175,8 +175,8 @@ function renderSummaryCards() {
     return dueDate < now && !a.submission?.submitted;
   }).length;
 
-  const completed = assignments.filter(a =>
-    a.submission?.submitted || a.submission?.workflowState === 'graded'
+  const completed = assignments.filter(a => {
+    return a.submission?.submitted || a.submission?.workflowState === 'graded';
   }).length;
 
   // Update DOM with animation

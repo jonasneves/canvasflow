@@ -1,5 +1,22 @@
-const output = document.getElementById('output');
+// Tab switching
+const tabButtons = document.querySelectorAll('.tab-button');
+const tabContents = document.querySelectorAll('.tab-content');
 
+tabButtons.forEach(button => {
+  button.addEventListener('click', () => {
+    const targetTab = button.getAttribute('data-tab');
+
+    // Update buttons
+    tabButtons.forEach(btn => btn.classList.remove('active'));
+    button.classList.add('active');
+
+    // Update content
+    tabContents.forEach(content => content.classList.remove('active'));
+    document.getElementById(targetTab).classList.add('active');
+  });
+});
+
+// Helper function to send MCP requests
 async function sendMCPRequest(method, params = {}) {
   return new Promise((resolve) => {
     chrome.runtime.sendMessage({
@@ -26,6 +43,7 @@ async function updateCanvasUrl() {
   }
 }
 
+// Update status indicators
 async function updateStatus() {
   chrome.runtime.sendMessage({ type: 'GET_MCP_STATUS' }, (response) => {
     if (response) {
@@ -48,44 +66,173 @@ async function updateStatus() {
   });
 }
 
-function showOutput(text) {
-  output.textContent = text;
-  output.classList.add('show');
+// Load and display assignments
+async function loadAssignments() {
+  const assignmentsList = document.getElementById('assignmentsList');
+  assignmentsList.innerHTML = '<div class="loading"><span class="spinner"></span> Loading assignments...</div>';
+
+  try {
+    // Get Canvas data from background
+    const response = await new Promise((resolve) => {
+      chrome.runtime.sendMessage({ type: 'GET_CANVAS_DATA' }, resolve);
+    });
+
+    if (response && response.success) {
+      const allAssignments = response.data.allAssignments || [];
+
+      if (allAssignments.length === 0) {
+        assignmentsList.innerHTML = `
+          <div class="empty-state">
+            <div class="empty-state-icon">📚</div>
+            <div class="empty-state-text">No assignments found</div>
+            <div style="font-size: 12px; margin-top: 8px;">Click "Refresh Canvas Data" in Settings</div>
+          </div>
+        `;
+        return;
+      }
+
+      // Sort by due date (closest first)
+      const sortedAssignments = allAssignments
+        .filter(a => a.due_at)
+        .sort((a, b) => new Date(a.due_at) - new Date(b.due_at));
+
+      // Only show next 20 assignments
+      const upcomingAssignments = sortedAssignments.slice(0, 20);
+
+      if (upcomingAssignments.length === 0) {
+        assignmentsList.innerHTML = `
+          <div class="empty-state">
+            <div class="empty-state-icon">✅</div>
+            <div class="empty-state-text">No upcoming assignments with due dates</div>
+          </div>
+        `;
+        return;
+      }
+
+      // Render assignments
+      assignmentsList.innerHTML = upcomingAssignments.map(assignment => {
+        const dueDate = new Date(assignment.due_at);
+        const now = new Date();
+        const isOverdue = dueDate < now;
+        const isDueSoon = !isOverdue && (dueDate - now) < 24 * 60 * 60 * 1000; // Within 24 hours
+        const isCompleted = assignment.has_submitted_submissions;
+
+        let cardClass = 'assignment-card';
+        if (isCompleted) cardClass += ' completed';
+        else if (isOverdue) cardClass += ' overdue';
+
+        let dueDateText = dueDate.toLocaleDateString('en-US', {
+          month: 'short',
+          day: 'numeric',
+          hour: 'numeric',
+          minute: '2-digit'
+        });
+
+        let dueDateClass = 'assignment-due';
+        if (isDueSoon) dueDateClass += ' soon';
+
+        let statusText = '';
+        if (isCompleted) statusText = '✓ Submitted';
+        else if (isOverdue) statusText = '⚠ Overdue';
+        else if (isDueSoon) statusText = '⏰ Due soon';
+
+        return `
+          <div class="${cardClass}">
+            <div class="assignment-title">${escapeHtml(assignment.name || 'Untitled Assignment')}</div>
+            <div class="assignment-meta">
+              <span>${escapeHtml(assignment.course_name || 'Unknown Course')}</span>
+              <span class="${dueDateClass}">Due: ${dueDateText}</span>
+              ${statusText ? `<span>${statusText}</span>` : ''}
+            </div>
+          </div>
+        `;
+      }).join('');
+
+    } else {
+      assignmentsList.innerHTML = `
+        <div class="empty-state">
+          <div class="empty-state-icon">⚠️</div>
+          <div class="empty-state-text">Failed to load assignments</div>
+          <div style="font-size: 12px; margin-top: 8px;">Try refreshing Canvas data in Settings</div>
+        </div>
+      `;
+    }
+  } catch (error) {
+    console.error('Error loading assignments:', error);
+    assignmentsList.innerHTML = `
+      <div class="empty-state">
+        <div class="empty-state-icon">⚠️</div>
+        <div class="empty-state-text">Error loading assignments</div>
+        <div style="font-size: 12px; margin-top: 8px;">${escapeHtml(error.message)}</div>
+      </div>
+    `;
+  }
 }
 
-function hideOutput() {
-  output.classList.remove('show');
+// Helper to escape HTML
+function escapeHtml(text) {
+  const div = document.createElement('div');
+  div.textContent = text;
+  return div.innerHTML;
+}
+
+// Show status message
+function showStatusMessage(elementId, message, type) {
+  const statusEl = document.getElementById(elementId);
+  if (!statusEl) return;
+
+  statusEl.textContent = message;
+  statusEl.className = `status-message show ${type}`;
+
+  if (type === 'success') {
+    setTimeout(() => {
+      statusEl.classList.remove('show');
+    }, 3000);
+  }
 }
 
 // Open Dashboard
-document.getElementById('openDashboard').addEventListener('click', () => {
+document.getElementById('openDashboard').addEventListener('click', (e) => {
+  e.preventDefault();
   chrome.tabs.create({ url: chrome.runtime.getURL('dashboard.html') });
 });
 
+// Test Connection
 document.getElementById('testListCourses').addEventListener('click', async () => {
-  showOutput('Testing connection...');
+  const button = document.getElementById('testListCourses');
+  const originalText = button.textContent;
+  button.textContent = 'Testing...';
+  button.disabled = true;
+
   const response = await sendMCPRequest('tools/call', {
     name: 'list_courses',
     arguments: {}
   });
 
   try {
-    // Handle both response.result.content and response.content structures
     const content = response?.result?.content || response?.content;
 
     if (content && content[0] && content[0].text) {
       const data = JSON.parse(content[0].text);
-      showOutput(`✓ Connected\n\nCourses: ${data.count}\nLast update: ${data.lastUpdate || 'Unknown'}`);
+      showStatusMessage('canvasUrlStatus', `✓ Connected - Found ${data.count} courses`, 'success');
     } else {
-      showOutput(`✗ Connection failed\n\n${JSON.stringify(response, null, 2)}`);
+      showStatusMessage('canvasUrlStatus', '✗ Connection failed', 'error');
     }
   } catch (error) {
-    showOutput(`✗ Parse error\n\n${error.message}\n\nResponse: ${JSON.stringify(response, null, 2)}`);
+    showStatusMessage('canvasUrlStatus', `✗ Error: ${error.message}`, 'error');
+  } finally {
+    button.textContent = originalText;
+    button.disabled = false;
   }
 });
 
+// Refresh Data
 document.getElementById('refreshData').addEventListener('click', async () => {
-  showOutput('Syncing with Canvas...');
+  const button = document.getElementById('refreshData');
+  const originalText = button.textContent;
+  button.textContent = 'Syncing...';
+  button.disabled = true;
+
   try {
     const response = await new Promise((resolve) => {
       chrome.runtime.sendMessage({ type: 'REFRESH_DATA' }, resolve);
@@ -94,26 +241,28 @@ document.getElementById('refreshData').addEventListener('click', async () => {
     if (response && response.success) {
       const coursesCount = response.data.courses?.length || 0;
       const allAssignmentsCount = response.data.allAssignments?.length || 0;
-      const calendarEventsCount = response.data.calendarEvents?.length || 0;
-      const upcomingEventsCount = response.data.upcomingEvents?.length || 0;
 
-      showOutput(
-        `✓ Sync complete\n\n` +
-        `Courses: ${coursesCount}\n` +
-        `All Assignments: ${allAssignmentsCount}\n` +
-        `Calendar Events: ${calendarEventsCount}\n` +
-        `Upcoming Events: ${upcomingEventsCount}`
+      showStatusMessage(
+        'canvasUrlStatus',
+        `✓ Synced - ${coursesCount} courses, ${allAssignmentsCount} assignments`,
+        'success'
       );
       updateStatus();
-
-      // Hide output after 4 seconds
-      setTimeout(hideOutput, 4000);
+      loadAssignments(); // Reload assignments after refresh
     } else {
-      showOutput(`✗ Sync failed\n\n${response?.error || 'Unknown error'}`);
+      showStatusMessage('canvasUrlStatus', `✗ Sync failed: ${response?.error || 'Unknown error'}`, 'error');
     }
   } catch (error) {
-    showOutput(`✗ Error\n\n${error.message}`);
+    showStatusMessage('canvasUrlStatus', `✗ Error: ${error.message}`, 'error');
+  } finally {
+    button.textContent = originalText;
+    button.disabled = false;
   }
+});
+
+// Refresh assignments button
+document.getElementById('refreshAssignments').addEventListener('click', () => {
+  loadAssignments();
 });
 
 // Listen for storage changes to update Canvas URL
@@ -133,21 +282,7 @@ claudeConfigToggle.addEventListener('click', () => {
   setupChevron.classList.toggle('open', isOpen);
 });
 
-// Canvas URL inline editing
-const canvasUrlInput = document.getElementById('canvasUrlInput');
-const canvasUrlStatus = document.getElementById('canvasUrlStatus');
-
-function showCanvasUrlStatus(message, type) {
-  canvasUrlStatus.textContent = message;
-  canvasUrlStatus.className = `canvas-url-status show ${type}`;
-
-  if (type === 'success') {
-    setTimeout(() => {
-      canvasUrlStatus.classList.remove('show');
-    }, 3000);
-  }
-}
-
+// Canvas URL validation
 function isValidCanvasUrl(url) {
   try {
     const parsed = new URL(url);
@@ -165,29 +300,30 @@ function isValidCanvasUrl(url) {
 
 // Save Canvas URL
 document.getElementById('saveCanvasUrl').addEventListener('click', async () => {
+  const canvasUrlInput = document.getElementById('canvasUrlInput');
   const url = canvasUrlInput.value.trim();
 
   if (!url) {
-    showCanvasUrlStatus('Please enter a Canvas URL', 'error');
+    showStatusMessage('canvasUrlStatus', 'Please enter a Canvas URL', 'error');
     return;
   }
 
   if (!isValidCanvasUrl(url)) {
-    showCanvasUrlStatus('Please enter a valid HTTPS URL', 'error');
+    showStatusMessage('canvasUrlStatus', 'Please enter a valid HTTPS URL', 'error');
     return;
   }
 
   try {
     await chrome.storage.local.set({ canvasUrl: url });
-    showCanvasUrlStatus('✓ Saved', 'success');
+    showStatusMessage('canvasUrlStatus', '✓ Saved', 'success');
   } catch (error) {
-    showCanvasUrlStatus('✗ Save failed', 'error');
+    showStatusMessage('canvasUrlStatus', '✗ Save failed', 'error');
   }
 });
 
 // Auto-detect Canvas URL
 document.getElementById('autoDetectUrl').addEventListener('click', async () => {
-  showCanvasUrlStatus('Detecting...', 'success');
+  showStatusMessage('canvasUrlStatus', 'Detecting...', 'success');
 
   try {
     const tabs = await chrome.tabs.query({});
@@ -215,19 +351,23 @@ document.getElementById('autoDetectUrl').addEventListener('click', async () => {
     }
 
     if (detectedUrls.length === 0) {
-      showCanvasUrlStatus('✗ No Canvas URLs found in open tabs', 'error');
+      showStatusMessage('canvasUrlStatus', '✗ No Canvas URLs found in open tabs', 'error');
       return;
     }
 
+    const canvasUrlInput = document.getElementById('canvasUrlInput');
     canvasUrlInput.value = detectedUrls[0];
     await chrome.storage.local.set({ canvasUrl: detectedUrls[0] });
-    showCanvasUrlStatus(`✓ Detected: ${detectedUrls[0]}`, 'success');
+    showStatusMessage('canvasUrlStatus', `✓ Detected: ${detectedUrls[0]}`, 'success');
   } catch (error) {
-    showCanvasUrlStatus('✗ Detection failed', 'error');
+    showStatusMessage('canvasUrlStatus', '✗ Detection failed', 'error');
   }
 });
 
 // Initial load
 updateCanvasUrl();
 updateStatus();
-setInterval(updateStatus, 2000);
+loadAssignments();
+
+// Periodic updates
+setInterval(updateStatus, 5000);

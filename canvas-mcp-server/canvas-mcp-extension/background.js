@@ -23,6 +23,102 @@ const MCP_TOOLS = {
       },
       required: ["course_id"]
     }
+  },
+  list_all_assignments: {
+    name: "list_all_assignments",
+    description: "Get all assignments across all courses with submission status - ideal for dashboard views",
+    inputSchema: {
+      type: "object",
+      properties: {},
+      required: []
+    }
+  },
+  get_assignment_details: {
+    name: "get_assignment_details",
+    description: "Get detailed information about a specific assignment including description, rubrics, and submission status",
+    inputSchema: {
+      type: "object",
+      properties: {
+        course_id: {
+          type: "string",
+          description: "The Canvas course ID"
+        },
+        assignment_id: {
+          type: "string",
+          description: "The Canvas assignment ID"
+        }
+      },
+      required: ["course_id", "assignment_id"]
+    }
+  },
+  list_calendar_events: {
+    name: "list_calendar_events",
+    description: "Get calendar events and assignments within a date range",
+    inputSchema: {
+      type: "object",
+      properties: {
+        start_date: {
+          type: "string",
+          description: "Start date in ISO 8601 format (optional)"
+        },
+        end_date: {
+          type: "string",
+          description: "End date in ISO 8601 format (optional)"
+        }
+      },
+      required: []
+    }
+  },
+  get_user_submissions: {
+    name: "get_user_submissions",
+    description: "Get all submissions for the current user in a specific course",
+    inputSchema: {
+      type: "object",
+      properties: {
+        course_id: {
+          type: "string",
+          description: "The Canvas course ID"
+        }
+      },
+      required: ["course_id"]
+    }
+  },
+  list_course_modules: {
+    name: "list_course_modules",
+    description: "Get all modules and module items for a course",
+    inputSchema: {
+      type: "object",
+      properties: {
+        course_id: {
+          type: "string",
+          description: "The Canvas course ID"
+        }
+      },
+      required: ["course_id"]
+    }
+  },
+  list_upcoming_events: {
+    name: "list_upcoming_events",
+    description: "Get upcoming events and assignments for the current user",
+    inputSchema: {
+      type: "object",
+      properties: {},
+      required: []
+    }
+  },
+  get_course_analytics: {
+    name: "get_course_analytics",
+    description: "Get analytics data for a course (page views, participations, tardiness) - may not be available on all Canvas instances",
+    inputSchema: {
+      type: "object",
+      properties: {
+        course_id: {
+          type: "string",
+          description: "The Canvas course ID"
+        }
+      },
+      required: ["course_id"]
+    }
   }
 };
 
@@ -295,7 +391,7 @@ async function handleMCPRequest(payload) {
 
 async function handleToolCall(params) {
   const { name, arguments: args } = params;
-  
+
   switch(name) {
     case 'list_courses':
       if (canvasData.courses.length === 0) {
@@ -315,7 +411,7 @@ async function handleToolCall(params) {
           console.error('Error fetching courses:', error);
         }
       }
-      
+
       return {
         content: [{
           type: "text",
@@ -326,11 +422,11 @@ async function handleToolCall(params) {
           }, null, 2)
         }]
       };
-      
+
     case 'get_course_assignments':
       const courseId = args.course_id;
       let assignments = canvasData.assignments[courseId] || [];
-      
+
       if (assignments.length === 0) {
         try {
           const tab = await getCanvasTab();
@@ -339,9 +435,9 @@ async function handleToolCall(params) {
             files: ['content.js']
           });
           await new Promise(resolve => setTimeout(resolve, 500));
-          const response = await sendMessageToContent(tab.id, { 
+          const response = await sendMessageToContent(tab.id, {
             type: 'FETCH_ASSIGNMENTS',
-            courseId: courseId 
+            courseId: courseId
           });
           if (response && response.success) {
             assignments = response.data;
@@ -351,7 +447,7 @@ async function handleToolCall(params) {
           console.error('Error fetching assignments:', error);
         }
       }
-      
+
       return {
         content: [{
           type: "text",
@@ -362,7 +458,257 @@ async function handleToolCall(params) {
           }, null, 2)
         }]
       };
-      
+
+    case 'list_all_assignments':
+      try {
+        const tab = await getCanvasTab();
+        await chrome.scripting.executeScript({
+          target: { tabId: tab.id },
+          files: ['content.js']
+        });
+        await new Promise(resolve => setTimeout(resolve, 500));
+        const response = await sendMessageToContent(tab.id, { type: 'FETCH_ALL_ASSIGNMENTS' });
+
+        const allAssignments = response?.success ? response.data : [];
+
+        return {
+          content: [{
+            type: "text",
+            text: JSON.stringify({
+              assignments: allAssignments,
+              count: allAssignments.length,
+              fetchedAt: new Date().toISOString()
+            }, null, 2)
+          }]
+        };
+      } catch (error) {
+        console.error('Error fetching all assignments:', error);
+        return {
+          content: [{
+            type: "text",
+            text: JSON.stringify({ error: error.message }, null, 2)
+          }]
+        };
+      }
+
+    case 'get_assignment_details':
+      try {
+        const tab = await getCanvasTab();
+        await chrome.scripting.executeScript({
+          target: { tabId: tab.id },
+          files: ['content.js']
+        });
+        await new Promise(resolve => setTimeout(resolve, 500));
+        const response = await sendMessageToContent(tab.id, {
+          type: 'FETCH_ASSIGNMENT_DETAILS',
+          courseId: args.course_id,
+          assignmentId: args.assignment_id
+        });
+
+        if (response?.success) {
+          return {
+            content: [{
+              type: "text",
+              text: JSON.stringify(response.data, null, 2)
+            }]
+          };
+        } else {
+          throw new Error(response?.error || 'Failed to fetch assignment details');
+        }
+      } catch (error) {
+        console.error('Error fetching assignment details:', error);
+        return {
+          content: [{
+            type: "text",
+            text: JSON.stringify({ error: error.message }, null, 2)
+          }]
+        };
+      }
+
+    case 'list_calendar_events':
+      try {
+        const tab = await getCanvasTab();
+        await chrome.scripting.executeScript({
+          target: { tabId: tab.id },
+          files: ['content.js']
+        });
+        await new Promise(resolve => setTimeout(resolve, 500));
+        const response = await sendMessageToContent(tab.id, {
+          type: 'FETCH_CALENDAR_EVENTS',
+          startDate: args.start_date,
+          endDate: args.end_date
+        });
+
+        const events = response?.success ? response.data : [];
+
+        return {
+          content: [{
+            type: "text",
+            text: JSON.stringify({
+              events: events,
+              count: events.length,
+              dateRange: {
+                start: args.start_date || 'Not specified',
+                end: args.end_date || 'Not specified'
+              }
+            }, null, 2)
+          }]
+        };
+      } catch (error) {
+        console.error('Error fetching calendar events:', error);
+        return {
+          content: [{
+            type: "text",
+            text: JSON.stringify({ error: error.message }, null, 2)
+          }]
+        };
+      }
+
+    case 'get_user_submissions':
+      try {
+        const tab = await getCanvasTab();
+        await chrome.scripting.executeScript({
+          target: { tabId: tab.id },
+          files: ['content.js']
+        });
+        await new Promise(resolve => setTimeout(resolve, 500));
+        const response = await sendMessageToContent(tab.id, {
+          type: 'FETCH_USER_SUBMISSIONS',
+          courseId: args.course_id
+        });
+
+        const submissions = response?.success ? response.data : [];
+
+        return {
+          content: [{
+            type: "text",
+            text: JSON.stringify({
+              courseId: args.course_id,
+              submissions: submissions,
+              count: submissions.length
+            }, null, 2)
+          }]
+        };
+      } catch (error) {
+        console.error('Error fetching user submissions:', error);
+        return {
+          content: [{
+            type: "text",
+            text: JSON.stringify({ error: error.message }, null, 2)
+          }]
+        };
+      }
+
+    case 'list_course_modules':
+      try {
+        const tab = await getCanvasTab();
+        await chrome.scripting.executeScript({
+          target: { tabId: tab.id },
+          files: ['content.js']
+        });
+        await new Promise(resolve => setTimeout(resolve, 500));
+        const response = await sendMessageToContent(tab.id, {
+          type: 'FETCH_COURSE_MODULES',
+          courseId: args.course_id
+        });
+
+        const modules = response?.success ? response.data : [];
+
+        return {
+          content: [{
+            type: "text",
+            text: JSON.stringify({
+              courseId: args.course_id,
+              modules: modules,
+              count: modules.length
+            }, null, 2)
+          }]
+        };
+      } catch (error) {
+        console.error('Error fetching course modules:', error);
+        return {
+          content: [{
+            type: "text",
+            text: JSON.stringify({ error: error.message }, null, 2)
+          }]
+        };
+      }
+
+    case 'list_upcoming_events':
+      try {
+        const tab = await getCanvasTab();
+        await chrome.scripting.executeScript({
+          target: { tabId: tab.id },
+          files: ['content.js']
+        });
+        await new Promise(resolve => setTimeout(resolve, 500));
+        const response = await sendMessageToContent(tab.id, { type: 'FETCH_UPCOMING_EVENTS' });
+
+        const events = response?.success ? response.data : [];
+
+        return {
+          content: [{
+            type: "text",
+            text: JSON.stringify({
+              upcomingEvents: events,
+              count: events.length
+            }, null, 2)
+          }]
+        };
+      } catch (error) {
+        console.error('Error fetching upcoming events:', error);
+        return {
+          content: [{
+            type: "text",
+            text: JSON.stringify({ error: error.message }, null, 2)
+          }]
+        };
+      }
+
+    case 'get_course_analytics':
+      try {
+        const tab = await getCanvasTab();
+        await chrome.scripting.executeScript({
+          target: { tabId: tab.id },
+          files: ['content.js']
+        });
+        await new Promise(resolve => setTimeout(resolve, 500));
+        const response = await sendMessageToContent(tab.id, {
+          type: 'FETCH_COURSE_ANALYTICS',
+          courseId: args.course_id
+        });
+
+        if (response?.success && response.data) {
+          return {
+            content: [{
+              type: "text",
+              text: JSON.stringify(response.data, null, 2)
+            }]
+          };
+        } else {
+          return {
+            content: [{
+              type: "text",
+              text: JSON.stringify({
+                courseId: args.course_id,
+                note: 'Analytics data not available for this Canvas instance or course'
+              }, null, 2)
+            }]
+          };
+        }
+      } catch (error) {
+        console.error('Error fetching course analytics:', error);
+        return {
+          content: [{
+            type: "text",
+            text: JSON.stringify({
+              error: error.message,
+              note: 'Analytics may not be available on all Canvas instances'
+            }, null, 2)
+          }]
+        };
+      }
+
     default:
       throw new Error(`Unknown tool: ${name}`);
   }

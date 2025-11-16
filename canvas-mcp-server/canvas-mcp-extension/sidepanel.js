@@ -175,8 +175,11 @@ async function loadAssignments() {
       chrome.runtime.sendMessage({ type: 'GET_CANVAS_DATA' }, resolve);
     });
 
+    console.log('Canvas data response:', response);
+
     if (response && response.success) {
       allAssignments = response.data.allAssignments || [];
+      console.log('Loaded assignments:', allAssignments.length);
 
       // Calculate summary counts
       const now = new Date();
@@ -191,6 +194,8 @@ async function loadAssignments() {
         return dueDate >= todayStart && dueDate < todayEnd;
       }).length;
       const upcomingCount = assignmentsWithDates.filter(a => new Date(a.due_at) >= todayEnd).length;
+
+      console.log('Counts - Overdue:', overdueCount, 'Due Today:', dueTodayCount, 'Upcoming:', upcomingCount);
 
       // Update summary cards
       document.getElementById('overdueCount').textContent = overdueCount;

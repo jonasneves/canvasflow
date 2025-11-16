@@ -583,7 +583,7 @@ async function callClaudeWithStructuredOutput(apiKey, assignmentsData) {
       max_tokens: 2000,
       messages: [{
         role: 'user',
-        content: `Analyze this student's Canvas assignments and provide actionable insights.
+        content: `Analyze this student's Canvas assignments and create a Weekly Battle Plan with specific scheduling recommendations.
 
 Data:
 - Total: ${assignmentsData.totalAssignments} assignments
@@ -598,7 +598,14 @@ ${assignmentsData.upcoming.slice(0, 5).map(a => `- ${a.name} (${a.course}) - ${n
 Overdue:
 ${assignmentsData.overdue.slice(0, 5).map(a => `- ${a.name} (${a.course}) - was due ${new Date(a.dueDate).toLocaleDateString()}, ${a.points}pts`).join('\n')}
 
-Provide concise, actionable advice.`
+Create a weekly battle plan with:
+- Priority tasks with estimated hours and urgency levels (critical/high/medium/low)
+- Workload assessment with total hours needed and intensity level
+- Day-by-day schedule for the next 7 days with specific time blocks
+- Each day should have: focus area, workload level, and scheduled tasks with time blocks
+- Strategic study tips
+
+Be realistic with time estimates. Consider assignment complexity and point values.`
       }],
       response_format: {
         type: 'json_schema',
@@ -615,9 +622,10 @@ Provide concise, actionable advice.`
                   properties: {
                     task: { type: 'string' },
                     reason: { type: 'string' },
-                    urgency: { type: 'string', enum: ['high', 'medium', 'low'] }
+                    urgency: { type: 'string', enum: ['critical', 'high', 'medium', 'low'] },
+                    estimated_hours: { type: 'number' }
                   },
-                  required: ['task', 'reason', 'urgency'],
+                  required: ['task', 'reason', 'urgency', 'estimated_hours'],
                   additionalProperties: false
                 }
               },
@@ -625,20 +633,48 @@ Provide concise, actionable advice.`
                 type: 'object',
                 properties: {
                   overall: { type: 'string' },
+                  total_hours_needed: { type: 'number' },
+                  intensity_level: { type: 'string', enum: ['extreme', 'high', 'moderate', 'manageable'] },
                   recommendations: {
                     type: 'array',
                     items: { type: 'string' }
                   }
                 },
-                required: ['overall', 'recommendations'],
+                required: ['overall', 'total_hours_needed', 'intensity_level', 'recommendations'],
                 additionalProperties: false
+              },
+              weekly_plan: {
+                type: 'array',
+                items: {
+                  type: 'object',
+                  properties: {
+                    day: { type: 'string' },
+                    focus: { type: 'string' },
+                    workload: { type: 'string', enum: ['extreme', 'high', 'medium', 'low'] },
+                    tasks: {
+                      type: 'array',
+                      items: {
+                        type: 'object',
+                        properties: {
+                          assignment: { type: 'string' },
+                          time_block: { type: 'string' },
+                          notes: { type: 'string' }
+                        },
+                        required: ['assignment', 'time_block', 'notes'],
+                        additionalProperties: false
+                      }
+                    }
+                  },
+                  required: ['day', 'focus', 'workload', 'tasks'],
+                  additionalProperties: false
+                }
               },
               study_tips: {
                 type: 'array',
                 items: { type: 'string' }
               }
             },
-            required: ['priority_tasks', 'workload_assessment', 'study_tips'],
+            required: ['priority_tasks', 'workload_assessment', 'weekly_plan', 'study_tips'],
             additionalProperties: false
           }
         }
@@ -658,15 +694,31 @@ Provide concise, actionable advice.`
 // Format structured insights for display
 function formatStructuredInsights(insights) {
   const urgencyColors = {
-    high: '#C84E00',
+    critical: '#C84E00',
+    high: '#E89923',
     medium: '#E89923',
     low: '#339898'
   };
 
   const urgencyLabels = {
-    high: '🔴 High',
+    critical: '🔴 Critical',
+    high: '🟠 High',
     medium: '🟡 Medium',
     low: '🟢 Low'
+  };
+
+  const workloadColors = {
+    extreme: '#EF4444',
+    high: '#F97316',
+    medium: '#FBBF24',
+    low: '#10B981'
+  };
+
+  const intensityColors = {
+    extreme: '#DC2626',
+    high: '#EA580C',
+    moderate: '#FBBF24',
+    manageable: '#059669'
   };
 
   const recommendationsHtml = insights.workload_assessment.recommendations.map(rec => {
@@ -683,9 +735,61 @@ function formatStructuredInsights(insights) {
       <div style="padding: 16px; background: white; border: 1px solid #E5E7EB; border-left: 4px solid ${urgencyColors[task.urgency]}; border-radius: 8px; box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);">
         <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 8px;">
           <strong style="color: #111827; font-size: 14px; flex: 1;">${escapeHtml(task.task)}</strong>
-          <span style="background: ${urgencyColors[task.urgency]}15; color: ${urgencyColors[task.urgency]}; padding: 4px 10px; border-radius: 12px; font-size: 12px; font-weight: 600; white-space: nowrap; margin-left: 12px;">${urgencyLabels[task.urgency]}</span>
+          <div style="display: flex; align-items: center; gap: 8px; margin-left: 12px;">
+            <span style="background: ${urgencyColors[task.urgency]}15; color: ${urgencyColors[task.urgency]}; padding: 4px 10px; border-radius: 12px; font-size: 12px; font-weight: 600; white-space: nowrap;">${urgencyLabels[task.urgency]}</span>
+            <span style="background: #F3F4F6; color: #374151; padding: 4px 8px; border-radius: 6px; font-size: 12px; font-weight: 600;">${task.estimated_hours}h</span>
+          </div>
         </div>
         <p style="margin: 0; color: #6B7280; font-size: 13px; line-height: 1.5;">${escapeHtml(task.reason)}</p>
+      </div>
+    `;
+  }).join('');
+
+  // Generate Weekly Plan HTML
+  const weeklyPlanHtml = insights.weekly_plan.map((day, dayIdx) => {
+    const tasksHtml = day.tasks.map(task => {
+      return `
+        <div style="padding: 12px; background: white; border-left: 3px solid #00539B; border-radius: 4px; margin-bottom: 8px;">
+          <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 6px;">
+            <strong style="color: #111827; font-size: 13px; flex: 1;">${escapeHtml(task.assignment)}</strong>
+            <span style="background: #E2E6ED; color: #00539B; padding: 3px 8px; border-radius: 4px; font-size: 11px; font-weight: 600; white-space: nowrap; margin-left: 8px;">${escapeHtml(task.time_block)}</span>
+          </div>
+          <p style="margin: 0; color: #6B7280; font-size: 12px; font-style: italic;">💡 ${escapeHtml(task.notes)}</p>
+        </div>
+      `;
+    }).join('');
+
+    const tasksCount = day.tasks.length;
+    const dayId = `day-${dayIdx}`;
+
+    return `
+      <div style="background: white; border-radius: 8px; border: 1px solid #E5E7EB; overflow: hidden; margin-bottom: 12px;">
+        <button
+          onclick="toggleDayPlan('${dayId}')"
+          style="width: 100%; padding: 14px 16px; background: ${dayIdx === 0 || dayIdx === 1 ? '#FAFAFA' : 'white'}; border: none; cursor: pointer; display: flex; align-items: center; justify-content: space-between; transition: background 0.2s;"
+          onmouseover="this.style.background='#F9FAFB'"
+          onmouseout="this.style.background='${dayIdx === 0 || dayIdx === 1 ? '#FAFAFA' : 'white'}'"
+        >
+          <div style="display: flex; align-items: center; gap: 12px;">
+            <div style="width: 10px; height: 10px; border-radius: 50%; background: ${workloadColors[day.workload]}; flex-shrink: 0;"></div>
+            <div style="text-align: left;">
+              <div style="font-weight: 700; color: #111827; font-size: 15px;">${escapeHtml(day.day)}</div>
+              <div style="font-size: 13px; color: #6B7280; margin-top: 2px;">${escapeHtml(day.focus)}</div>
+            </div>
+          </div>
+          <div style="display: flex; align-items: center; gap: 12px;">
+            <div style="text-align: right;">
+              <div style="font-size: 12px; font-weight: 600; color: #374151;">${tasksCount} session${tasksCount !== 1 ? 's' : ''}</div>
+              <div style="font-size: 11px; color: #9CA3AF; text-transform: capitalize;">${day.workload} load</div>
+            </div>
+            <svg id="${dayId}-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#9CA3AF" stroke-width="2" style="transition: transform 0.2s; transform: ${dayIdx < 2 ? 'rotate(180deg)' : 'rotate(0deg)'};">
+              <polyline points="6 9 12 15 18 9"></polyline>
+            </svg>
+          </div>
+        </button>
+        <div id="${dayId}" style="display: ${dayIdx < 2 ? 'block' : 'none'}; padding: 16px; border-top: 1px solid #E5E7EB; background: #FAFAFA;">
+          ${tasksCount > 0 ? tasksHtml : '<p style="color: #9CA3AF; text-align: center; padding: 20px 0; font-size: 13px;">No sessions scheduled - rest day!</p>'}
+        </div>
       </div>
     `;
   }).join('');
@@ -700,14 +804,38 @@ function formatStructuredInsights(insights) {
   }).join('');
 
   return `
-    <h3 style="margin-bottom: 16px;">📊 AI-Powered Insights</h3>
+    <h3 style="margin-bottom: 16px; display: flex; align-items: center; gap: 8px;">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#00539B" stroke-width="2">
+        <path d="M12 2L2 7l10 5 10-5-10-5z"/>
+        <path d="M2 17l10 5 10-5"/>
+        <path d="M2 12l10 5 10-5"/>
+      </svg>
+      Weekly Battle Plan
+    </h3>
 
+    <!-- Workload Stats -->
+    <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 20px;">
+      <div style="background: white; border-radius: 8px; padding: 14px; border: 1px solid #E5E7EB;">
+        <div style="font-size: 11px; color: #6B7280; text-transform: uppercase; font-weight: 600; margin-bottom: 4px; letter-spacing: 0.5px;">Total Hours</div>
+        <div style="font-size: 26px; font-weight: 700; color: #00539B;">${insights.workload_assessment.total_hours_needed}h</div>
+      </div>
+      <div style="background: white; border-radius: 8px; padding: 14px; border: 1px solid #E5E7EB;">
+        <div style="font-size: 11px; color: #6B7280; text-transform: uppercase; font-weight: 600; margin-bottom: 4px; letter-spacing: 0.5px;">Intensity</div>
+        <div style="font-size: 18px; font-weight: 700; color: ${intensityColors[insights.workload_assessment.intensity_level]}; text-transform: capitalize;">${insights.workload_assessment.intensity_level}</div>
+      </div>
+      <div style="background: white; border-radius: 8px; padding: 14px; border: 1px solid #E5E7EB;">
+        <div style="font-size: 11px; color: #6B7280; text-transform: uppercase; font-weight: 600; margin-bottom: 4px; letter-spacing: 0.5px;">Critical Tasks</div>
+        <div style="font-size: 26px; font-weight: 700; color: #C84E00;">${insights.priority_tasks.filter(t => t.urgency === 'critical').length}</div>
+      </div>
+    </div>
+
+    <!-- Workload Assessment -->
     <div style="background: linear-gradient(135deg, #00539B 0%, #005587 100%); padding: 20px; border-radius: 12px; color: white; margin-bottom: 20px; box-shadow: 0 4px 12px rgba(0, 83, 155, 0.2);">
       <h4 style="margin: 0 0 8px 0; font-size: 16px; display: flex; align-items: center; gap: 8px;">
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
           <path d="M22 12h-4l-3 9L9 3l-3 9H2"/>
         </svg>
-        Workload Assessment
+        Workload Overview
       </h4>
       <p style="margin: 0 0 12px 0; font-size: 15px; line-height: 1.6; opacity: 0.95;">${escapeHtml(insights.workload_assessment.overall)}</p>
       <div style="background: rgba(255, 255, 255, 0.15); padding: 12px; border-radius: 8px; backdrop-filter: blur(10px);">
@@ -715,15 +843,37 @@ function formatStructuredInsights(insights) {
       </div>
     </div>
 
+    <!-- Priority Tasks -->
     <h4 style="margin: 24px 0 12px 0; font-size: 16px; color: #111827;">🎯 Priority Tasks</h4>
     <div style="display: flex; flex-direction: column; gap: 12px; margin-bottom: 24px;">
       ${priorityTasksHtml}
     </div>
 
-    <h4 style="margin: 24px 0 12px 0; font-size: 16px; color: #111827;">💡 Study Tips</h4>
+    <!-- Daily Schedule -->
+    <h4 style="margin: 24px 0 12px 0; font-size: 16px; color: #111827;">📅 This Week's Schedule</h4>
+    <div style="margin-bottom: 24px;">
+      ${weeklyPlanHtml}
+    </div>
+
+    <!-- Study Tips -->
+    <h4 style="margin: 24px 0 12px 0; font-size: 16px; color: #111827;">💡 Strategic Study Tips</h4>
     <div style="background: #F9FAFB; padding: 16px; border-radius: 8px; border: 1px solid #E5E7EB;">
       ${studyTipsHtml}
     </div>
+
+    <script>
+      function toggleDayPlan(dayId) {
+        const dayContent = document.getElementById(dayId);
+        const icon = document.getElementById(dayId + '-icon');
+        if (dayContent.style.display === 'none') {
+          dayContent.style.display = 'block';
+          icon.style.transform = 'rotate(180deg)';
+        } else {
+          dayContent.style.display = 'none';
+          icon.style.transform = 'rotate(0deg)';
+        }
+      }
+    </script>
   `;
 }
 

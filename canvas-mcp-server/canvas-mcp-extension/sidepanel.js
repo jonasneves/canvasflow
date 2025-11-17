@@ -421,9 +421,12 @@ settingsModal.addEventListener('click', (e) => {
 // Header Refresh Button
 document.getElementById('headerRefreshBtn').addEventListener('click', async () => {
   const button = document.getElementById('headerRefreshBtn');
+  const svg = button.querySelector('svg');
 
   // Add spinning animation
-  button.style.animation = 'spin 1s linear infinite';
+  if (svg) {
+    svg.style.animation = 'spin 1s linear infinite';
+  }
   button.disabled = true;
 
   try {
@@ -438,7 +441,9 @@ document.getElementById('headerRefreshBtn').addEventListener('click', async () =
   } catch (error) {
     console.error('Error refreshing data:', error);
   } finally {
-    button.style.animation = '';
+    if (svg) {
+      svg.style.animation = '';
+    }
     button.disabled = false;
   }
 });

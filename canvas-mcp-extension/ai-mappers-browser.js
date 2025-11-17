@@ -133,4 +133,30 @@ window.AIMappers.isValidIntensityScore = function(intensityScore) {
   return window.AIMappers.isValidScore(intensityScore, 0, 3);
 };
 
+/**
+ * Formats a time block from structured start hour and duration
+ * @param {number} startHour - Starting hour in 24-hour format (0-23)
+ * @param {number} durationHours - Duration in hours (supports decimals like 1.5)
+ * @returns {string} Formatted time range (e.g., "9:00 AM - 12:30 PM")
+ */
+window.AIMappers.formatTimeBlock = function(startHour, durationHours) {
+  const endHour = startHour + Math.floor(durationHours);
+  const endMinutes = Math.round((durationHours % 1) * 60);
+
+  /**
+   * Formats a single time
+   * @param {number} hour - Hour in 24-hour format
+   * @param {number} minutes - Minutes (0-59)
+   * @returns {string} Formatted time (e.g., "2:30 PM")
+   */
+  const formatTime = function(hour, minutes = 0) {
+    const period = hour >= 12 ? 'PM' : 'AM';
+    const displayHour = hour === 0 ? 12 : hour > 12 ? hour - 12 : hour;
+    const displayMinutes = minutes > 0 ? `:${minutes.toString().padStart(2, '0')}` : ':00';
+    return `${displayHour}${displayMinutes} ${period}`;
+  };
+
+  return `${formatTime(startHour)} - ${formatTime(endHour, endMinutes)}`;
+};
+
 console.log('[AI Mappers] Loaded successfully');

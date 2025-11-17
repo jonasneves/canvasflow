@@ -81,8 +81,13 @@
       background: rgba(255, 255, 255, 0.2);
     }
 
-    .btn-icon svg {
+    .btn-icon svg,
+    .btn-icon i {
+      width: 20px;
+      height: 20px;
       stroke: white;
+      color: white;
+      display: block;
     }
 
     .title {
@@ -107,8 +112,12 @@
       justify-content: center;
     }
 
-    .header-icon svg {
+    .header-icon svg,
+    .header-icon i {
       stroke: white;
+      color: white;
+      width: 20px;
+      height: 20px;
     }
 
     /* Tab Navigation */
@@ -845,23 +854,16 @@
   <div class="header">
     <div class="header-left">
       <div class="header-icon">
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon>
-        </svg>
+        <i data-lucide="zap"></i>
       </div>
       <h1 class="title">CanvasFlow</h1>
     </div>
     <div class="header-right">
       <button class="btn-icon" id="headerRefreshBtn" title="Refresh data">
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <path d="M21.5 2v6h-6M2.5 22v-6h6M2 11.5a10 10 0 0 1 18.8-4.3M22 12.5a10 10 0 0 1-18.8 4.2"/>
-        </svg>
+        <i data-lucide="refresh-cw"></i>
       </button>
       <button class="btn-icon" id="settingsBtn" title="Settings">
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <circle cx="12" cy="12" r="3"></circle>
-          <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
-        </svg>
+        <i data-lucide="settings"></i>
       </button>
     </div>
   </div>
@@ -1032,6 +1034,8 @@
     </div>
   </div>
 
+  <script src="lucide.min.js"></script>
+  <script src="lucide-init.js"></script>
   <script src="sidepanel.js"></script>
 </body>
 </html>

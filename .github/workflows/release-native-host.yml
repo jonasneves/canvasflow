@@ -2,6 +2,8 @@ name: Release Native Host
 
 on:
   push:
+    branches:
+      - main
     tags:
       - 'v*'
   workflow_dispatch:
@@ -52,10 +54,12 @@ jobs:
             echo "version=dev-$(date +%Y%m%d-%H%M%S)" >> $GITHUB_OUTPUT
           fi
 
-      - name: Create Release
+      - name: Create or Update Latest Release
         uses: softprops/action-gh-release@v1
-        if: startsWith(github.ref, 'refs/tags/')
         with:
+          tag_name: ${{ startsWith(github.ref, 'refs/tags/') && github.ref_name || 'latest' }}
+          name: ${{ startsWith(github.ref, 'refs/tags/') && format('CanvasFlow Native Host {0}', github.ref_name) || 'CanvasFlow Native Host (Latest)' }}
+          prerelease: ${{ !startsWith(github.ref, 'refs/tags/') }}
           files: dist/canvasflow-native-host.zip
           body: |
             ## CanvasFlow Native Host ${{ steps.version.outputs.version }}
@@ -64,10 +68,21 @@ jobs:
 
             ### Installation
 
-            1. Download `canvasflow-native-host.zip`
-            2. Extract to a permanent location (e.g., `~/canvasflow-native-host` or `C:\Program Files\CanvasFlow`)
-            3. Run `npm install` in the extracted directory
-            4. Follow platform-specific setup instructions in README.md
+            **Quick Install:**
+
+            **macOS/Linux:**
+            ```bash
+            curl -L https://github.com/jonasneves/canvasflow/releases/latest/download/canvasflow-native-host.zip -o canvasflow-native-host.zip
+            unzip canvasflow-native-host.zip
+            cd canvasflow-native-host
+            chmod +x install.sh
+            ./install.sh
+            ```
+
+            **Windows:**
+            1. Download `canvasflow-native-host.zip` below
+            2. Extract the ZIP file
+            3. Run `install.bat`
 
             ### Requirements
 
@@ -78,15 +93,12 @@ jobs:
 
             - Native messaging host server (`host.js`)
             - MCP server configuration (`manifest.json`)
+            - Automated installers (`install.sh`, `install.bat`)
             - Installation instructions (`README.md`)
             - Node.js dependencies (`package.json`)
+
+            ### Documentation
+
+            Full installation guide: [native-host/README.md](https://github.com/jonasneves/canvasflow/blob/main/native-host/README.md)
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Upload artifact (for manual runs)
-        if: "!startsWith(github.ref, 'refs/tags/')"
-        uses: actions/upload-artifact@v4
-        with:
-          name: canvasflow-native-host-${{ steps.version.outputs.version }}
-          path: dist/canvasflow-native-host.zip
-          retention-days: 30

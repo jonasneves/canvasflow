@@ -131,13 +131,28 @@ function renderAssignments() {
     assignmentsList.innerHTML = `
       <div class="empty-state">
         <div class="empty-state-icon">
-          <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#9CA3AF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path>
-            <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path>
+          <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#F59E0B" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="10"></circle>
+            <line x1="12" y1="8" x2="12" y2="12"></line>
+            <line x1="12" y1="16" x2="12.01" y2="16"></line>
           </svg>
         </div>
-        <div class="empty-state-text">No assignments found</div>
-        <div style="font-size: 12px; margin-top: 8px;">Click "Refresh Canvas Data" in MCP Server tab</div>
+        <div class="empty-state-text">Canvas URL Not Configured</div>
+        <div style="font-size: 13px; margin-top: 12px; line-height: 1.6; color: #6B7280; max-width: 320px;">
+          <p style="margin: 0 0 12px 0;">To load your assignments:</p>
+          <ol style="margin: 0; padding-left: 20px; text-align: left;">
+            <li style="margin-bottom: 8px;">Open Settings (gear icon above)</li>
+            <li style="margin-bottom: 8px;"><strong>Go to a Canvas page</strong> and click "Auto-Detect"</li>
+            <li style="margin-bottom: 0;">Or manually enter your Canvas URL</li>
+          </ol>
+        </div>
+        <button class="primary" onclick="document.getElementById('settingsBtn').click()" style="margin-top: 16px; display: inline-flex; align-items: center; gap: 6px; padding: 8px 16px; font-size: 13px;">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="3"></circle>
+            <path d="M12 1v6m0 6v6m5.2-13.2l-4.2 4.2m-6 6l-4.2 4.2m13.2-4.2l-4.2-4.2m-6-6L1.8 5.8"></path>
+          </svg>
+          <span>Open Settings</span>
+        </button>
       </div>
     `;
     return;
@@ -407,14 +422,28 @@ async function loadAssignments() {
       assignmentsList.innerHTML = `
         <div class="empty-state">
           <div class="empty-state-icon">
-            <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#DC2626" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#F59E0B" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
               <circle cx="12" cy="12" r="10"></circle>
               <line x1="12" y1="8" x2="12" y2="12"></line>
               <line x1="12" y1="16" x2="12.01" y2="16"></line>
             </svg>
           </div>
-          <div class="empty-state-text">Failed to load assignments</div>
-          <div style="font-size: 12px; margin-top: 8px;">Try refreshing Canvas data in MCP Server tab</div>
+          <div class="empty-state-text">Cannot Connect to Canvas</div>
+          <div style="font-size: 13px; margin-top: 12px; line-height: 1.6; color: #6B7280; max-width: 320px;">
+            <p style="margin: 0 0 8px 0;">Unable to load Canvas data. Please check:</p>
+            <ul style="margin: 0; padding-left: 20px; text-align: left;">
+              <li style="margin-bottom: 6px;">Canvas URL is configured correctly</li>
+              <li style="margin-bottom: 6px;">You're logged into Canvas</li>
+              <li style="margin-bottom: 0;">You're on a Canvas page</li>
+            </ul>
+          </div>
+          <button class="primary" onclick="document.getElementById('settingsBtn').click()" style="margin-top: 16px; display: inline-flex; align-items: center; gap: 6px; padding: 8px 16px; font-size: 13px;">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="12" r="3"></circle>
+              <path d="M12 1v6m0 6v6m5.2-13.2l-4.2 4.2m-6 6l-4.2 4.2m13.2-4.2l-4.2-4.2m-6-6L1.8 5.8"></path>
+            </svg>
+            <span>Configure Canvas URL</span>
+          </button>
         </div>
       `;
     }
@@ -429,8 +458,22 @@ async function loadAssignments() {
             <line x1="12" y1="16" x2="12.01" y2="16"></line>
           </svg>
         </div>
-        <div class="empty-state-text">Error loading assignments</div>
-        <div style="font-size: 12px; margin-top: 8px;">${escapeHtml(error.message)}</div>
+        <div class="empty-state-text">Connection Error</div>
+        <div style="font-size: 13px; margin-top: 12px; line-height: 1.6; color: #6B7280; max-width: 320px;">
+          <p style="margin: 0 0 8px 0;">Cannot connect to Canvas. Please:</p>
+          <ul style="margin: 0; padding-left: 20px; text-align: left;">
+            <li style="margin-bottom: 6px;">Go to your Canvas page</li>
+            <li style="margin-bottom: 6px;">Click Settings and use "Auto-Detect"</li>
+            <li style="margin-bottom: 0;">Or manually enter Canvas URL</li>
+          </ul>
+        </div>
+        <button class="primary" onclick="document.getElementById('settingsBtn').click()" style="margin-top: 16px; display: inline-flex; align-items: center; gap: 6px; padding: 8px 16px; font-size: 13px;">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="3"></circle>
+            <path d="M12 1v6m0 6v6m5.2-13.2l-4.2 4.2m-6 6l-4.2 4.2m13.2-4.2l-4.2-4.2m-6-6L1.8 5.8"></path>
+          </svg>
+          <span>Open Settings</span>
+        </button>
       </div>
     `;
   }

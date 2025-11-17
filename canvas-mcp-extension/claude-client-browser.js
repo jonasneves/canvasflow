@@ -22,8 +22,8 @@ window.ClaudeClient.callClaude = async function(apiKey, assignmentsData, schema,
   // Adaptive max_tokens: sidepanel needs less, dashboard needs more
   const maxTokens = promptType === 'dashboard' ? 3000 : 1500;
 
-  // Adaptive thinking budget: must be less than max_tokens
-  const thinkingBudget = promptType === 'dashboard' ? 2000 : 1000;
+  // Adaptive thinking budget: must be >= 1024 and < max_tokens
+  const thinkingBudget = promptType === 'dashboard' ? 2000 : 1024;
 
   const response = await fetch('https://api.anthropic.com/v1/messages', {
     method: 'POST',

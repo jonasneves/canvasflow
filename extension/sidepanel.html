@@ -1074,34 +1074,44 @@
         </div>
         <div class="setup-content" id="setupContent" style="padding: 14px; background: white;">
           <div style="font-size: 12px; color: #374151; line-height: 1.6;">
-            <div style="font-weight: 600; margin-bottom: 10px; color: #111827;">Step 1: Download Native Host</div>
-            <div style="margin-bottom: 12px; padding: 10px; background: #F3F4F6; border-radius: 6px; font-family: monospace; font-size: 11px; overflow-x: auto;">
-              <a href="https://github.com/jonasneves/canvasflow/releases/download/latest/canvasflow-native-host.zip" target="_blank" style="color: #00539B; text-decoration: none;">Download canvasflow-native-host.zip</a>
+            <div style="font-weight: 600; margin-bottom: 10px; color: #111827;">Choose Installation Method:</div>
+
+            <div style="margin-bottom: 16px; padding: 12px; background: #F0FDF4; border: 1px solid #BBF7D0; border-radius: 8px;">
+              <div style="font-weight: 600; color: #166534; margin-bottom: 8px; display: flex; align-items: center; gap: 6px;">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M12 2v20M2 12h20"></path>
+                </svg>
+                Option 1: Drag-and-Drop (Easiest)
+              </div>
+              <ol style="margin: 0; padding-left: 20px;">
+                <li style="margin-bottom: 4px;">Download <a href="https://github.com/jonasneves/canvasflow/releases/download/latest/canvasflow-native-host.dxt" target="_blank" style="color: #00539B; text-decoration: underline;">canvasflow-native-host.dxt</a></li>
+                <li style="margin-bottom: 4px;">Open Claude Desktop → Extensions</li>
+                <li style="margin-bottom: 0;">Drag the .dxt file into the window</li>
+              </ol>
             </div>
 
-            <div style="font-weight: 600; margin-bottom: 10px; color: #111827;">Step 2: Install</div>
-            <ul style="margin: 0 0 12px 0; padding-left: 20px;">
-              <li style="margin-bottom: 4px;">Extract the ZIP file</li>
-              <li style="margin-bottom: 4px;"><strong>macOS/Linux:</strong> Run <code>./install.sh</code></li>
-              <li style="margin-bottom: 4px;"><strong>Windows:</strong> Run <code>install.bat</code></li>
-              <li style="margin-bottom: 4px;">Enter your CanvasFlow extension ID when prompted</li>
-            </ul>
+            <div style="margin-bottom: 16px; padding: 12px; background: #F9FAFB; border: 1px solid #E5E7EB; border-radius: 8px;">
+              <div style="font-weight: 600; color: #374151; margin-bottom: 8px;">Option 2: Manual Installation</div>
+              <ol style="margin: 0; padding-left: 20px;">
+                <li style="margin-bottom: 4px;">Download <a href="https://github.com/jonasneves/canvasflow/releases/download/latest/canvasflow-native-host.zip" target="_blank" style="color: #00539B; text-decoration: underline;">canvasflow-native-host.zip</a></li>
+                <li style="margin-bottom: 4px;">Extract and run installer:
+                  <ul style="margin-top: 4px; padding-left: 20px;">
+                    <li style="margin-bottom: 2px;"><strong>macOS/Linux:</strong> <code>./install.sh</code></li>
+                    <li style="margin-bottom: 0;"><strong>Windows:</strong> <code>install.bat</code></li>
+                  </ul>
+                </li>
+                <li style="margin-bottom: 0;">Enter your extension ID when prompted</li>
+              </ol>
+            </div>
 
-            <div style="font-weight: 600; margin-bottom: 10px; color: #111827;">Step 3: Get Extension ID</div>
+            <div style="font-weight: 600; margin-bottom: 8px; color: #111827;">Get Your Extension ID:</div>
             <ul style="margin: 0 0 12px 0; padding-left: 20px;">
               <li style="margin-bottom: 4px;">Go to <code>chrome://extensions/</code></li>
               <li style="margin-bottom: 4px;">Enable "Developer mode"</li>
-              <li style="margin-bottom: 4px;">Copy the CanvasFlow extension ID</li>
+              <li style="margin-bottom: 0;">Copy the CanvasFlow ID</li>
             </ul>
 
-            <div style="font-weight: 600; margin-bottom: 10px; color: #111827;">Step 4: Claude Desktop Config</div>
-            <div style="margin-bottom: 8px;">Add to Claude Desktop MCP settings:</div>
-            <div style="margin-bottom: 12px; padding: 10px; background: #F3F4F6; border-radius: 6px; font-family: monospace; font-size: 11px;">
-              <strong>macOS/Linux:</strong> ~/.config/claude/mcp.json<br>
-              <strong>Windows:</strong> %APPDATA%\Claude\mcp.json
-            </div>
-
-            <div style="font-weight: 600; margin-bottom: 10px; color: #111827;">Step 5: Sync and Test</div>
+            <div style="font-weight: 600; margin-bottom: 8px; color: #111827;">Test the Connection:</div>
             <ul style="margin: 0; padding-left: 20px;">
               <li style="margin-bottom: 4px;">Click "Refresh Canvas Data" below</li>
               <li style="margin-bottom: 4px;">Restart Chrome and Claude Desktop</li>
@@ -1110,7 +1120,7 @@
 
             <div style="margin-top: 12px; padding: 10px; background: #EFF6FF; border-left: 3px solid #00539B; border-radius: 4px;">
               <div style="font-size: 11px; color: #1E40AF;">
-                <strong>Note:</strong> The installer will guide you through both Chrome extension ID and Claude Desktop configuration. Just follow the prompts!
+                <strong>Tip:</strong> The .dxt drag-and-drop method is the fastest way to install. Claude Desktop handles everything automatically!
               </div>
             </div>
           </div>

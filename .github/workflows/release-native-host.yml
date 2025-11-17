@@ -36,6 +36,8 @@ jobs:
 
           # Package for all platforms (cross-platform Node.js)
           cd native-host
+
+          # Create ZIP package (for manual installation)
           zip -r ../dist/canvasflow-native-host.zip \
             host.js \
             manifest.json \
@@ -45,7 +47,15 @@ jobs:
             install.bat \
             README.md
 
-          echo "Package created: canvasflow-native-host.zip"
+          # Create DXT package (for Claude Desktop drag-and-drop)
+          # DXT is just a renamed ZIP with the MCP server files
+          zip -r ../dist/canvasflow-native-host.dxt \
+            host.js \
+            manifest.json \
+            package.json \
+            package-lock.json
+
+          echo "Packages created:"
           ls -lh ../dist/
 
       - name: Get version
@@ -63,24 +73,28 @@ jobs:
           tag_name: ${{ startsWith(github.ref, 'refs/tags/') && github.ref_name || 'nightly' }}
           name: ${{ startsWith(github.ref, 'refs/tags/') && format('CanvasFlow Native Host {0}', github.ref_name) || 'CanvasFlow Native Host (Nightly)' }}
           prerelease: ${{ !startsWith(github.ref, 'refs/tags/') }}
-          files: dist/canvasflow-native-host.zip
+          files: |
+            dist/canvasflow-native-host.zip
+            dist/canvasflow-native-host.dxt
           body: |
             ## CanvasFlow Native Host ${{ steps.version.outputs.version }}
 
-            Download and install the native messaging host to connect Claude Desktop to your Canvas data.
+            Connect Claude Desktop to your Canvas data through the CanvasFlow Chrome extension.
 
-            ### Quick Download
+            ### Installation Options
 
-            **Direct download link:**
-            ```
-            https://github.com/jonasneves/canvasflow/releases/download/latest/canvasflow-native-host.zip
-            ```
+            **Option 1: Claude Desktop Drag-and-Drop (Easiest)**
+            1. Download `canvasflow-native-host.dxt` below
+            2. Open Claude Desktop → Extensions
+            3. Drag the `.dxt` file into the extensions area
+            4. Done! Claude Desktop will handle everything
 
-            ### Installation
+            **Option 2: Manual Installation with Scripts**
+
+            Download: [`canvasflow-native-host.zip`](https://github.com/jonasneves/canvasflow/releases/download/latest/canvasflow-native-host.zip)
 
             **macOS/Linux:**
             ```bash
-            curl -L https://github.com/jonasneves/canvasflow/releases/download/latest/canvasflow-native-host.zip -o canvasflow-native-host.zip
             unzip canvasflow-native-host.zip
             cd canvasflow-native-host
             chmod +x install.sh
@@ -88,9 +102,16 @@ jobs:
             ```
 
             **Windows:**
-            1. Download `canvasflow-native-host.zip` using the link above
-            2. Extract the ZIP file
-            3. Run `install.bat`
+            1. Extract `canvasflow-native-host.zip`
+            2. Run `install.bat`
+            3. Follow the prompts
+
+            ### After Installation
+
+            1. Get your CanvasFlow extension ID from `chrome://extensions/`
+            2. Configure it when prompted (or manually in the manifest)
+            3. Restart Chrome and Claude Desktop
+            4. In Claude Desktop, ask: "What are my Canvas courses?"
 
             ### Requirements
 
@@ -99,11 +120,11 @@ jobs:
 
             ### What's Included
 
-            - Native messaging host server (`host.js`)
-            - MCP server configuration (`manifest.json`)
-            - Automated installers (`install.sh`, `install.bat`)
-            - Installation instructions (`README.md`)
-            - Node.js dependencies (`package.json`)
+            - **`.dxt` file**: Drag-and-drop installation for Claude Desktop
+            - **`.zip` file**: Manual installation with automated scripts
+            - Native messaging host server
+            - Cross-platform installers
+            - Full documentation
 
             ### Documentation
 

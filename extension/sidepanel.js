@@ -146,15 +146,17 @@ function renderAssignments() {
             <li style="margin-bottom: 0;">Or manually enter your Canvas URL</li>
           </ol>
         </div>
-        <button class="primary" onclick="document.getElementById('settingsBtn').click()" style="margin-top: 16px; display: inline-flex; align-items: center; gap: 6px; padding: 8px 16px; font-size: 13px;">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <circle cx="12" cy="12" r="3"></circle>
-            <path d="M12 1v6m0 6v6m5.2-13.2l-4.2 4.2m-6 6l-4.2 4.2m13.2-4.2l-4.2-4.2m-6-6L1.8 5.8"></path>
-          </svg>
+        <button class="primary open-settings-btn" style="margin-top: 16px; display: inline-flex; align-items: center; gap: 6px; padding: 8px 16px; font-size: 13px;">
+          <i data-lucide="settings" style="width: 16px; height: 16px;"></i>
           <span>Open Settings</span>
         </button>
       </div>
     `;
+    // Initialize Lucide icons and add event listener
+    lucide.createIcons();
+    document.querySelector('.open-settings-btn')?.addEventListener('click', () => {
+      document.getElementById('settingsBtn')?.click();
+    });
     return;
   }
 
@@ -437,15 +439,17 @@ async function loadAssignments() {
               <li style="margin-bottom: 0;">You're on a Canvas page</li>
             </ul>
           </div>
-          <button class="primary" onclick="document.getElementById('settingsBtn').click()" style="margin-top: 16px; display: inline-flex; align-items: center; gap: 6px; padding: 8px 16px; font-size: 13px;">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <circle cx="12" cy="12" r="3"></circle>
-              <path d="M12 1v6m0 6v6m5.2-13.2l-4.2 4.2m-6 6l-4.2 4.2m13.2-4.2l-4.2-4.2m-6-6L1.8 5.8"></path>
-            </svg>
+          <button class="primary open-settings-btn-2" style="margin-top: 16px; display: inline-flex; align-items: center; gap: 6px; padding: 8px 16px; font-size: 13px;">
+            <i data-lucide="settings" style="width: 16px; height: 16px;"></i>
             <span>Configure Canvas URL</span>
           </button>
         </div>
       `;
+      // Initialize Lucide icons and add event listener
+      lucide.createIcons();
+      document.querySelector('.open-settings-btn-2')?.addEventListener('click', () => {
+        document.getElementById('settingsBtn')?.click();
+      });
     }
   } catch (error) {
     console.error('Error loading assignments:', error);
@@ -467,15 +471,17 @@ async function loadAssignments() {
             <li style="margin-bottom: 0;">Or manually enter Canvas URL</li>
           </ul>
         </div>
-        <button class="primary" onclick="document.getElementById('settingsBtn').click()" style="margin-top: 16px; display: inline-flex; align-items: center; gap: 6px; padding: 8px 16px; font-size: 13px;">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <circle cx="12" cy="12" r="3"></circle>
-            <path d="M12 1v6m0 6v6m5.2-13.2l-4.2 4.2m-6 6l-4.2 4.2m13.2-4.2l-4.2-4.2m-6-6L1.8 5.8"></path>
-          </svg>
+        <button class="primary open-settings-btn-3" style="margin-top: 16px; display: inline-flex; align-items: center; gap: 6px; padding: 8px 16px; font-size: 13px;">
+          <i data-lucide="settings" style="width: 16px; height: 16px;"></i>
           <span>Open Settings</span>
         </button>
       </div>
     `;
+    // Initialize Lucide icons and add event listener
+    lucide.createIcons();
+    document.querySelector('.open-settings-btn-3')?.addEventListener('click', () => {
+      document.getElementById('settingsBtn')?.click();
+    });
   }
 }
 

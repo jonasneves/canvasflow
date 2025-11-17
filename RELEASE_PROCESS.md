@@ -18,17 +18,26 @@ git push origin v1.0.0
 ### 3. Automated Release
 
 The GitHub Actions workflow will automatically:
-1. Package the native host with install scripts
+1. Package both the Claude Desktop MCP server (.dxt) and Chrome extension native messaging setup (.zip)
 2. Create a GitHub release
-3. Attach `canvasflow-native-host.zip` as a downloadable asset
+3. Attach both packages as downloadable assets:
+   - `canvasflow-native-host.dxt` - Claude Desktop drag-and-drop
+   - `canvasflow-chrome-extension.zip` - Chrome extension native messaging
 
 ### 4. Release Assets
 
 Each release includes:
-- `canvasflow-native-host.zip` - Native messaging host package
+- `canvasflow-native-host.dxt` - Claude Desktop MCP server (drag-and-drop installation)
+  - `host.js` - MCP server
+  - `manifest.json` - MCP server metadata
+  - `package.json` - Node.js dependencies
+  - `package-lock.json` - Locked dependencies
+
+- `canvasflow-chrome-extension.zip` - Chrome extension native messaging setup
   - `host.js` - Native messaging server
   - `manifest.json` - Chrome native messaging configuration
   - `package.json` - Node.js dependencies
+  - `package-lock.json` - Locked dependencies
   - `install.sh` - Automated installer for macOS/Linux
   - `install.bat` - Automated installer for Windows
   - `README.md` - Installation instructions
@@ -56,19 +65,20 @@ To create a development build without a tag:
 
 Use these links in documentation:
 
-**Latest build (from main):**
+**Claude Desktop MCP Server (.dxt):**
 ```
-https://github.com/jonasneves/canvasflow/releases/download/latest/canvasflow-native-host.zip
-```
-
-**Specific version:**
-```
-https://github.com/jonasneves/canvasflow/releases/download/v1.0.0/canvasflow-native-host.zip
+https://github.com/jonasneves/canvasflow/releases/download/latest/canvasflow-native-host.dxt
 ```
 
-**Latest stable release (when versioned releases exist):**
+**Chrome Extension Native Messaging (.zip):**
 ```
-https://github.com/jonasneves/canvasflow/releases/latest/download/canvasflow-native-host.zip
+https://github.com/jonasneves/canvasflow/releases/download/latest/canvasflow-chrome-extension.zip
+```
+
+**Specific version examples:**
+```
+https://github.com/jonasneves/canvasflow/releases/download/v1.0.0/canvasflow-native-host.dxt
+https://github.com/jonasneves/canvasflow/releases/download/v1.0.0/canvasflow-chrome-extension.zip
 ```
 
 **Releases page:**
@@ -81,17 +91,21 @@ https://github.com/jonasneves/canvasflow/releases
 Update the extension's MCP Server tab message to include:
 
 ```
-To connect Claude Desktop to your Canvas data:
+Option 1: Claude Desktop (Easiest)
+   Download: https://github.com/jonasneves/canvasflow/releases/download/latest/canvasflow-native-host.dxt
+   Installation: Drag and drop into Claude Desktop → Extensions
 
-1. Download the native host:
-   https://github.com/jonasneves/canvasflow/releases/download/latest/canvasflow-native-host.zip
-
-2. Extract and run the installer:
+Option 2: Chrome Extension Integration
+   Download: https://github.com/jonasneves/canvasflow/releases/download/latest/canvasflow-chrome-extension.zip
+   Installation:
    - macOS/Linux: ./install.sh
    - Windows: install.bat
+   - Enter your extension ID when prompted
 
-3. Note your extension ID and update the manifest
-4. Restart Chrome
+After installation:
+1. Restart Chrome and Claude Desktop
+2. Click "Refresh Canvas Data" in the extension
+3. Ask Claude: "What are my Canvas courses?"
 
 Full instructions: https://github.com/jonasneves/canvasflow/blob/main/native-host/README.md
 ```
@@ -105,14 +119,23 @@ Follow semantic versioning (semver):
 
 ## Testing Before Release
 
-1. Test native host package creation locally:
+1. Test package creation locally:
    ```bash
    cd native-host
-   zip -r test-package.zip host.js manifest.json package.json package-lock.json install.sh install.bat README.md
+
+   # Test Chrome extension package
+   zip -r test-chrome.zip host.js manifest.json package.json package-lock.json install.sh install.bat README.md
+
+   # Test Claude Desktop package
+   zip -r test-claude.dxt host.js manifest.json package.json package-lock.json
    ```
 
 2. Extract and test installation on each platform
+   - Test .dxt drag-and-drop in Claude Desktop
+   - Test install scripts for Chrome extension integration
 
-3. Verify native messaging connection works
+3. Verify connections work
+   - Claude Desktop MCP server can query Canvas data
+   - Chrome extension native messaging works
 
 4. Create tag and push when ready

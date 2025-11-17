@@ -37,8 +37,8 @@ jobs:
           # Package for all platforms (cross-platform Node.js)
           cd native-host
 
-          # Create ZIP package (for manual installation)
-          zip -r ../dist/canvasflow-native-host.zip \
+          # Create ZIP package (for Chrome extension native messaging setup)
+          zip -r ../dist/canvasflow-chrome-extension.zip \
             host.js \
             manifest.json \
             package.json \
@@ -74,7 +74,7 @@ jobs:
           name: ${{ startsWith(github.ref, 'refs/tags/') && format('CanvasFlow Native Host {0}', github.ref_name) || 'CanvasFlow Native Host (Nightly)' }}
           prerelease: ${{ !startsWith(github.ref, 'refs/tags/') }}
           files: |
-            dist/canvasflow-native-host.zip
+            dist/canvasflow-chrome-extension.zip
             dist/canvasflow-native-host.dxt
           body: |
             ## CanvasFlow Native Host ${{ steps.version.outputs.version }}
@@ -83,28 +83,30 @@ jobs:
 
             ### Installation Options
 
-            **Option 1: Claude Desktop Drag-and-Drop (Easiest)**
+            **Option 1: Claude Desktop MCP Server (Recommended for Claude Desktop users)**
             1. Download `canvasflow-native-host.dxt` below
             2. Open Claude Desktop → Extensions
             3. Drag the `.dxt` file into the extensions area
-            4. Done! Claude Desktop will handle everything
+            4. Done! Claude Desktop will handle everything automatically
 
-            **Option 2: Manual Installation with Scripts**
+            **Option 2: Chrome Extension Native Messaging (For Chrome extension integration)**
 
-            Download: [`canvasflow-native-host.zip`](https://github.com/jonasneves/canvasflow/releases/download/latest/canvasflow-native-host.zip)
+            Download: [`canvasflow-chrome-extension.zip`](https://github.com/jonasneves/canvasflow/releases/download/latest/canvasflow-chrome-extension.zip)
+
+            This package sets up native messaging between the Chrome extension and the host.
 
             **macOS/Linux:**
             ```bash
-            unzip canvasflow-native-host.zip
-            cd canvasflow-native-host
+            unzip canvasflow-chrome-extension.zip
+            cd canvasflow-chrome-extension
             chmod +x install.sh
             ./install.sh
             ```
 
             **Windows:**
-            1. Extract `canvasflow-native-host.zip`
+            1. Extract `canvasflow-chrome-extension.zip`
             2. Run `install.bat`
-            3. Follow the prompts
+            3. Follow the prompts to configure your extension ID
 
             ### After Installation
 
@@ -120,10 +122,10 @@ jobs:
 
             ### What's Included
 
-            - **`.dxt` file**: Drag-and-drop installation for Claude Desktop
-            - **`.zip` file**: Manual installation with automated scripts
-            - Native messaging host server
-            - Cross-platform installers
+            - **`canvasflow-native-host.dxt`**: Drag-and-drop MCP server for Claude Desktop
+            - **`canvasflow-chrome-extension.zip`**: Chrome extension native messaging setup with automated installers
+            - Cross-platform support (Windows, macOS, Linux)
+            - Interactive installation scripts
             - Full documentation
 
             ### Documentation

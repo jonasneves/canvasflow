@@ -718,16 +718,10 @@ async function saveAutoRefreshSetting(enabled) {
 }
 
 // Toggle grades button event listener
-document.getElementById('toggleGradesBtn').addEventListener('click', async () => {
+document.getElementById('toggleGradesBtn').addEventListener('click', () => {
   showGrades = !showGrades;
-
-  try {
-    await chrome.storage.local.set({ showGrades });
-    updateGradesIcon();
-    renderAssignments(); // Re-render to show/hide grades
-  } catch (error) {
-    console.error('Error saving show grades setting:', error);
-  }
+  updateGradesIcon();
+  renderAssignments(); // Re-render to show/hide grades
 });
 
 // Update grades icon based on state
@@ -824,18 +818,6 @@ async function loadTimeRangeSettings() {
   }
 }
 
-// Load grade visibility setting
-async function loadGradeVisibilitySetting() {
-  try {
-    const result = await chrome.storage.local.get(['showGrades']);
-    showGrades = result.showGrades || false;
-    console.log('Loaded grade visibility setting:', showGrades);
-    updateGradesIcon(); // Update icon on load
-  } catch (error) {
-    console.error('Error loading grade visibility setting:', error);
-  }
-}
-
 // Update insights timestamp display
 function updateInsightsTimestamp(timestamp) {
   const timestampEl = document.getElementById('insightsTimestamp');
@@ -911,11 +893,11 @@ async function initialize() {
   // Load time range settings
   await loadTimeRangeSettings();
 
-  // Load grade visibility setting
-  await loadGradeVisibilitySetting();
-
   // Load auto-refresh setting
   await loadAutoRefreshSetting();
+
+  // Initialize grade visibility icon (always starts hidden)
+  updateGradesIcon();
 
   // Update AI insights button text
   await updateInsightsButtonText();

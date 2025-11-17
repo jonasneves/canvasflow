@@ -7,8 +7,6 @@
 
 CanvasFlow is a Chrome extension that enhances your Canvas LMS experience with AI-powered insights and intelligent schedule planning.
 
-**🌐 [Visit the CanvasFlow Website](https://jonasneves.github.io/canvasflow/)**
-
 ## Features
 
 - **Direct Canvas Integration**: View assignments instantly - no Canvas API key or authentication required

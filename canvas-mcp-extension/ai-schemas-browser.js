@@ -80,8 +80,8 @@ window.AISchemas.SIDEPANEL_INSIGHTS_SCHEMA = {
           },
           recommendations: {
             type: "array",
-            description: "Recommendations (2-5 items, max 150 chars each)",
-            minItems: 2,
+            description: "Recommendations (provide 2-5 items, max 150 chars each)",
+            minItems: 1,
             items: {
               type: "string"
             }
@@ -92,8 +92,8 @@ window.AISchemas.SIDEPANEL_INSIGHTS_SCHEMA = {
       },
       study_tips: {
         type: "array",
-        description: "Study tips (3-5 items, max 150 chars each)",
-        minItems: 3,
+        description: "Study tips (provide 3-5 items, max 150 chars each)",
+        minItems: 1,
         items: {
           type: "string"
         }

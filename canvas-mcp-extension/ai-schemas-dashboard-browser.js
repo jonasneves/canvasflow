@@ -63,8 +63,8 @@ window.AISchemas.DASHBOARD_SCHEDULE_SCHEMA = {
           },
           recommendations: {
             type: "array",
-            description: "Recommendations (2-5 items, max 150 chars each)",
-            minItems: 2,
+            description: "Recommendations (provide 2-5 items, max 150 chars each)",
+            minItems: 1,
             items: {
               type: "string"
             }
@@ -75,8 +75,8 @@ window.AISchemas.DASHBOARD_SCHEDULE_SCHEMA = {
       },
       weekly_plan: {
         type: "array",
-        description: "7-day study schedule (exactly 7 days)",
-        minItems: 7,
+        description: "7-day study schedule (provide exactly 7 days)",
+        minItems: 1,
         items: {
           type: "object",
           properties: {
@@ -126,8 +126,8 @@ window.AISchemas.DASHBOARD_SCHEDULE_SCHEMA = {
       },
       study_tips: {
         type: "array",
-        description: "Study tips for the week (3-5 items, max 150 chars each)",
-        minItems: 3,
+        description: "Study tips for the week (provide 3-5 items, max 150 chars each)",
+        minItems: 1,
         items: {
           type: "string"
         }

@@ -401,6 +401,11 @@ const closeSettingsModal = document.getElementById('closeSettingsModal');
 settingsBtn.addEventListener('click', async () => {
   settingsModal.classList.add('show');
 
+  // Reinitialize Feather icons in modal
+  if (typeof feather !== 'undefined') {
+    feather.replace();
+  }
+
   // Load current API key
   const result = await chrome.storage.local.get(['claudeApiKey']);
   if (result.claudeApiKey) {
@@ -421,10 +426,12 @@ settingsModal.addEventListener('click', (e) => {
 // Header Refresh Button
 document.getElementById('headerRefreshBtn').addEventListener('click', async () => {
   const button = document.getElementById('headerRefreshBtn');
-  const svg = button.querySelector('svg');
+  const icon = button.querySelector('svg') || button.querySelector('i');
 
   // Add spinning animation
-  svg.style.animation = 'spin 1s linear infinite';
+  if (icon) {
+    icon.style.animation = 'spin 1s linear infinite';
+  }
   button.disabled = true;
 
   try {
@@ -439,7 +446,9 @@ document.getElementById('headerRefreshBtn').addEventListener('click', async () =
   } catch (error) {
     console.error('Error refreshing data:', error);
   } finally {
-    svg.style.animation = '';
+    if (icon) {
+      icon.style.animation = '';
+    }
     button.disabled = false;
   }
 });

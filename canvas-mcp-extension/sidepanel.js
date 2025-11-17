@@ -953,7 +953,8 @@ async function updateInsightsButtonText() {
 }
 
 async function generateAIInsights() {
-  const btn = document.getElementById('generateInsightsBtn');
+  // Try to find either button (could be generateInsightsBtn or regenerateInsightsBtn)
+  const btn = document.getElementById('generateInsightsBtn') || document.getElementById('regenerateInsightsBtn');
   const insightsContent = document.getElementById('insightsContent');
 
   // Check if API key is set
@@ -1004,7 +1005,7 @@ async function generateAIInsights() {
   }
 
   // Generate insights with Claude API
-  btn.disabled = true;
+  if (btn) btn.disabled = true;
   insightsContent.innerHTML = `
     <div class="insights-loading">
       <div class="spinner"></div>
@@ -1067,7 +1068,7 @@ async function generateAIInsights() {
       insightsTimestamp: Date.now()
     });
   } finally {
-    btn.disabled = false;
+    if (btn) btn.disabled = false;
   }
 }
 

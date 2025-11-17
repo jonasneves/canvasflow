@@ -26,7 +26,7 @@ const MCP_TOOLS = {
   },
   list_all_assignments: {
     name: "list_all_assignments",
-    description: "Get all assignments across all courses with submission status",
+    description: "Get all assignments across all courses with submission status - ideal for dashboard views",
     inputSchema: {
       type: "object",
       properties: {},
@@ -810,6 +810,11 @@ checkMCPServerHealth().then(connected => {
   } else {
     console.log('MCP server not available (extension will work standalone)');
   }
+});
+
+// Handle extension icon click to open side panel
+chrome.action.onClicked.addListener((tab) => {
+  chrome.sidePanel.open({ windowId: tab.windowId });
 });
 
 console.log('Canvas MCP Server initialized');

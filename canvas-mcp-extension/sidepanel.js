@@ -1124,10 +1124,11 @@ async function callClaudeWithStructuredOutput(apiKey, assignmentsData) {
       'Content-Type': 'application/json',
       'x-api-key': apiKey,
       'anthropic-version': '2023-06-01',
+      'anthropic-beta': 'structured-outputs-2025-11-13',  // Phase 2: Enable structured outputs
       'anthropic-dangerous-direct-browser-access': 'true'
     },
     body: JSON.stringify({
-      model: 'claude-sonnet-4-5-20250929',
+      model: 'claude-sonnet-4-5',  // Updated model name
       max_tokens: 3000,
       messages: [{
         role: 'user',
@@ -1146,27 +1147,13 @@ ${assignmentsData.upcoming.slice(0, 8).map(a => `- ${a.name} (${a.course}) - Due
 Overdue Assignments:
 ${assignmentsData.overdue.slice(0, 5).map(a => `- ${a.name} (${a.course}) - Was due: ${new Date(a.dueDate).toLocaleDateString()}, ${a.points} points`).join('\n')}
 
-Create a weekly battle plan as a JSON object with this EXACT structure:
-{
-  "priority_tasks": [
-    {
-      "task": "assignment name and action",
-      "reason": "why this is a priority",
-      "urgency": "critical|high|medium|low",
-      "estimated_hours": 2.5
-    }
-  ],
-  "workload_assessment": {
-    "overall": "one sentence summary of the week's workload",
-    "total_hours_needed": 25,
-    "intensity_level": "extreme|high|moderate|manageable",
-    "recommendations": ["tip 1", "tip 2", "tip 3"]
-  },
-  "study_tips": ["tip 1", "tip 2", "tip 3", "tip 4"]
-}
+SCORING GUIDANCE:
+- urgency_score: 0=can wait, 1=should do soon, 2=high priority, 3=critical/immediate
+- intensity_score: 0=light week, 1=normal load, 2=heavy week, 3=overwhelming
 
-Return ONLY the JSON object, no other text. Be realistic with time estimates. Keep it concise for a sidepanel view.`
-      }]
+Provide practical, actionable advice. Be realistic with time estimates. Keep it concise for a sidepanel view.`
+      }],
+      output_format: window.AISchemas.SIDEPANEL_INSIGHTS_SCHEMA  // Phase 2: Use structured schema
     })
   });
 
@@ -1176,15 +1163,10 @@ Return ONLY the JSON object, no other text. Be realistic with time estimates. Ke
   }
 
   const data = await response.json();
+
+  // Phase 2: Structured outputs guarantee valid JSON - no regex extraction needed!
   const textContent = data.content[0].text;
-
-  // Extract JSON from the response
-  const jsonMatch = textContent.match(/\{[\s\S]*\}/);
-  if (!jsonMatch) {
-    throw new Error('No valid JSON found in response');
-  }
-
-  return JSON.parse(jsonMatch[0]);
+  return JSON.parse(textContent);  // Direct parse, always works with structured outputs
 }
 
 // Helper function to create Lucide icon SVG
@@ -1206,27 +1188,7 @@ function getLucideIconPaths(iconName) {
 }
 
 function formatStructuredInsights(insights) {
-  const urgencyColors = {
-    critical: '#C84E00',
-    high: '#E89923',
-    medium: '#E89923',
-    low: '#339898'
-  };
-
-  const urgencyLabels = {
-    critical: 'Critical',
-    high: 'High',
-    medium: 'Medium',
-    low: 'Low'
-  };
-
-  const intensityColors = {
-    extreme: '#DC2626',
-    high: '#EA580C',
-    moderate: '#FBBF24',
-    manageable: '#059669'
-  };
-
+  // Phase 2: Use AI mappers for numeric scores
   const recommendationsHtml = insights.workload_assessment.recommendations.map(rec => {
     return `
       <div style="margin: 8px 0; font-size: 14px; display: flex; align-items: start; gap: 8px;">
@@ -1237,14 +1199,18 @@ function formatStructuredInsights(insights) {
   }).join('');
 
   const priorityTasksHtml = insights.priority_tasks.map(task => {
+    // Phase 2: Map urgency_score (0-3) to colors and labels
+    const urgencyColor = window.AIMappers.mapUrgencyToColor(task.urgency_score);
+    const urgencyLabel = window.AIMappers.mapUrgencyToDisplayLabel(task.urgency_score);
+
     return `
-      <div style="padding: 16px; background: white; border: 1px solid #E5E7EB; border-left: 4px solid ${urgencyColors[task.urgency]}; border-radius: 8px; box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);">
+      <div style="padding: 16px; background: white; border: 1px solid #E5E7EB; border-left: 4px solid ${urgencyColor}; border-radius: 8px; box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);">
         <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 8px;">
           <strong style="color: #111827; font-size: 14px; flex: 1;">${escapeHtml(task.task)}</strong>
           <div style="display: flex; align-items: center; gap: 8px; margin-left: 12px; flex-shrink: 0;">
-            <span style="background: ${urgencyColors[task.urgency]}15; color: ${urgencyColors[task.urgency]}; padding: 4px 10px; border-radius: 12px; font-size: 12px; font-weight: 600; white-space: nowrap; display: flex; align-items: center; gap: 6px;">
-              <span style="width: 10px; height: 10px; border-radius: 50%; background: ${urgencyColors[task.urgency]}; flex-shrink: 0;"></span>
-              ${urgencyLabels[task.urgency]}
+            <span style="background: ${urgencyColor}15; color: ${urgencyColor}; padding: 4px 10px; border-radius: 12px; font-size: 12px; font-weight: 600; white-space: nowrap; display: flex; align-items: center; gap: 6px;">
+              <span style="width: 10px; height: 10px; border-radius: 50%; background: ${urgencyColor}; flex-shrink: 0;"></span>
+              ${urgencyLabel}
             </span>
             <span style="background: #F3F4F6; color: #374151; padding: 4px 8px; border-radius: 6px; font-size: 12px; font-weight: 600;">${task.estimated_hours}h</span>
           </div>
@@ -1263,6 +1229,11 @@ function formatStructuredInsights(insights) {
     `;
   }).join('');
 
+  // Phase 2: Map intensity_score (0-3) to colors and labels
+  const intensityColor = window.AIMappers.mapIntensityToColor(insights.workload_assessment.intensity_score);
+  const intensityLabel = window.AIMappers.mapIntensityToLabel(insights.workload_assessment.intensity_score);
+  const criticalTaskCount = insights.priority_tasks.filter(t => t.urgency_score === 3).length;
+
   return `
     <h3 style="margin-bottom: 16px; display: flex; align-items: center; gap: 8px;">
       ${createLucideIcon('layers', 24, '#00539B')}
@@ -1277,11 +1248,11 @@ function formatStructuredInsights(insights) {
       </div>
       <div style="background: white; border-radius: 8px; padding: 14px; border: 1px solid #E5E7EB;">
         <div style="font-size: 11px; color: #6B7280; text-transform: uppercase; font-weight: 600; margin-bottom: 4px; letter-spacing: 0.5px;">Intensity</div>
-        <div style="font-size: 26px; font-weight: 700; color: ${intensityColors[insights.workload_assessment.intensity_level]}; text-transform: capitalize;">${insights.workload_assessment.intensity_level}</div>
+        <div style="font-size: 26px; font-weight: 700; color: ${intensityColor}; text-transform: capitalize;">${intensityLabel}</div>
       </div>
       <div style="background: white; border-radius: 8px; padding: 14px; border: 1px solid #E5E7EB;">
         <div style="font-size: 11px; color: #6B7280; text-transform: uppercase; font-weight: 600; margin-bottom: 4px; letter-spacing: 0.5px;">Critical Tasks</div>
-        <div style="font-size: 26px; font-weight: 700; color: #C84E00;">${insights.priority_tasks.filter(t => t.urgency === 'critical').length}</div>
+        <div style="font-size: 26px; font-weight: 700; color: #C84E00;">${criticalTaskCount}</div>
       </div>
     </div>
 

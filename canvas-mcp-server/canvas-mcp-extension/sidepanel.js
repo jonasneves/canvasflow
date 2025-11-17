@@ -708,9 +708,285 @@ async function initialize() {
   // Load auto-refresh setting
   await loadAutoRefreshSetting();
 
+  // Update AI insights button text
+  await updateInsightsButtonText();
+
   // Trigger initial refresh on extension open
   await refreshCanvasData();
 }
+
+// AI Insights functionality
+async function updateInsightsButtonText() {
+  const result = await chrome.storage.local.get(['claudeApiKey']);
+  const btnText = document.getElementById('generateInsightsBtnText');
+
+  if (result.claudeApiKey) {
+    btnText.textContent = 'Generate AI Insights';
+  } else {
+    btnText.textContent = 'Show Question Suggestions';
+  }
+}
+
+async function generateAIInsights() {
+  const btn = document.getElementById('generateInsightsBtn');
+  const insightsContent = document.getElementById('insightsContent');
+
+  // Check if API key is set
+  const result = await chrome.storage.local.get(['claudeApiKey']);
+
+  if (!result.claudeApiKey) {
+    // Show MCP guidance if no API key
+    const assignmentsData = prepareAssignmentsForAI();
+    insightsContent.innerHTML = `
+      <div class="insights-loaded">
+        <h3 style="margin-bottom: 12px;">Ask Claude for AI-Powered Insights</h3>
+        <p style="margin-bottom: 16px; color: #6B7280; font-size: 14px;">Claude Desktop already has access to all your Canvas data via MCP. Open Claude and try asking:</p>
+
+        <div style="background: #F9FAFB; padding: 16px; border-radius: 8px; border-left: 4px solid #00539B; margin-bottom: 12px;">
+          <strong style="color: #00539B;">💡 Priority Recommendations</strong>
+          <p style="margin: 8px 0 4px 0; font-size: 13px; color: #374151;">"What assignments should I focus on first based on due dates and importance?"</p>
+        </div>
+
+        <div style="background: #F9FAFB; padding: 16px; border-radius: 8px; border-left: 4px solid #00539B; margin-bottom: 12px;">
+          <strong style="color: #00539B;">📊 Workload Analysis</strong>
+          <p style="margin: 8px 0 4px 0; font-size: 13px; color: #374151;">"Analyze my current workload and help me create a study schedule"</p>
+        </div>
+
+        <div style="background: #F9FAFB; padding: 16px; border-radius: 8px; border-left: 4px solid #00539B; margin-bottom: 16px;">
+          <strong style="color: #00539B;">🎯 Study Strategy</strong>
+          <p style="margin: 8px 0 4px 0; font-size: 13px; color: #374151;">"What's the best strategy to catch up on my ${assignmentsData.overdue.length} overdue assignments?"</p>
+        </div>
+
+        <p style="font-size: 12px; color: #9CA3AF;">
+          <strong>Tip:</strong> Claude can see all ${assignmentsData.totalAssignments} assignments across your ${assignmentsData.courses.length} courses, including submission status, due dates, and points.
+        </p>
+
+        <div style="margin-top: 16px; padding: 12px; background: #FCF7E5; border-radius: 8px; border-left: 4px solid #E89923;">
+          <p style="margin: 0; font-size: 12px; color: #374151;">💡 <strong>Want insights here?</strong> Add your Claude API key in settings!</p>
+        </div>
+      </div>
+    `;
+    return;
+  }
+
+  // Generate insights with Claude API
+  btn.disabled = true;
+  insightsContent.innerHTML = `
+    <div class="insights-loading">
+      <div class="spinner"></div>
+      <p>Analyzing your assignments with Claude AI...</p>
+    </div>
+  `;
+
+  try {
+    const assignmentsData = prepareAssignmentsForAI();
+    const insights = await callClaudeWithStructuredOutput(result.claudeApiKey, assignmentsData);
+
+    insightsContent.innerHTML = `
+      <div class="insights-loaded fade-in">
+        ${formatStructuredInsights(insights)}
+      </div>
+    `;
+  } catch (error) {
+    console.error('Error generating insights:', error);
+    insightsContent.innerHTML = `
+      <div class="insights-error">
+        <strong>Failed to generate insights:</strong> ${escapeHtml(error.message)}
+        <p style="margin-top: 8px; font-size: 12px;">Check your API key in settings or use Claude Desktop via MCP instead.</p>
+      </div>
+    `;
+  } finally {
+    btn.disabled = false;
+  }
+}
+
+function prepareAssignmentsForAI() {
+  const now = new Date();
+  const assignments = allAssignments || [];
+
+  return {
+    totalAssignments: assignments.length,
+    courses: [...new Set(assignments.map(a => a.courseName))],
+    upcoming: assignments.filter(a => {
+      if (!a.dueDate) return false;
+      const dueDate = new Date(a.dueDate);
+      const weekFromNow = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000);
+      return dueDate >= now && dueDate <= weekFromNow && !a.submitted;
+    }).map(a => ({
+      name: a.name,
+      course: a.courseName,
+      dueDate: a.dueDate,
+      points: a.pointsPossible
+    })),
+    overdue: assignments.filter(a => {
+      if (!a.dueDate) return false;
+      const dueDate = new Date(a.dueDate);
+      return dueDate < now && !a.submitted;
+    }).map(a => ({
+      name: a.name,
+      course: a.courseName,
+      dueDate: a.dueDate,
+      points: a.pointsPossible
+    })),
+    completed: assignments.filter(a => a.submitted).length
+  };
+}
+
+async function callClaudeWithStructuredOutput(apiKey, assignmentsData) {
+  const response = await fetch('https://api.anthropic.com/v1/messages', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'x-api-key': apiKey,
+      'anthropic-version': '2023-06-01',
+      'anthropic-dangerous-direct-browser-access': 'true'
+    },
+    body: JSON.stringify({
+      model: 'claude-sonnet-4-5-20250929',
+      max_tokens: 3000,
+      messages: [{
+        role: 'user',
+        content: `Analyze this student's Canvas assignments and create a Weekly Battle Plan.
+
+Current Status:
+- Total Assignments: ${assignmentsData.totalAssignments}
+- Courses: ${assignmentsData.courses.join(', ')}
+- Due this week: ${assignmentsData.upcoming.length}
+- Overdue: ${assignmentsData.overdue.length}
+- Completed: ${assignmentsData.completed}
+
+Upcoming Assignments (next 7 days):
+${assignmentsData.upcoming.slice(0, 8).map(a => `- ${a.name} (${a.course}) - Due: ${new Date(a.dueDate).toLocaleDateString()}, ${a.points} points`).join('\n')}
+
+Overdue Assignments:
+${assignmentsData.overdue.slice(0, 5).map(a => `- ${a.name} (${a.course}) - Was due: ${new Date(a.dueDate).toLocaleDateString()}, ${a.points} points`).join('\n')}
+
+Create a weekly battle plan as a JSON object with this EXACT structure:
+{
+  "priority_tasks": [
+    {
+      "task": "assignment name and action",
+      "reason": "why this is a priority",
+      "urgency": "critical|high|medium|low",
+      "estimated_hours": 2.5
+    }
+  ],
+  "workload_assessment": {
+    "overall": "one sentence summary of the week's workload",
+    "total_hours_needed": 25,
+    "intensity_level": "extreme|high|moderate|manageable",
+    "recommendations": ["tip 1", "tip 2", "tip 3"]
+  },
+  "study_tips": ["tip 1", "tip 2", "tip 3", "tip 4"]
+}
+
+Return ONLY the JSON object, no other text. Be realistic with time estimates. Keep it concise for a sidepanel view.`
+      }]
+    })
+  });
+
+  if (!response.ok) {
+    const error = await response.json();
+    throw new Error(error.error?.message || `API error: ${response.status}`);
+  }
+
+  const data = await response.json();
+  const textContent = data.content[0].text;
+
+  // Extract JSON from the response
+  const jsonMatch = textContent.match(/\{[\s\S]*\}/);
+  if (!jsonMatch) {
+    throw new Error('No valid JSON found in response');
+  }
+
+  return JSON.parse(jsonMatch[0]);
+}
+
+function formatStructuredInsights(insights) {
+  const urgencyColors = {
+    critical: '#DC2626',
+    high: '#EA580C',
+    medium: '#FBBF24',
+    low: '#059669'
+  };
+
+  const urgencyLabels = {
+    critical: '🔴 Critical',
+    high: '🟠 High',
+    medium: '🟡 Medium',
+    low: '🟢 Low'
+  };
+
+  const intensityColors = {
+    extreme: '#DC2626',
+    high: '#EA580C',
+    moderate: '#FBBF24',
+    manageable: '#059669'
+  };
+
+  const recommendationsHtml = insights.workload_assessment.recommendations.map(rec => {
+    return `<div style="margin: 6px 0; font-size: 13px; display: flex; gap: 8px;"><span>•</span><span>${escapeHtml(rec)}</span></div>`;
+  }).join('');
+
+  const priorityTasksHtml = insights.priority_tasks.slice(0, 5).map(task => {
+    return `
+      <div style="padding: 12px; background: white; border: 1px solid #E5E7EB; border-left: 3px solid ${urgencyColors[task.urgency]}; border-radius: 6px; margin-bottom: 8px;">
+        <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 6px;">
+          <strong style="color: #111827; font-size: 13px; flex: 1;">${escapeHtml(task.task)}</strong>
+          <div style="display: flex; gap: 6px; margin-left: 8px;">
+            <span style="background: ${urgencyColors[task.urgency]}15; color: ${urgencyColors[task.urgency]}; padding: 2px 8px; border-radius: 10px; font-size: 11px; font-weight: 600; white-space: nowrap;">${urgencyLabels[task.urgency]}</span>
+            <span style="background: #F3F4F6; color: #374151; padding: 2px 6px; border-radius: 4px; font-size: 11px; font-weight: 600;">${task.estimated_hours}h</span>
+          </div>
+        </div>
+        <p style="margin: 0; color: #6B7280; font-size: 12px; line-height: 1.4;">${escapeHtml(task.reason)}</p>
+      </div>
+    `;
+  }).join('');
+
+  const studyTipsHtml = insights.study_tips.map(tip => {
+    return `<div style="margin: 6px 0; font-size: 13px; display: flex; gap: 8px;"><span>💡</span><span>${escapeHtml(tip)}</span></div>`;
+  }).join('');
+
+  return `
+    <div style="margin-bottom: 20px; padding: 16px; background: linear-gradient(135deg, ${intensityColors[insights.workload_assessment.intensity_level]}15, ${intensityColors[insights.workload_assessment.intensity_level]}05); border: 1px solid ${intensityColors[insights.workload_assessment.intensity_level]}30; border-radius: 8px;">
+      <h3 style="margin: 0 0 8px 0; color: #111827; font-size: 15px;">📊 Workload Assessment</h3>
+      <p style="margin: 0 0 12px 0; color: #374151; font-size: 13px;">${escapeHtml(insights.workload_assessment.overall)}</p>
+      <div style="display: flex; gap: 12px; margin-bottom: 12px;">
+        <div style="flex: 1; padding: 8px; background: white; border-radius: 6px; text-align: center;">
+          <div style="font-size: 20px; font-weight: 700; color: ${intensityColors[insights.workload_assessment.intensity_level]};">${insights.workload_assessment.total_hours_needed}h</div>
+          <div style="font-size: 11px; color: #6B7280; text-transform: uppercase;">Total Hours</div>
+        </div>
+        <div style="flex: 1; padding: 8px; background: white; border-radius: 6px; text-align: center;">
+          <div style="font-size: 14px; font-weight: 600; color: ${intensityColors[insights.workload_assessment.intensity_level]}; text-transform: capitalize;">${insights.workload_assessment.intensity_level}</div>
+          <div style="font-size: 11px; color: #6B7280; text-transform: uppercase;">Intensity</div>
+        </div>
+      </div>
+      <div style="background: white; padding: 12px; border-radius: 6px;">
+        <strong style="font-size: 13px; color: #111827;">Key Recommendations:</strong>
+        ${recommendationsHtml}
+      </div>
+    </div>
+
+    <div style="margin-bottom: 20px;">
+      <h3 style="margin: 0 0 12px 0; color: #111827; font-size: 15px;">🎯 Priority Tasks</h3>
+      ${priorityTasksHtml}
+    </div>
+
+    <div style="padding: 16px; background: #F9FAFB; border: 1px solid #E5E7EB; border-radius: 8px;">
+      <h3 style="margin: 0 0 12px 0; color: #111827; font-size: 15px;">💡 Study Tips</h3>
+      ${studyTipsHtml}
+    </div>
+  `;
+}
+
+function escapeHtml(text) {
+  const div = document.createElement('div');
+  div.textContent = text;
+  return div.innerHTML;
+}
+
+// Generate Insights Button
+document.getElementById('generateInsightsBtn').addEventListener('click', generateAIInsights);
 
 initialize();
 

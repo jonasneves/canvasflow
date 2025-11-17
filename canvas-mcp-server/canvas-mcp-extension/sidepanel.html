@@ -380,6 +380,76 @@
       color: #111827;
     }
 
+    /* AI Insights Styles */
+    .btn-primary {
+      background: linear-gradient(135deg, #00539B 0%, #012169 100%);
+      color: white;
+      border: none;
+      border-radius: 8px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .btn-primary:hover:not(:disabled) {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(0, 83, 155, 0.3);
+    }
+
+    .btn-primary:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+
+    .insights-placeholder {
+      text-align: center;
+      padding: 40px 20px;
+      color: #9CA3AF;
+    }
+
+    .insights-placeholder svg {
+      margin-bottom: 16px;
+      opacity: 0.5;
+    }
+
+    .insights-placeholder p {
+      margin: 8px 0;
+      font-size: 14px;
+    }
+
+    .insights-placeholder-note {
+      font-size: 12px !important;
+      color: #6B7280;
+    }
+
+    .insights-loading {
+      text-align: center;
+      padding: 40px 20px;
+    }
+
+    .insights-loading p {
+      margin-top: 16px;
+      color: #6B7280;
+      font-size: 14px;
+    }
+
+    .insights-loaded {
+      animation: fadeIn 0.3s ease-in;
+    }
+
+    .insights-error {
+      padding: 16px;
+      background: #FEF2F2;
+      border: 1px solid #FEE2E2;
+      border-radius: 8px;
+      color: #DC2626;
+      font-size: 14px;
+    }
+
+    .fade-in {
+      animation: fadeIn 0.5s ease-in;
+    }
+
     /* Settings Tab */
     .canvas-url {
       padding: 16px;
@@ -775,15 +845,23 @@
 
   <!-- AI Dashboard Tab -->
   <div class="tab-content" id="ai-dashboard">
-    <a href="#" class="dashboard-link" id="openDashboard">
-      <div style="font-size: 18px; margin-bottom: 4px;">🤖 Open AI Dashboard</div>
-      <div style="font-size: 12px; opacity: 0.9;">Get personalized study insights</div>
-    </a>
+    <div style="margin-bottom: 16px;">
+      <button class="btn-primary" id="generateInsightsBtn" style="width: 100%; padding: 14px; font-size: 15px; display: flex; align-items: center; justify-content: center; gap: 8px;">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>
+        </svg>
+        <span id="generateInsightsBtnText">Loading...</span>
+      </button>
+    </div>
 
-    <div class="info-card">
-      <h3>About AI Dashboard</h3>
-      <p>The AI Dashboard provides personalized study insights, assignment analysis, and intelligent recommendations based on your Canvas data.</p>
-      <p style="margin: 8px 0 0 0;">Click above to open it in a new tab.</p>
+    <div id="insightsContent">
+      <div class="insights-placeholder">
+        <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>
+        </svg>
+        <p>Click above to get AI-powered insights for your assignments</p>
+        <p class="insights-placeholder-note">Claude can analyze your workload and create a personalized study plan</p>
+      </div>
     </div>
   </div>
 

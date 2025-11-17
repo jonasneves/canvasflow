@@ -931,6 +931,9 @@
       <h1 class="title">CanvasFlow</h1>
     </div>
     <div class="header-right">
+      <button class="btn-icon" id="openDashboardBtn" title="Open weekly schedule">
+        <i data-lucide="calendar"></i>
+      </button>
       <button class="btn-icon" id="headerRefreshBtn" title="Refresh data">
         <i data-lucide="refresh-cw"></i>
       </button>
@@ -985,26 +988,15 @@
 
   <!-- AI Dashboard Tab -->
   <div class="tab-content" id="ai-dashboard">
-    <div style="margin-bottom: 12px; display: flex; gap: 8px;">
-      <button class="btn-primary" id="generateInsightsBtn" style="flex: 1; padding: 14px; font-size: 15px; display: flex; align-items: center; justify-content: center; gap: 8px;">
-        <i data-lucide="zap" style="width: 18px; height: 18px;"></i>
-        <span id="generateInsightsBtnText">Loading...</span>
-      </button>
-      <button class="btn-secondary" id="openDashboardBtn" style="padding: 14px; font-size: 15px; display: flex; align-items: center; justify-content: center; gap: 8px; white-space: nowrap;" title="Open weekly schedule in new tab">
-        <i data-lucide="calendar" style="width: 18px; height: 18px;"></i>
-        <span>Weekly Schedule</span>
-      </button>
-    </div>
-
-    <div id="insightsTimestamp" style="display: none; font-size: 11px; color: #6B7280; text-align: center; margin-bottom: 12px;">
-      Last generated: <span id="insightsTimestampText">-</span>
-    </div>
-
     <div id="insightsContent">
       <div class="insights-placeholder">
         <i data-lucide="zap" style="width: 48px; height: 48px;"></i>
-        <p>Click above to get AI-powered insights for your assignments</p>
-        <p class="insights-placeholder-note">Claude can analyze your workload and create a personalized study plan</p>
+        <p style="margin-bottom: 16px;">Generate AI-powered insights for your assignments</p>
+        <button class="btn-primary" id="generateInsightsBtn" style="padding: 10px 20px; font-size: 14px; display: inline-flex; align-items: center; justify-content: center; gap: 8px;">
+          <i data-lucide="zap" style="width: 16px; height: 16px;"></i>
+          <span id="generateInsightsBtnText">Loading...</span>
+        </button>
+        <p class="insights-placeholder-note" style="margin-top: 12px;">Claude can analyze your workload and create a personalized study plan</p>
       </div>
     </div>
   </div>

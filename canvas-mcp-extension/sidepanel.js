@@ -819,32 +819,32 @@ async function loadTimeRangeSettings() {
 
 // Update insights timestamp display
 function updateInsightsTimestamp(timestamp) {
-  const timestampEl = document.getElementById('insightsTimestamp');
-  const timestampText = document.getElementById('insightsTimestampText');
+  if (!timestamp) return '';
 
-  if (timestamp) {
-    const now = Date.now();
-    const diff = now - timestamp;
-    const minutes = Math.floor(diff / 60000);
-    const hours = Math.floor(minutes / 60);
-    const days = Math.floor(hours / 24);
+  const now = Date.now();
+  const diff = now - timestamp;
+  const minutes = Math.floor(diff / 60000);
+  const hours = Math.floor(minutes / 60);
+  const days = Math.floor(hours / 24);
 
-    let timeAgo;
-    if (days > 0) {
-      timeAgo = `${days} day${days > 1 ? 's' : ''} ago`;
-    } else if (hours > 0) {
-      timeAgo = `${hours} hour${hours > 1 ? 's' : ''} ago`;
-    } else if (minutes > 0) {
-      timeAgo = `${minutes} minute${minutes > 1 ? 's' : ''} ago`;
-    } else {
-      timeAgo = 'just now';
-    }
-
-    timestampText.textContent = timeAgo;
-    timestampEl.style.display = 'block';
+  let timeAgo;
+  if (days > 0) {
+    timeAgo = `${days} day${days > 1 ? 's' : ''} ago`;
+  } else if (hours > 0) {
+    timeAgo = `${hours} hour${hours > 1 ? 's' : ''} ago`;
+  } else if (minutes > 0) {
+    timeAgo = `${minutes} minute${minutes > 1 ? 's' : ''} ago`;
   } else {
-    timestampEl.style.display = 'none';
+    timeAgo = 'just now';
   }
+
+  return `<div style="text-align: center; padding: 16px 0 0 0; border-top: 1px solid #E5E7EB;">
+    <div style="font-size: 11px; color: #9CA3AF; margin-bottom: 8px;">Last generated ${timeAgo}</div>
+    <button class="btn-primary" id="regenerateInsightsBtn" style="padding: 8px 16px; font-size: 13px; display: inline-flex; align-items: center; justify-content: center; gap: 6px;">
+      <i data-lucide="refresh-cw" style="width: 14px; height: 14px;"></i>
+      <span>Regenerate</span>
+    </button>
+  </div>`;
 }
 
 // Load saved insights from storage
@@ -852,16 +852,24 @@ async function loadSavedInsights() {
   try {
     const result = await chrome.storage.local.get(['savedInsights', 'insightsTimestamp']);
     if (result.savedInsights) {
+      const timestampHtml = updateInsightsTimestamp(result.insightsTimestamp);
       const insightsContent = document.getElementById('insightsContent');
       insightsContent.innerHTML = `
         <div class="insights-loaded">
           ${result.savedInsights}
+          ${timestampHtml}
         </div>
       `;
 
-      // Update timestamp if available
-      if (result.insightsTimestamp) {
-        updateInsightsTimestamp(result.insightsTimestamp);
+      // Attach event listener to regenerate button if it exists
+      const regenerateBtn = document.getElementById('regenerateInsightsBtn');
+      if (regenerateBtn) {
+        regenerateBtn.addEventListener('click', generateAIInsights);
+      }
+
+      // Initialize Lucide icons for the regenerate button
+      if (typeof initializeLucide === 'function') {
+        initializeLucide();
       }
     }
   } catch (error) {
@@ -985,21 +993,32 @@ async function generateAIInsights() {
     const insights = await callClaudeWithStructuredOutput(result.claudeApiKey, assignmentsData);
 
     const formattedInsights = formatStructuredInsights(insights);
+    const timestamp = Date.now();
+    const timestampHtml = updateInsightsTimestamp(timestamp);
+
     insightsContent.innerHTML = `
       <div class="insights-loaded fade-in">
         ${formattedInsights}
+        ${timestampHtml}
       </div>
     `;
 
+    // Attach event listener to regenerate button
+    const regenerateBtn = document.getElementById('regenerateInsightsBtn');
+    if (regenerateBtn) {
+      regenerateBtn.addEventListener('click', generateAIInsights);
+    }
+
+    // Initialize Lucide icons for the regenerate button
+    if (typeof initializeLucide === 'function') {
+      initializeLucide();
+    }
+
     // Save insights and timestamp to storage
-    const timestamp = Date.now();
     await chrome.storage.local.set({
       savedInsights: formattedInsights,
       insightsTimestamp: timestamp
     });
-
-    // Update timestamp display
-    updateInsightsTimestamp(timestamp);
 
   } catch (error) {
     console.error('Error generating insights:', error);
@@ -1016,7 +1035,6 @@ async function generateAIInsights() {
       savedInsights: errorHtml,
       insightsTimestamp: Date.now()
     });
-    document.getElementById('insightsTimestamp').style.display = 'none';
   } finally {
     btn.disabled = false;
   }
@@ -1276,7 +1294,7 @@ function escapeHtml(text) {
 // Generate Insights Button
 document.getElementById('generateInsightsBtn').addEventListener('click', generateAIInsights);
 
-// Open Dashboard Button
+// Open Dashboard Button (now in header)
 document.getElementById('openDashboardBtn').addEventListener('click', () => {
   chrome.tabs.create({ url: chrome.runtime.getURL('dashboard.html') });
 });

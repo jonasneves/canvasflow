@@ -36,25 +36,33 @@ window.AISchemas.SIDEPANEL_INSIGHTS_SCHEMA = {
     properties: {
       priority_tasks: {
         type: "array",
-        description: "Top priority assignments that need immediate attention",
+        description: "Top priority assignments",
+        minItems: 1,
+        maxItems: 8,
         items: {
           type: "object",
           properties: {
             task: {
               type: "string",
-              description: "Assignment name and recommended action"
+              description: "Assignment name and recommended action",
+              maxLength: 150
             },
             reason: {
               type: "string",
-              description: "Why this task is prioritized"
+              description: "Why this task is prioritized",
+              maxLength: 200
             },
             urgency_score: {
               type: "integer",
-              description: "Urgency level from 0-3 where 0=manageable, 1=moderate, 2=high, 3=critical"
+              description: "0=manageable, 1=moderate, 2=high, 3=critical",
+              minimum: 0,
+              maximum: 3
             },
             estimated_hours: {
               type: "number",
-              description: "Estimated hours needed to complete (must be >= 0)"
+              description: "Estimated hours needed (0.5-8)",
+              minimum: 0.5,
+              maximum: 8
             }
           },
           required: ["task", "reason", "urgency_score", "estimated_hours"],
@@ -63,25 +71,32 @@ window.AISchemas.SIDEPANEL_INSIGHTS_SCHEMA = {
       },
       workload_assessment: {
         type: "object",
-        description: "Overall assessment of the student's workload",
+        description: "Overall workload assessment",
         properties: {
           overall: {
             type: "string",
-            description: "One sentence summary of the week's workload"
+            description: "One sentence workload summary",
+            maxLength: 200
           },
           total_hours_needed: {
             type: "number",
-            description: "Total estimated hours needed for all tasks (must be >= 0)"
+            description: "Total estimated hours",
+            minimum: 0
           },
           intensity_score: {
             type: "integer",
-            description: "Intensity level from 0-3 where 0=manageable, 1=moderate, 2=high, 3=extreme"
+            description: "0=manageable, 1=moderate, 2=high, 3=extreme",
+            minimum: 0,
+            maximum: 3
           },
           recommendations: {
             type: "array",
-            description: "Actionable recommendations for managing the workload (provide 1-5 recommendations)",
+            description: "Workload management recommendations",
+            minItems: 2,
+            maxItems: 5,
             items: {
-              type: "string"
+              type: "string",
+              maxLength: 150
             }
           }
         },
@@ -90,9 +105,12 @@ window.AISchemas.SIDEPANEL_INSIGHTS_SCHEMA = {
       },
       study_tips: {
         type: "array",
-        description: "General study tips relevant to current assignments (provide 1-5 tips)",
+        description: "Study tips for current assignments",
+        minItems: 3,
+        maxItems: 5,
         items: {
-          type: "string"
+          type: "string",
+          maxLength: 150
         }
       }
     },

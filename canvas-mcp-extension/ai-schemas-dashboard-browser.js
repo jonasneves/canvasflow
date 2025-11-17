@@ -19,25 +19,33 @@ window.AISchemas.DASHBOARD_SCHEDULE_SCHEMA = {
     properties: {
       priority_tasks: {
         type: "array",
-        description: "Top priority assignments for the week",
+        description: "Top priority assignments",
+        minItems: 1,
+        maxItems: 8,
         items: {
           type: "object",
           properties: {
             task: {
               type: "string",
-              description: "Assignment name and recommended action"
+              description: "Assignment name and recommended action",
+              maxLength: 150
             },
             reason: {
               type: "string",
-              description: "Why this task is prioritized"
+              description: "Why this task is prioritized",
+              maxLength: 200
             },
             urgency_score: {
               type: "integer",
-              description: "Urgency level from 0-3 where 0=manageable, 1=moderate, 2=high, 3=critical"
+              description: "0=manageable, 1=moderate, 2=high, 3=critical",
+              minimum: 0,
+              maximum: 3
             },
             estimated_hours: {
               type: "number",
-              description: "Estimated hours needed to complete (must be >= 0)"
+              description: "Estimated hours needed (0.5-8)",
+              minimum: 0.5,
+              maximum: 8
             }
           },
           required: ["task", "reason", "urgency_score", "estimated_hours"],
@@ -46,25 +54,32 @@ window.AISchemas.DASHBOARD_SCHEDULE_SCHEMA = {
       },
       workload_assessment: {
         type: "object",
-        description: "Overall assessment of the student's workload",
+        description: "Overall workload assessment",
         properties: {
           overall: {
             type: "string",
-            description: "One sentence summary of the week's workload"
+            description: "One sentence workload summary",
+            maxLength: 200
           },
           total_hours_needed: {
             type: "number",
-            description: "Total estimated hours needed for all tasks (must be >= 0)"
+            description: "Total estimated hours",
+            minimum: 0
           },
           intensity_score: {
             type: "integer",
-            description: "Intensity level from 0-3 where 0=manageable, 1=moderate, 2=high, 3=extreme"
+            description: "0=manageable, 1=moderate, 2=high, 3=extreme",
+            minimum: 0,
+            maximum: 3
           },
           recommendations: {
             type: "array",
-            description: "Actionable recommendations for managing the workload (provide 1-5 recommendations)",
+            description: "Workload management recommendations",
+            minItems: 2,
+            maxItems: 5,
             items: {
-              type: "string"
+              type: "string",
+              maxLength: 150
             }
           }
         },
@@ -73,43 +88,57 @@ window.AISchemas.DASHBOARD_SCHEDULE_SCHEMA = {
       },
       weekly_plan: {
         type: "array",
-        description: "7-day study schedule with daily breakdowns (provide exactly 7 days)",
+        description: "7-day study schedule",
+        minItems: 7,
+        maxItems: 7,
         items: {
           type: "object",
           properties: {
             day: {
               type: "string",
-              description: "Day of week with date (e.g., 'Monday, Nov 18')"
+              description: "Day with date (e.g., 'Monday, Nov 18')",
+              maxLength: 50
             },
             focus: {
               type: "string",
-              description: "Main goal or theme for the day"
+              description: "Main goal for the day",
+              maxLength: 100
             },
             workload_score: {
               type: "integer",
-              description: "Daily workload intensity from 0-3 where 0=light, 1=moderate, 2=heavy, 3=extreme"
+              description: "0=light, 1=moderate, 2=heavy, 3=extreme",
+              minimum: 0,
+              maximum: 3
             },
             tasks: {
               type: "array",
-              description: "Scheduled study blocks for the day",
+              description: "Scheduled study blocks",
+              minItems: 0,
+              maxItems: 6,
               items: {
                 type: "object",
                 properties: {
                   assignment: {
                     type: "string",
-                    description: "Assignment or study activity name"
+                    description: "Assignment or study activity",
+                    maxLength: 100
                   },
                   start_hour: {
                     type: "integer",
-                    description: "Starting hour in 24-hour format from 0-23"
+                    description: "Starting hour (0-23)",
+                    minimum: 0,
+                    maximum: 23
                   },
                   duration_hours: {
                     type: "number",
-                    description: "Duration in hours from 0.5-8 (supports decimals like 1.5)"
+                    description: "Duration in hours (0.5-8)",
+                    minimum: 0.5,
+                    maximum: 8
                   },
                   notes: {
                     type: "string",
-                    description: "Specific guidance for this study session"
+                    description: "Session guidance",
+                    maxLength: 150
                   }
                 },
                 required: ["assignment", "start_hour", "duration_hours", "notes"],
@@ -123,9 +152,12 @@ window.AISchemas.DASHBOARD_SCHEDULE_SCHEMA = {
       },
       study_tips: {
         type: "array",
-        description: "General study tips for the week (provide 1-5 tips)",
+        description: "Study tips for the week",
+        minItems: 3,
+        maxItems: 5,
         items: {
-          type: "string"
+          type: "string",
+          maxLength: 150
         }
       }
     },

@@ -38,7 +38,7 @@ async function updateInsightsButtonText() {
   if (result.claudeApiKey) {
     btnText.textContent = 'Generate Schedule';
   } else {
-    btnText.textContent = 'Show Question Suggestions';
+    btnText.textContent = 'Configure API Key';
   }
 }
 
@@ -253,43 +253,40 @@ async function generateAIInsights() {
   const result = await chrome.storage.local.get(['claudeApiKey']);
 
   if (!result.claudeApiKey) {
-    // Show MCP guidance if no API key
+    // Show settings prompt if no API key
     btn.classList.remove('loading');
     btn.disabled = false;
-    const assignmentsData = prepareAssignmentsForAI();
-    const mcpGuidance = `
-      <div class="insights-loaded">
-        <h3>Ask Claude to Create Your Weekly Schedule</h3>
-        <p style="margin-bottom: 16px; color: #6B7280;">Claude Desktop already has access to all your Canvas data via MCP. Open Claude and try asking:</p>
-
-        <div style="background: #F9FAFB; padding: 16px; border-radius: 8px; border-left: 4px solid #00539B; margin-bottom: 12px;">
-          <strong style="color: #00539B;">📅 Weekly Schedule</strong>
-          <p style="margin: 8px 0 4px 0; font-size: 14px; color: #374151;">"Create a day-by-day study schedule for this week based on my assignments"</p>
-        </div>
-
-        <div style="background: #F9FAFB; padding: 16px; border-radius: 8px; border-left: 4px solid #00539B; margin-bottom: 12px;">
-          <strong style="color: #00539B;">⏰ Time Blocking</strong>
-          <p style="margin: 8px 0 4px 0; font-size: 14px; color: #374151;">"Block out study times for each assignment with realistic hour estimates"</p>
-        </div>
-
-        <div style="background: #F9FAFB; padding: 16px; border-radius: 8px; border-left: 4px solid #00539B; margin-bottom: 16px;">
-          <strong style="color: #00539B;">🎯 Daily Focus</strong>
-          <p style="margin: 8px 0 4px 0; font-size: 14px; color: #374151;">"What should I focus on each day this week to stay on top of my ${assignmentsData.upcoming.length} upcoming assignments?"</p>
-        </div>
-
-        <p style="font-size: 13px; color: #9CA3AF;">
-          <strong>Tip:</strong> Claude can see all ${assignmentsData.totalAssignments} assignments across your ${assignmentsData.courses.length} courses and create a personalized schedule based on due dates and workload.
+    const settingsPrompt = `
+      <div class="insights-loaded" style="text-align: center; padding: 60px 20px;">
+        <div style="font-size: 64px; margin-bottom: 20px;">🔑</div>
+        <h3 style="margin-bottom: 16px; color: #111827; font-size: 24px;">Claude API Key Required</h3>
+        <p style="margin-bottom: 32px; color: #6B7280; font-size: 16px; max-width: 500px; margin-left: auto; margin-right: auto; line-height: 1.6;">
+          To generate AI-powered weekly schedules and study insights, you need to configure your Claude API key.
         </p>
-
-        <div style="margin-top: 16px; padding: 12px; background: #FCF7E5; border-radius: 8px; border-left: 4px solid #E89923;">
-          <p style="margin: 0; font-size: 13px; color: #374151;">💡 <strong>Want automatic scheduling?</strong> Add your Claude API key in settings to generate schedules instantly!</p>
-        </div>
+        <button id="openSettingsBtn" style="
+          background: #00539B;
+          color: white;
+          border: none;
+          padding: 14px 28px;
+          border-radius: 8px;
+          font-size: 16px;
+          font-weight: 500;
+          cursor: pointer;
+          transition: background 0.2s;
+        " onmouseover="this.style.background='#004080'" onmouseout="this.style.background='#00539B'">
+          Open Settings
+        </button>
+        <p style="margin-top: 20px; font-size: 14px; color: #9CA3AF;">
+          Don't have an API key? <a href="https://console.anthropic.com/" target="_blank" style="color: #00539B; text-decoration: underline;">Get one from Anthropic</a>
+        </p>
       </div>
     `;
-    insightsContent.innerHTML = mcpGuidance;
+    insightsContent.innerHTML = settingsPrompt;
 
-    // Don't save MCP guidance to storage - it's just a placeholder
-    // updateInsightsTimestamp(null); // Hide timestamp for MCP guidance
+    // Add click listener to open settings
+    document.getElementById('openSettingsBtn').addEventListener('click', () => {
+      chrome.runtime.openOptionsPage();
+    });
 
     return;
   }

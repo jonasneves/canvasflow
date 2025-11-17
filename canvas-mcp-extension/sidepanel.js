@@ -948,7 +948,7 @@ async function updateInsightsButtonText() {
   if (result.claudeApiKey) {
     btnText.textContent = 'Generate AI Insights';
   } else {
-    btnText.textContent = 'Show Question Suggestions';
+    btnText.textContent = 'Configure API Key';
   }
 }
 
@@ -980,48 +980,43 @@ async function generateAIInsights() {
   const result = await chrome.storage.local.get(['claudeApiKey']);
 
   if (!result.claudeApiKey) {
-    // Show MCP guidance if no API key
+    // Show settings prompt if no API key
     if (btn) {
       btn.classList.remove('loading');
       btn.disabled = false;
     }
-    const assignmentsData = prepareAssignmentsForAI();
-    const mcpGuidance = `
-      <div class="insights-loaded">
-        <h3 style="margin-bottom: 12px;">Ask Claude for AI-Powered Insights</h3>
-        <p style="margin-bottom: 16px; color: #6B7280; font-size: 14px;">Claude Desktop already has access to all your Canvas data via MCP. Open Claude and try asking:</p>
-
-        <div style="background: #F9FAFB; padding: 16px; border-radius: 8px; border-left: 4px solid #00539B; margin-bottom: 12px;">
-          <strong style="color: #00539B;">💡 Priority Recommendations</strong>
-          <p style="margin: 8px 0 4px 0; font-size: 13px; color: #374151;">"What assignments should I focus on first based on due dates and importance?"</p>
-        </div>
-
-        <div style="background: #F9FAFB; padding: 16px; border-radius: 8px; border-left: 4px solid #00539B; margin-bottom: 12px;">
-          <strong style="color: #00539B;">📊 Workload Analysis</strong>
-          <p style="margin: 8px 0 4px 0; font-size: 13px; color: #374151;">"Analyze my current workload and help me create a study schedule"</p>
-        </div>
-
-        <div style="background: #F9FAFB; padding: 16px; border-radius: 8px; border-left: 4px solid #00539B; margin-bottom: 16px;">
-          <strong style="color: #00539B;">🎯 Study Strategy</strong>
-          <p style="margin: 8px 0 4px 0; font-size: 13px; color: #374151;">"What's the best strategy to catch up on my ${assignmentsData.overdue.length} overdue assignments?"</p>
-        </div>
-
-        <p style="font-size: 12px; color: #9CA3AF;">
-          <strong>Tip:</strong> Claude can see all ${assignmentsData.totalAssignments} assignments across your ${assignmentsData.courses.length} courses, including submission status, due dates, and points.
+    const settingsPrompt = `
+      <div class="insights-loaded" style="text-align: center; padding: 40px 20px;">
+        <div style="font-size: 48px; margin-bottom: 16px;">🔑</div>
+        <h3 style="margin-bottom: 12px; color: #111827;">Claude API Key Required</h3>
+        <p style="margin-bottom: 24px; color: #6B7280; font-size: 14px; max-width: 400px; margin-left: auto; margin-right: auto;">
+          To generate AI-powered insights and study schedules, you need to configure your Claude API key.
         </p>
-
-        <div style="margin-top: 16px; padding: 12px; background: #FCF7E5; border-radius: 8px; border-left: 4px solid #E89923;">
-          <p style="margin: 0; font-size: 12px; color: #374151;">💡 <strong>Want insights here?</strong> Add your Claude API key in settings!</p>
-        </div>
+        <button id="openSettingsBtn" style="
+          background: #00539B;
+          color: white;
+          border: none;
+          padding: 12px 24px;
+          border-radius: 8px;
+          font-size: 14px;
+          font-weight: 500;
+          cursor: pointer;
+          transition: background 0.2s;
+        " onmouseover="this.style.background='#004080'" onmouseout="this.style.background='#00539B'">
+          Open Settings
+        </button>
+        <p style="margin-top: 16px; font-size: 12px; color: #9CA3AF;">
+          Don't have an API key? <a href="https://console.anthropic.com/" target="_blank" style="color: #00539B; text-decoration: underline;">Get one from Anthropic</a>
+        </p>
       </div>
     `;
-    insightsContent.innerHTML = mcpGuidance;
+    insightsContent.innerHTML = settingsPrompt;
 
-    // Save MCP guidance (so it persists)
-    await chrome.storage.local.set({
-      savedInsights: mcpGuidance,
-      insightsTimestamp: Date.now()
+    // Add click listener to open settings
+    document.getElementById('openSettingsBtn').addEventListener('click', () => {
+      chrome.runtime.openOptionsPage();
     });
+
     document.getElementById('insightsTimestamp').style.display = 'none';
 
     return;

@@ -13,7 +13,7 @@
     <div class="header-content">
       <div class="header-left">
         <div style="display: flex; align-items: center; gap: 12px;">
-          <img src="icon-48.png" alt="CanvasFlow" style="width: 32px; height: 32px;">
+          <img src="icon.png" alt="CanvasFlow" style="width: 32px; height: 32px;">
           <div>
             <h1 class="header-title">CanvasFlow AI Dashboard</h1>
             <p class="header-subtitle">Weekly Battle Plan powered by Claude</p>
@@ -26,20 +26,7 @@
             <path d="M21.5 2v6h-6M2.5 22v-6h6M2 11.5a10 10 0 0 1 18.8-4.3M22 12.5a10 10 0 0 1-18.8 4.2"/>
           </svg>
         </button>
-        <button class="btn-icon" id="settingsBtn" title="Settings">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <circle cx="12" cy="12" r="3"></circle>
-            <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
-          </svg>
-        </button>
       </div>
-    </div>
-    <div class="header-status">
-      <span class="status-indicator" id="statusIndicator">
-        <span class="status-dot"></span>
-        <span class="status-text">Loading...</span>
-      </span>
-      <span class="last-sync" id="lastSync">Last synced: Never</span>
     </div>
   </header>
 
@@ -67,36 +54,6 @@
       </div>
     </section>
   </main>
-
-  <!-- Settings Modal -->
-  <div class="modal" id="settingsModal">
-    <div class="modal-overlay"></div>
-    <div class="modal-content">
-      <div class="modal-header">
-        <h2 class="modal-title">Settings</h2>
-        <button class="modal-close" id="closeSettingsBtn">
-          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <line x1="18" y1="6" x2="6" y2="18"/>
-            <line x1="6" y1="6" x2="18" y2="18"/>
-          </svg>
-        </button>
-      </div>
-      <div class="modal-body">
-        <div class="settings-group">
-          <p class="settings-info" style="text-align: center; padding: 20px; color: #6B7280;">
-            Settings are now managed in the extension side panel.<br>
-            Click the CanvasFlow extension icon and then the settings gear icon.
-          </p>
-        </div>
-
-        <!-- Reserved for future dashboard-specific settings -->
-      </div>
-      <div class="modal-footer">
-        <button class="btn-secondary" id="cancelSettingsBtn">Cancel</button>
-        <button class="btn-primary" id="saveSettingsBtn">Save Settings</button>
-      </div>
-    </div>
-  </div>
 
   <script src="dashboard.js"></script>
 </body>

@@ -55,19 +55,6 @@ function setupEventListeners() {
     btn.classList.remove('loading');
   });
 
-  // Settings button
-  document.getElementById('settingsBtn').addEventListener('click', () => {
-    openSettingsModal();
-  });
-
-  // Settings modal close handlers
-  document.getElementById('closeSettingsBtn').addEventListener('click', closeSettingsModal);
-  document.getElementById('cancelSettingsBtn').addEventListener('click', closeSettingsModal);
-  document.getElementById('saveSettingsBtn').addEventListener('click', closeSettingsModal);
-
-  // Click outside modal to close
-  document.querySelector('.modal-overlay').addEventListener('click', closeSettingsModal);
-
   // Generate insights button
   document.getElementById('generateInsightsBtn').addEventListener('click', generateAIInsights);
 }
@@ -122,29 +109,10 @@ async function refreshCanvasData() {
 
 // Update status indicator
 function updateStatus(response) {
-  const statusIndicator = document.getElementById('statusIndicator');
-  const statusDot = statusIndicator.querySelector('.status-dot');
-  const statusText = statusIndicator.querySelector('.status-text');
-  const lastSync = document.getElementById('lastSync');
-
+  // Status indicators have been removed for a cleaner header
+  // This function is kept for compatibility but does nothing
   if (response?.error) {
-    statusDot.classList.add('disconnected');
-    statusText.textContent = 'Error loading data';
-  } else if (canvasData.allAssignments.length === 0) {
-    statusDot.classList.add('disconnected');
-    statusText.textContent = 'No data available';
-  } else {
-    statusDot.classList.remove('disconnected');
-    statusText.textContent = 'Connected';
-  }
-
-  const lastUpdate = response?.lastUpdate || response?.dataLastUpdate;
-  if (lastUpdate) {
-    const time = new Date(lastUpdate).toLocaleTimeString([], {
-      hour: '2-digit',
-      minute: '2-digit'
-    });
-    lastSync.textContent = `Last synced: ${time}`;
+    console.error('Error loading data:', response.error);
   }
 }
 
@@ -158,17 +126,6 @@ function escapeHtml(text) {
   const div = document.createElement('div');
   div.textContent = text;
   return div.innerHTML;
-}
-
-// Settings Modal
-function openSettingsModal() {
-  const modal = document.getElementById('settingsModal');
-  modal.classList.add('open');
-}
-
-function closeSettingsModal() {
-  const modal = document.getElementById('settingsModal');
-  modal.classList.remove('open');
 }
 
 // Load time range settings

@@ -2,7 +2,7 @@
   "manifest_version": 3,
   "name": "CanvasFlow",
   "version": "1.0.0",
-  "description": "Your smart companion for Canvas LMS - see assignments at a glance, filter by priority, and get AI-powered study insights.",
+  "description": "Smart Canvas companion with AI insights, assignment tracking, and automated weekly schedule generation for better studying.",
   "permissions": [
     "storage",
     "activeTab",
@@ -13,7 +13,10 @@
     "sidePanel"
   ],
   "host_permissions": [
-    "<all_urls>"
+    "*://*.instructure.com/*",
+    "*://*.canvaslms.com/*",
+    "*://*.edu/*",
+    "https://api.anthropic.com/*"
   ],
   "background": {
     "service_worker": "background.js"
@@ -21,7 +24,8 @@
   "content_scripts": [{
     "matches": [
       "*://*.instructure.com/*",
-      "*://*.canvaslms.com/*"
+      "*://*.canvaslms.com/*",
+      "*://*.edu/*"
     ],
     "js": ["content.js"],
     "run_at": "document_idle"

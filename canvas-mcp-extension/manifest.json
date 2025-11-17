@@ -1,15 +1,16 @@
 {
   "manifest_version": 3,
-  "name": "Canvas MCP Server",
+  "name": "CanvasFlow",
   "version": "1.0.0",
-  "description": "MCP Server for Canvas LMS with Native Messaging support",
+  "description": "Your smart companion for Canvas LMS - see assignments at a glance, filter by priority, and get AI-powered study insights.",
   "permissions": [
     "storage",
     "activeTab",
     "tabs",
     "alarms",
     "scripting",
-    "nativeMessaging"
+    "nativeMessaging",
+    "sidePanel"
   ],
   "host_permissions": [
     "<all_urls>"
@@ -26,8 +27,10 @@
     "run_at": "document_idle"
   }],
   "action": {
-    "default_popup": "popup.html",
-    "default_title": "Canvas MCP Server"
+    "default_title": "CanvasFlow - Canvas Dashboard"
+  },
+  "side_panel": {
+    "default_path": "sidepanel.html"
   },
   "icons": {
     "16": "icon-16.png",

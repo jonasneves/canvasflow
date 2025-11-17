@@ -50,14 +50,11 @@ window.AISchemas.SIDEPANEL_INSIGHTS_SCHEMA = {
             },
             urgency_score: {
               type: "integer",
-              minimum: 0,
-              maximum: 3,
-              description: "0=manageable, 1=moderate, 2=high, 3=critical"
+              description: "Urgency level from 0-3 where 0=manageable, 1=moderate, 2=high, 3=critical"
             },
             estimated_hours: {
               type: "number",
-              minimum: 0,
-              description: "Estimated hours needed to complete"
+              description: "Estimated hours needed to complete (must be >= 0)"
             }
           },
           required: ["task", "reason", "urgency_score", "estimated_hours"],
@@ -74,14 +71,11 @@ window.AISchemas.SIDEPANEL_INSIGHTS_SCHEMA = {
           },
           total_hours_needed: {
             type: "number",
-            minimum: 0,
-            description: "Total estimated hours needed for all tasks"
+            description: "Total estimated hours needed for all tasks (must be >= 0)"
           },
           intensity_score: {
             type: "integer",
-            minimum: 0,
-            maximum: 3,
-            description: "0=manageable, 1=moderate, 2=high, 3=extreme"
+            description: "Intensity level from 0-3 where 0=manageable, 1=moderate, 2=high, 3=extreme"
           },
           recommendations: {
             type: "array",

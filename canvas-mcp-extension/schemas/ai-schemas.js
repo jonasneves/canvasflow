@@ -45,14 +45,11 @@ export const SIDEPANEL_INSIGHTS_SCHEMA = {
             },
             urgency_score: {
               type: "integer",
-              minimum: 0,
-              maximum: 3,
-              description: "0=manageable, 1=moderate, 2=high, 3=critical"
+              description: "Urgency level from 0-3 where 0=manageable, 1=moderate, 2=high, 3=critical"
             },
             estimated_hours: {
               type: "number",
-              minimum: 0,
-              description: "Estimated hours needed to complete"
+              description: "Estimated hours needed to complete (must be >= 0)"
             }
           },
           required: ["task", "reason", "urgency_score", "estimated_hours"],
@@ -69,14 +66,11 @@ export const SIDEPANEL_INSIGHTS_SCHEMA = {
           },
           total_hours_needed: {
             type: "number",
-            minimum: 0,
-            description: "Total estimated hours needed for all tasks"
+            description: "Total estimated hours needed for all tasks (must be >= 0)"
           },
           intensity_score: {
             type: "integer",
-            minimum: 0,
-            maximum: 3,
-            description: "0=manageable, 1=moderate, 2=high, 3=extreme"
+            description: "Intensity level from 0-3 where 0=manageable, 1=moderate, 2=high, 3=extreme"
           },
           recommendations: {
             type: "array",
@@ -131,14 +125,11 @@ export const DASHBOARD_SCHEDULE_SCHEMA = {
             },
             urgency_score: {
               type: "integer",
-              minimum: 0,
-              maximum: 3,
-              description: "0=manageable, 1=moderate, 2=high, 3=critical"
+              description: "Urgency level from 0-3 where 0=manageable, 1=moderate, 2=high, 3=critical"
             },
             estimated_hours: {
               type: "number",
-              minimum: 0,
-              description: "Estimated hours needed to complete"
+              description: "Estimated hours needed to complete (must be >= 0)"
             }
           },
           required: ["task", "reason", "urgency_score", "estimated_hours"],
@@ -155,14 +146,11 @@ export const DASHBOARD_SCHEDULE_SCHEMA = {
           },
           total_hours_needed: {
             type: "number",
-            minimum: 0,
-            description: "Total estimated hours needed for all tasks"
+            description: "Total estimated hours needed for all tasks (must be >= 0)"
           },
           intensity_score: {
             type: "integer",
-            minimum: 0,
-            maximum: 3,
-            description: "0=manageable, 1=moderate, 2=high, 3=extreme"
+            description: "Intensity level from 0-3 where 0=manageable, 1=moderate, 2=high, 3=extreme"
           },
           recommendations: {
             type: "array",
@@ -193,9 +181,7 @@ export const DASHBOARD_SCHEDULE_SCHEMA = {
             },
             workload_score: {
               type: "integer",
-              minimum: 0,
-              maximum: 3,
-              description: "Daily workload intensity (0=light, 1=moderate, 2=heavy, 3=extreme)"
+              description: "Daily workload intensity from 0-3 where 0=light, 1=moderate, 2=heavy, 3=extreme"
             },
             tasks: {
               type: "array",
@@ -209,15 +195,11 @@ export const DASHBOARD_SCHEDULE_SCHEMA = {
                   },
                   start_hour: {
                     type: "integer",
-                    minimum: 0,
-                    maximum: 23,
-                    description: "Starting hour in 24-hour format (0-23)"
+                    description: "Starting hour in 24-hour format from 0-23"
                   },
                   duration_hours: {
                     type: "number",
-                    minimum: 0.5,
-                    maximum: 8,
-                    description: "Duration in hours (supports decimals like 1.5)"
+                    description: "Duration in hours from 0.5-8 (supports decimals like 1.5)"
                   },
                   notes: {
                     type: "string",

@@ -67,12 +67,12 @@ Use these links in documentation:
 
 **Claude Desktop MCP Server (.dxt):**
 ```
-https://github.com/jonasneves/canvasflow/releases/download/latest/canvasflow-native-host.dxt
+https://github.com/jonasneves/canvasflow/releases/download/nightly/canvasflow-native-host.dxt
 ```
 
-**Chrome Extension Native Messaging (.zip):**
+**Chrome Extension Configuration (.zip):**
 ```
-https://github.com/jonasneves/canvasflow/releases/download/latest/canvasflow-chrome-extension.zip
+https://github.com/jonasneves/canvasflow/releases/download/nightly/canvasflow-chrome-extension.zip
 ```
 
 **Specific version examples:**
@@ -91,23 +91,17 @@ https://github.com/jonasneves/canvasflow/releases
 Update the extension's MCP Server tab message to include:
 
 ```
-Option 1: Claude Desktop (Easiest)
-   Download: https://github.com/jonasneves/canvasflow/releases/download/latest/canvasflow-native-host.dxt
-   Installation: Drag and drop into Claude Desktop → Extensions
+Installation:
+1. Download: https://github.com/jonasneves/canvasflow/releases/download/nightly/canvasflow-native-host.dxt
+2. Open Claude Desktop → Extensions
+3. Drag the .dxt file into the window
 
-Option 2: Chrome Extension Integration
-   Download: https://github.com/jonasneves/canvasflow/releases/download/latest/canvasflow-chrome-extension.zip
-   Installation:
-   - macOS/Linux: ./install.sh
-   - Windows: install.bat
-   - Enter your extension ID when prompted
+Test the Connection:
+- Click "Refresh Canvas Data" in the extension
+- Restart Chrome and Claude Desktop
+- Ask Claude: "What are my Canvas courses?"
 
-After installation:
-1. Restart Chrome and Claude Desktop
-2. Click "Refresh Canvas Data" in the extension
-3. Ask Claude: "What are my Canvas courses?"
-
-Full instructions: https://github.com/jonasneves/canvasflow/blob/main/native-host/README.md
+Note: Chrome extension configuration available at https://github.com/jonasneves/canvasflow/releases/download/nightly/canvasflow-chrome-extension.zip
 ```
 
 ## Versioning

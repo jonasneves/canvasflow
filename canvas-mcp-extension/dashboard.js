@@ -217,6 +217,9 @@ async function loadSavedInsights() {
         </div>
       `;
 
+      // Setup event listeners AFTER HTML is inserted into DOM
+      setupDayToggleListeners();
+
       // Update timestamp if available
       if (result.dashboardInsightsTimestamp) {
         updateInsightsTimestamp(result.dashboardInsightsTimestamp);
@@ -294,6 +297,9 @@ async function generateAIInsights() {
         ${formattedInsights}
       </div>
     `;
+
+    // Setup event listeners AFTER HTML is inserted into DOM
+    setupDayToggleListeners();
 
     // Save insights and timestamp to storage (dashboard-specific)
     const timestamp = Date.now();
@@ -398,6 +404,34 @@ function getLucideIconPaths(iconName) {
   return icons[iconName] || '';
 }
 
+// Setup day toggle event listeners (must be called AFTER HTML is in DOM)
+function setupDayToggleListeners() {
+  document.querySelectorAll('.day-plan-toggle').forEach(btn => {
+    btn.addEventListener('click', function() {
+      const dayId = this.dataset.dayId;
+      const defaultBg = this.dataset.defaultBg;
+      const dayContent = document.getElementById(dayId);
+      const icon = this.querySelector('.day-icon');
+
+      if (dayContent.style.display === 'none') {
+        dayContent.style.display = 'block';
+        icon.style.transform = 'rotate(180deg)';
+      } else {
+        dayContent.style.display = 'none';
+        icon.style.transform = 'rotate(0deg)';
+      }
+    });
+
+    // Hover effects
+    btn.addEventListener('mouseenter', function() {
+      this.style.background = '#F9FAFB';
+    });
+    btn.addEventListener('mouseleave', function() {
+      this.style.background = this.dataset.defaultBg;
+    });
+  });
+}
+
 // Format structured insights for display (Dashboard focuses ONLY on weekly schedule)
 function formatStructuredInsights(insights) {
   // Phase 3: Removed hardcoded color maps - using mappers instead
@@ -461,34 +495,6 @@ function formatStructuredInsights(insights) {
       </div>
     `;
   }).join('');
-
-  // Setup event listeners after content is rendered
-  setTimeout(() => {
-    document.querySelectorAll('.day-plan-toggle').forEach(btn => {
-      btn.addEventListener('click', function() {
-        const dayId = this.dataset.dayId;
-        const defaultBg = this.dataset.defaultBg;
-        const dayContent = document.getElementById(dayId);
-        const icon = this.querySelector('.day-icon');
-
-        if (dayContent.style.display === 'none') {
-          dayContent.style.display = 'block';
-          icon.style.transform = 'rotate(180deg)';
-        } else {
-          dayContent.style.display = 'none';
-          icon.style.transform = 'rotate(0deg)';
-        }
-      });
-
-      // Hover effects
-      btn.addEventListener('mouseenter', function() {
-        this.style.background = '#F9FAFB';
-      });
-      btn.addEventListener('mouseleave', function() {
-        this.style.background = this.dataset.defaultBg;
-      });
-    });
-  }, 0);
 
   // Dashboard only shows the daily schedule - other insights are in the sidepanel
   return `

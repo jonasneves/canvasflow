@@ -142,7 +142,7 @@ Current permissions and justifications:
 | `sidePanel` | Display Canvas assignments and AI insights in Chrome sidepanel |
 | `*.instructure.com` | Access Canvas LMS sites on Instructure domain (primary Canvas provider) |
 | `*.canvaslms.com` | Access Canvas LMS sites on alternative Canvas domain |
-| `canvas.*.edu` | Access university-hosted Canvas instances (e.g., canvas.duke.edu) |
+| `*.edu` | Access university-hosted Canvas instances (e.g., canvas.duke.edu, canvas.stanford.edu) |
 | `api.anthropic.com` | Send AI analysis requests to Claude API when user requests insights |
 
 **Action**: Enter these justifications in Chrome Web Store Developer Dashboard during submission
@@ -162,11 +162,13 @@ Current permissions and justifications:
 "host_permissions": [
   "*://*.instructure.com/*",
   "*://*.canvaslms.com/*",
-  "*://canvas.*.edu/*",
+  "*://*.edu/*",
   "https://api.anthropic.com/*"
 ]
 ```
-This covers standard Canvas hosting, university-hosted instances (e.g., canvas.duke.edu), and Claude API while significantly reducing permission scope.
+This covers standard Canvas hosting, all .edu domains (for university-hosted Canvas like Duke, Stanford, etc.), and Claude API while significantly reducing permission scope from `<all_urls>`.
+
+Note: `*://*.edu/*` is broader than ideal but necessary since Chrome match patterns don't support mid-domain wildcards like `canvas.*.edu`.
 
 ### 8. Content Scripts
 

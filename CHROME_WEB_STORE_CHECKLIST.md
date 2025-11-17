@@ -196,7 +196,7 @@ For Chrome Web Store submission, use these justifications:
 | `sidePanel` | Display Canvas assignments and AI insights in Chrome sidepanel interface |
 | `*.instructure.com` | Access Canvas LMS sites on Instructure domain (primary Canvas provider) |
 | `*.canvaslms.com` | Access Canvas LMS sites on alternative Canvas domain |
-| `canvas.*.edu` | Access university-hosted Canvas instances (e.g., canvas.duke.edu, canvas.stanford.edu) |
+| `*.edu` | Access university-hosted Canvas instances (Duke, Stanford, etc. host Canvas on .edu domains) |
 | `api.anthropic.com` | Send assignment data to Claude API for AI insights when user requests |
 
 ## Notes

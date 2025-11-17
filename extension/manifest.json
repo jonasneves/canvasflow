@@ -15,7 +15,7 @@
   "host_permissions": [
     "*://*.instructure.com/*",
     "*://*.canvaslms.com/*",
-    "*://canvas.*.edu/*",
+    "*://*.edu/*",
     "https://api.anthropic.com/*"
   ],
   "background": {
@@ -25,7 +25,7 @@
     "matches": [
       "*://*.instructure.com/*",
       "*://*.canvaslms.com/*",
-      "*://canvas.*.edu/*"
+      "*://*.edu/*"
     ],
     "js": ["content.js"],
     "run_at": "document_idle"

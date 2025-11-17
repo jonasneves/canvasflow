@@ -217,8 +217,8 @@ export const DASHBOARD_SCHEDULE_SCHEMA = {
       },
       study_tips: {
         type: "array",
-        description: "Study tips for the week (3-5 items, max 150 chars each)",
-        minItems: 3,
+        description: "Study tips for the week (provide 3-5 items, max 150 chars each)",
+        minItems: 1,
         items: {
           type: "string"
         }

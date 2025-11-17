@@ -29,23 +29,38 @@
     .header {
       padding: 16px 20px;
       border-bottom: 1px solid #E5E7EB;
-      background: #fff;
+      background: linear-gradient(to right, #dc2626, #339898);
       flex-shrink: 0;
       display: flex;
       align-items: center;
       justify-content: space-between;
+      position: relative;
+    }
+
+    .header::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: linear-gradient(to right, rgba(220, 38, 38, 0.3), rgba(51, 152, 152, 0.3));
     }
 
     .header-left {
       display: flex;
       align-items: center;
       gap: 8px;
+      position: relative;
+      z-index: 1;
     }
 
     .header-right {
       display: flex;
       align-items: center;
       gap: 8px;
+      position: relative;
+      z-index: 1;
     }
 
     .btn-icon {
@@ -62,13 +77,17 @@
     }
 
     .btn-icon:hover {
-      background: #F3F4F6;
+      background: rgba(255, 255, 255, 0.2);
+    }
+
+    .btn-icon svg {
+      stroke: white;
     }
 
     .title {
       font-size: 16px;
       font-weight: 600;
-      color: #111827;
+      color: white;
       margin: 0;
       letter-spacing: -0.01em;
     }

@@ -325,11 +325,32 @@ document.getElementById('openDashboard').addEventListener('click', (e) => {
   chrome.tabs.create({ url: chrome.runtime.getURL('dashboard.html') });
 });
 
-// Refresh Data
-document.getElementById('refreshData').addEventListener('click', async () => {
-  const button = document.getElementById('refreshData');
-  const originalText = button.textContent;
-  button.textContent = 'Syncing...';
+// Settings Modal
+const settingsModal = document.getElementById('settingsModal');
+const settingsBtn = document.getElementById('settingsBtn');
+const closeSettingsModal = document.getElementById('closeSettingsModal');
+
+settingsBtn.addEventListener('click', () => {
+  settingsModal.classList.add('show');
+});
+
+closeSettingsModal.addEventListener('click', () => {
+  settingsModal.classList.remove('show');
+});
+
+settingsModal.addEventListener('click', (e) => {
+  if (e.target === settingsModal) {
+    settingsModal.classList.remove('show');
+  }
+});
+
+// Header Refresh Button
+document.getElementById('headerRefreshBtn').addEventListener('click', async () => {
+  const button = document.getElementById('headerRefreshBtn');
+  const svg = button.querySelector('svg');
+
+  // Add spinning animation
+  svg.style.animation = 'spin 1s linear infinite';
   button.disabled = true;
 
   try {
@@ -338,23 +359,13 @@ document.getElementById('refreshData').addEventListener('click', async () => {
     });
 
     if (response && response.success) {
-      const coursesCount = response.data.courses?.length || 0;
-      const allAssignmentsCount = response.data.allAssignments?.length || 0;
-
-      showStatusMessage(
-        'canvasUrlStatus',
-        `✓ Synced - ${coursesCount} courses, ${allAssignmentsCount} assignments`,
-        'success'
-      );
       updateStatus();
       loadAssignments(); // Reload assignments after refresh
-    } else {
-      showStatusMessage('canvasUrlStatus', `✗ Sync failed: ${response?.error || 'Unknown error'}`, 'error');
     }
   } catch (error) {
-    showStatusMessage('canvasUrlStatus', `✗ Error: ${error.message}`, 'error');
+    console.error('Error refreshing data:', error);
   } finally {
-    button.textContent = originalText;
+    svg.style.animation = '';
     button.disabled = false;
   }
 });

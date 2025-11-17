@@ -31,6 +31,45 @@
       border-bottom: 1px solid #E5E7EB;
       background: #fff;
       flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .header-left {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .header-right {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .btn-icon {
+      width: 32px;
+      height: 32px;
+      border: none;
+      background: transparent;
+      border-radius: 6px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #6B7280;
+      transition: all 0.15s ease;
+    }
+
+    .btn-icon:hover {
+      background: #F3F4F6;
+      color: #374151;
+    }
+
+    .btn-icon svg {
+      width: 18px;
+      height: 18px;
     }
 
     .title {
@@ -533,11 +572,110 @@
     ::-webkit-scrollbar-thumb:hover {
       background: #9CA3AF;
     }
+
+    /* Settings Modal */
+    .modal-overlay {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.5);
+      z-index: 1000;
+      animation: fadeIn 0.2s ease;
+    }
+
+    .modal-overlay.show {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .modal-content {
+      background: white;
+      border-radius: 12px;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+      width: 90%;
+      max-width: 500px;
+      max-height: 80vh;
+      overflow-y: auto;
+      animation: modalSlideIn 0.3s ease-out;
+    }
+
+    .modal-header {
+      padding: 20px 24px;
+      border-bottom: 1px solid #E5E7EB;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .modal-title {
+      font-size: 18px;
+      font-weight: 600;
+      color: #111827;
+      margin: 0;
+    }
+
+    .modal-close {
+      width: 32px;
+      height: 32px;
+      border: none;
+      background: transparent;
+      border-radius: 6px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #6B7280;
+      transition: all 0.15s ease;
+    }
+
+    .modal-close:hover {
+      background: #F3F4F6;
+      color: #374151;
+    }
+
+    .modal-body {
+      padding: 24px;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+
+    @keyframes modalSlideIn {
+      from {
+        opacity: 0;
+        transform: translateY(-20px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
   </style>
 </head>
 <body>
   <div class="header">
-    <h1 class="title">CanvasFlow</h1>
+    <div class="header-left">
+      <h1 class="title">CanvasFlow</h1>
+    </div>
+    <div class="header-right">
+      <button class="btn-icon" id="headerRefreshBtn" title="Refresh data">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M21.5 2v6h-6M2.5 22v-6h6M2 11.5a10 10 0 0 1 18.8-4.3M22 12.5a10 10 0 0 1-18.8 4.2"/>
+        </svg>
+      </button>
+      <button class="btn-icon" id="settingsBtn" title="Settings">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="3"></circle>
+          <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+        </svg>
+      </button>
+    </div>
   </div>
 
   <div class="tab-nav">
@@ -598,28 +736,8 @@
     </div>
   </div>
 
-  <!-- Settings Tab -->
+  <!-- MCP Server Tab (Status Only) -->
   <div class="tab-content" id="settings">
-    <div class="canvas-url">
-      <label class="canvas-url-label">Canvas Instance</label>
-      <input type="text" class="canvas-url-input" id="canvasUrlInput" placeholder="https://canvas.instructure.com">
-      <div class="canvas-url-buttons">
-        <button class="secondary small" id="saveCanvasUrl">Save</button>
-        <button class="ghost small" id="autoDetectUrl">Auto-Detect</button>
-      </div>
-      <div class="status-message" id="canvasUrlStatus"></div>
-    </div>
-
-    <div class="canvas-url">
-      <label class="canvas-url-label">Auto-Refresh</label>
-      <div style="display: flex; align-items: center; gap: 8px; padding: 8px 0;">
-        <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; flex: 1;">
-          <input type="checkbox" id="autoRefreshToggle" style="cursor: pointer;">
-          <span style="font-size: 13px; color: #374151;">Automatically refresh data every 5 minutes</span>
-        </label>
-      </div>
-    </div>
-
     <div class="status-section">
       <div class="section-label">Status</div>
       <div class="status-grid">
@@ -638,10 +756,56 @@
       </div>
     </div>
 
-    <div class="button-group">
-      <button class="secondary" id="refreshData">Refresh Canvas Data</button>
+    <div class="setup-card">
+      <div class="setup-header">
+        <span>Setup Instructions</span>
+      </div>
+      <div class="setup-content open">
+        <ol>
+          <li>Open Claude Desktop → Settings → Extensions</li>
+          <li>Click "Install Unpacked Extension"</li>
+          <li>Select folder: <code>canvas-mcp-native</code></li>
+          <li>Click the refresh button above to sync Canvas data</li>
+          <li>Ask Claude: "What are my Canvas courses?"</li>
+        </ol>
+      </div>
     </div>
+  </div>
 
+  <!-- Settings Modal -->
+  <div class="modal-overlay" id="settingsModal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2 class="modal-title">Settings</h2>
+        <button class="modal-close" id="closeSettingsModal">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="18" y1="6" x2="6" y2="18"></line>
+            <line x1="6" y1="6" x2="18" y2="18"></line>
+          </svg>
+        </button>
+      </div>
+      <div class="modal-body">
+        <div class="canvas-url">
+          <label class="canvas-url-label">Canvas Instance</label>
+          <input type="text" class="canvas-url-input" id="canvasUrlInput" placeholder="https://canvas.instructure.com">
+          <div class="canvas-url-buttons">
+            <button class="secondary small" id="saveCanvasUrl">Save</button>
+            <button class="ghost small" id="autoDetectUrl">Auto-Detect</button>
+          </div>
+          <div class="status-message" id="canvasUrlStatus"></div>
+        </div>
+
+        <div class="canvas-url">
+          <label class="canvas-url-label">Auto-Refresh</label>
+          <div style="display: flex; align-items: center; gap: 8px; padding: 8px 0;">
+            <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; flex: 1;">
+              <input type="checkbox" id="autoRefreshToggle" style="cursor: pointer;">
+              <span style="font-size: 13px; color: #374151;">Automatically refresh data every 5 minutes</span>
+            </label>
+          </div>
+        </div>
+      </div>
+    </div>
   </div>
 
   <script src="sidepanel.js"></script>

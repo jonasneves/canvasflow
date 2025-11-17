@@ -28,34 +28,81 @@ Claude Desktop <-> Native Host <-> Chrome Extension <-> Canvas LMS
 
 - Node.js 14 or higher
 - CanvasFlow Chrome extension installed
-- Claude Desktop application
+- Claude Desktop application (optional, for MCP integration)
 
-### Setup Steps
+### Quick Install
 
-1. Install dependencies:
+**Download the latest release:**
+
+Visit [GitHub Releases](https://github.com/jonasneves/canvasflow/releases) and download `canvasflow-native-host.zip`
+
+**Automated Installation:**
+
+**macOS/Linux:**
+```bash
+unzip canvasflow-native-host.zip
+cd canvasflow-native-host
+chmod +x install.sh
+./install.sh
+```
+
+**Windows:**
+```cmd
+# Extract canvasflow-native-host.zip
+cd canvasflow-native-host
+install.bat
+```
+
+The install script will:
+1. Copy files to a permanent location
+2. Install Node.js dependencies
+3. Configure Chrome native messaging
+4. Provide next steps for extension ID configuration
+
+### Manual Installation
+
+1. Download and extract the release package
+
+2. Install dependencies:
    ```bash
-   cd native-host
-   npm install
+   cd canvasflow-native-host
+   npm install --production
    ```
 
-2. Install the native messaging host manifest:
+3. Install the native messaging host manifest:
 
    **Windows:**
-   ```bash
-   # Run as Administrator
-   reg add "HKCU\Software\Google\Chrome\NativeMessagingHosts\canvas-mcp-server" /ve /t REG_SZ /d "%CD%\manifest.json" /f
+   ```cmd
+   # Run as Administrator or use install.bat
+   reg add "HKCU\Software\Google\Chrome\NativeMessagingHosts\com.canvasflow.host" /ve /t REG_SZ /d "%CD%\manifest.json" /f
    ```
 
-   **macOS/Linux:**
+   **macOS:**
+   ```bash
+   mkdir -p ~/Library/Application\ Support/Google/Chrome/NativeMessagingHosts
+   cp manifest.json ~/Library/Application\ Support/Google/Chrome/NativeMessagingHosts/com.canvasflow.host.json
+   # Update paths in manifest to absolute paths
+   ```
+
+   **Linux:**
    ```bash
    mkdir -p ~/.config/google-chrome/NativeMessagingHosts
-   cp manifest.json ~/.config/google-chrome/NativeMessagingHosts/canvas-mcp-server.json
-
-   # Update the path in the manifest to point to host.js
-   # Edit the manifest.json to use absolute paths
+   cp manifest.json ~/.config/google-chrome/NativeMessagingHosts/com.canvasflow.host.json
+   # Update paths in manifest to absolute paths
    ```
 
-3. Configure Claude Desktop to use the MCP server (see Claude Desktop MCP documentation)
+4. Update the manifest with your extension ID:
+   - Open Chrome and go to `chrome://extensions/`
+   - Enable "Developer mode" and note the CanvasFlow extension ID
+   - Edit the installed manifest file and replace `EXTENSION_ID` with your actual ID
+
+5. Restart Chrome
+
+### Verify Installation
+
+1. Open Chrome DevTools console
+2. Run: `chrome.runtime.connectNative('com.canvasflow.host')`
+3. If successful, the connection will be established without errors
 
 ## File Structure
 

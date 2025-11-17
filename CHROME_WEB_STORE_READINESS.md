@@ -27,7 +27,7 @@ This document verifies CanvasFlow extension compliance with Chrome Web Store req
 - Name: "CanvasFlow" (11 chars, within 75 char limit)
 - Version: "1.0.0" (semantic versioning)
 - Description: 122 characters (within 132 char limit)
-  - Updated to: "Smart Canvas companion with AI insights, assignment tracking, and automated weekly schedule generation for better studying."
+  - Updated to: "Smart Canvas companion with AI insights, assignment tracking, and weekly schedule generation for better studying."
   - Clearly describes all major features
 
 ### 2. Code Quality & Security
@@ -265,7 +265,7 @@ Note: `*://*.edu/*` is broader than ideal but necessary since Chrome match patte
 ## Store Listing Recommendations
 
 ### Short Description (from manifest)
-"Smart Canvas companion with AI insights, assignment tracking, and automated weekly schedule generation for better studying."
+"Smart Canvas companion with AI insights, assignment tracking, and weekly schedule generation for better studying."
 
 ### Detailed Description (for store listing)
 

@@ -2,7 +2,7 @@
   "manifest_version": 3,
   "name": "CanvasFlow",
   "version": "1.0.0",
-  "description": "Smart Canvas companion with AI insights, assignment tracking, and automated weekly schedule generation for better studying.",
+  "description": "Smart Canvas companion with AI insights, assignment tracking, and weekly schedule generation for better studying.",
   "permissions": [
     "storage",
     "activeTab",

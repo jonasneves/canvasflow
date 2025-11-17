@@ -1117,56 +1117,14 @@ function prepareAssignmentsForAI() {
   };
 }
 
+// Phase 4: Use shared Claude client to reduce code duplication
 async function callClaudeWithStructuredOutput(apiKey, assignmentsData) {
-  const response = await fetch('https://api.anthropic.com/v1/messages', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'x-api-key': apiKey,
-      'anthropic-version': '2023-06-01',
-      'anthropic-beta': 'structured-outputs-2025-11-13',  // Phase 2: Enable structured outputs
-      'anthropic-dangerous-direct-browser-access': 'true'
-    },
-    body: JSON.stringify({
-      model: 'claude-sonnet-4-5',  // Updated model name
-      max_tokens: 3000,
-      messages: [{
-        role: 'user',
-        content: `Analyze this student's Canvas assignments and create a Weekly Battle Plan.
-
-Current Status:
-- Total Assignments: ${assignmentsData.totalAssignments}
-- Courses: ${assignmentsData.courses.join(', ')}
-- Due this week: ${assignmentsData.upcoming.length}
-- Overdue: ${assignmentsData.overdue.length}
-- Completed: ${assignmentsData.completed}
-
-Upcoming Assignments (next 7 days):
-${assignmentsData.upcoming.slice(0, 8).map(a => `- ${a.name} (${a.course}) - Due: ${new Date(a.dueDate).toLocaleDateString()}, ${a.points} points`).join('\n')}
-
-Overdue Assignments:
-${assignmentsData.overdue.slice(0, 5).map(a => `- ${a.name} (${a.course}) - Was due: ${new Date(a.dueDate).toLocaleDateString()}, ${a.points} points`).join('\n')}
-
-SCORING GUIDANCE:
-- urgency_score: 0=can wait, 1=should do soon, 2=high priority, 3=critical/immediate
-- intensity_score: 0=light week, 1=normal load, 2=heavy week, 3=overwhelming
-
-Provide practical, actionable advice. Be realistic with time estimates. Keep it concise for a sidepanel view.`
-      }],
-      output_format: window.AISchemas.SIDEPANEL_INSIGHTS_SCHEMA  // Phase 2: Use structured schema
-    })
-  });
-
-  if (!response.ok) {
-    const error = await response.json();
-    throw new Error(error.error?.message || `API error: ${response.status}`);
-  }
-
-  const data = await response.json();
-
-  // Phase 2: Structured outputs guarantee valid JSON - no regex extraction needed!
-  const textContent = data.content[0].text;
-  return JSON.parse(textContent);  // Direct parse, always works with structured outputs
+  return await window.ClaudeClient.callClaude(
+    apiKey,
+    assignmentsData,
+    window.AISchemas.SIDEPANEL_INSIGHTS_SCHEMA,
+    'sidepanel'
+  );
 }
 
 // Helper function to create Lucide icon SVG

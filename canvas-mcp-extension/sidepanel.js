@@ -442,11 +442,6 @@ document.getElementById('headerRefreshBtn').addEventListener('click', async () =
   }
 });
 
-// Refresh assignments button
-document.getElementById('refreshAssignments').addEventListener('click', () => {
-  loadAssignments();
-});
-
 // Summary card filters
 document.querySelectorAll('.summary-card').forEach(card => {
   card.addEventListener('click', () => {

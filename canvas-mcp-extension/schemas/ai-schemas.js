@@ -31,25 +31,26 @@ export const SIDEPANEL_INSIGHTS_SCHEMA = {
     properties: {
       priority_tasks: {
         type: "array",
-        description: "Top priority assignments that need immediate attention",
+        description: "Top priority assignments (1-8 items)",
+        minItems: 1,
         items: {
           type: "object",
           properties: {
             task: {
               type: "string",
-              description: "Assignment name and recommended action"
+              description: "Assignment name and action (max 150 chars)"
             },
             reason: {
               type: "string",
-              description: "Why this task is prioritized"
+              description: "Why prioritized (max 200 chars)"
             },
             urgency_score: {
               type: "integer",
-              description: "Urgency level from 0-3 where 0=manageable, 1=moderate, 2=high, 3=critical"
+              description: "0=manageable, 1=moderate, 2=high, 3=critical"
             },
             estimated_hours: {
               type: "number",
-              description: "Estimated hours needed to complete (must be >= 0)"
+              description: "Estimated hours (0.5 to 8)"
             }
           },
           required: ["task", "reason", "urgency_score", "estimated_hours"],
@@ -58,23 +59,24 @@ export const SIDEPANEL_INSIGHTS_SCHEMA = {
       },
       workload_assessment: {
         type: "object",
-        description: "Overall assessment of the student's workload",
+        description: "Overall workload assessment",
         properties: {
           overall: {
             type: "string",
-            description: "One sentence summary of the week's workload"
+            description: "One sentence summary (max 200 chars)"
           },
           total_hours_needed: {
             type: "number",
-            description: "Total estimated hours needed for all tasks (must be >= 0)"
+            description: "Total estimated hours"
           },
           intensity_score: {
             type: "integer",
-            description: "Intensity level from 0-3 where 0=manageable, 1=moderate, 2=high, 3=extreme"
+            description: "0=manageable, 1=moderate, 2=high, 3=extreme"
           },
           recommendations: {
             type: "array",
-            description: "Actionable recommendations for managing the workload (provide 1-5 recommendations)",
+            description: "Recommendations (provide 2-5 items, max 150 chars each)",
+            minItems: 1,
             items: {
               type: "string"
             }
@@ -85,7 +87,8 @@ export const SIDEPANEL_INSIGHTS_SCHEMA = {
       },
       study_tips: {
         type: "array",
-        description: "General study tips relevant to current assignments (provide 1-5 tips)",
+        description: "Study tips (provide 3-5 items, max 150 chars each)",
+        minItems: 1,
         items: {
           type: "string"
         }
@@ -107,25 +110,26 @@ export const DASHBOARD_SCHEDULE_SCHEMA = {
     properties: {
       priority_tasks: {
         type: "array",
-        description: "Top priority assignments for the week",
+        description: "Top priority assignments (1-8 items)",
+        minItems: 1,
         items: {
           type: "object",
           properties: {
             task: {
               type: "string",
-              description: "Assignment name and recommended action"
+              description: "Assignment name and action (max 150 chars)"
             },
             reason: {
               type: "string",
-              description: "Why this task is prioritized"
+              description: "Why prioritized (max 200 chars)"
             },
             urgency_score: {
               type: "integer",
-              description: "Urgency level from 0-3 where 0=manageable, 1=moderate, 2=high, 3=critical"
+              description: "0=manageable, 1=moderate, 2=high, 3=critical"
             },
             estimated_hours: {
               type: "number",
-              description: "Estimated hours needed to complete (must be >= 0)"
+              description: "Estimated hours (0.5 to 8)"
             }
           },
           required: ["task", "reason", "urgency_score", "estimated_hours"],
@@ -134,23 +138,24 @@ export const DASHBOARD_SCHEDULE_SCHEMA = {
       },
       workload_assessment: {
         type: "object",
-        description: "Overall assessment of the student's workload",
+        description: "Overall workload assessment",
         properties: {
           overall: {
             type: "string",
-            description: "One sentence summary of the week's workload"
+            description: "One sentence summary (max 200 chars)"
           },
           total_hours_needed: {
             type: "number",
-            description: "Total estimated hours needed for all tasks (must be >= 0)"
+            description: "Total estimated hours"
           },
           intensity_score: {
             type: "integer",
-            description: "Intensity level from 0-3 where 0=manageable, 1=moderate, 2=high, 3=extreme"
+            description: "0=manageable, 1=moderate, 2=high, 3=extreme"
           },
           recommendations: {
             type: "array",
-            description: "Actionable recommendations for managing the workload (provide 1-5 recommendations)",
+            description: "Recommendations (provide 2-5 items, max 150 chars each)",
+            minItems: 1,
             items: {
               type: "string"
             }
@@ -161,43 +166,44 @@ export const DASHBOARD_SCHEDULE_SCHEMA = {
       },
       weekly_plan: {
         type: "array",
-        description: "7-day study schedule with daily breakdowns (provide exactly 7 days)",
+        description: "7-day study schedule (provide exactly 7 days)",
+        minItems: 1,
         items: {
           type: "object",
           properties: {
             day: {
               type: "string",
-              description: "Day of week with date (e.g., 'Monday, Nov 18')"
+              description: "Day with date, e.g. 'Monday, Nov 18' (max 50 chars)"
             },
             focus: {
               type: "string",
-              description: "Main goal or theme for the day"
+              description: "Main goal for the day (max 100 chars)"
             },
             workload_score: {
               type: "integer",
-              description: "Daily workload intensity from 0-3 where 0=light, 1=moderate, 2=heavy, 3=extreme"
+              description: "0=light, 1=moderate, 2=heavy, 3=extreme"
             },
             tasks: {
               type: "array",
-              description: "Scheduled study blocks for the day",
+              description: "Scheduled study blocks (0-6 items)",
               items: {
                 type: "object",
                 properties: {
                   assignment: {
                     type: "string",
-                    description: "Assignment or study activity name"
+                    description: "Assignment or activity (max 100 chars)"
                   },
                   start_hour: {
                     type: "integer",
-                    description: "Starting hour in 24-hour format from 0-23"
+                    description: "Starting hour (0-23)"
                   },
                   duration_hours: {
                     type: "number",
-                    description: "Duration in hours from 0.5-8 (supports decimals like 1.5)"
+                    description: "Duration in hours (0.5-8)"
                   },
                   notes: {
                     type: "string",
-                    description: "Specific guidance for this study session"
+                    description: "Session guidance (max 150 chars)"
                   }
                 },
                 required: ["assignment", "start_hour", "duration_hours", "notes"],
@@ -211,7 +217,8 @@ export const DASHBOARD_SCHEDULE_SCHEMA = {
       },
       study_tips: {
         type: "array",
-        description: "General study tips for the week (provide 1-5 tips)",
+        description: "Study tips for the week (provide 3-5 items, max 150 chars each)",
+        minItems: 1,
         items: {
           type: "string"
         }

@@ -19,6 +19,12 @@ window.ClaudeClient = window.ClaudeClient || {};
 window.ClaudeClient.callClaude = async function(apiKey, assignmentsData, schema, promptType = 'sidepanel') {
   const prompt = buildPrompt(assignmentsData, promptType);
 
+  // Adaptive max_tokens: sidepanel needs less, dashboard needs more
+  const maxTokens = promptType === 'dashboard' ? 3000 : 1500;
+
+  // Adaptive thinking budget: must be >= 1024 and < max_tokens
+  const thinkingBudget = promptType === 'dashboard' ? 2000 : 1024;
+
   const response = await fetch('https://api.anthropic.com/v1/messages', {
     method: 'POST',
     headers: {
@@ -30,7 +36,11 @@ window.ClaudeClient.callClaude = async function(apiKey, assignmentsData, schema,
     },
     body: JSON.stringify({
       model: 'claude-sonnet-4-5',
-      max_tokens: 3000,
+      max_tokens: maxTokens,
+      thinking: {
+        type: "enabled",
+        budget_tokens: thinkingBudget
+      },
       messages: [{
         role: 'user',
         content: prompt
@@ -46,9 +56,16 @@ window.ClaudeClient.callClaude = async function(apiKey, assignmentsData, schema,
 
   const data = await response.json();
 
+  // With Extended Thinking enabled, we need to find the text block (not thinking block)
+  // Response structure: { content: [{ type: "thinking", thinking: "..." }, { type: "text", text: "{...}" }] }
+  const textBlock = data.content.find(block => block.type === 'text');
+
+  if (!textBlock || !textBlock.text) {
+    throw new Error('No text content found in API response');
+  }
+
   // Structured outputs guarantee valid JSON - no regex extraction needed!
-  const textContent = data.content[0].text;
-  return JSON.parse(textContent);
+  return JSON.parse(textBlock.text);
 };
 
 /**
@@ -82,21 +99,14 @@ Upcoming Assignments (next 7 days):
 ${assignmentsData.upcoming.slice(0, 8).map(a => `- ${a.name} (${a.course}) - Due: ${new Date(a.dueDate).toLocaleDateString()}, ${a.points} points`).join('\n')}
 
 Overdue Assignments:
-${assignmentsData.overdue.slice(0, 5).map(a => `- ${a.name} (${a.course}) - Was due: ${new Date(a.dueDate).toLocaleDateString()}, ${a.points} points`).join('\n')}
-
-SCORING GUIDANCE:
-- urgency_score: 0=can wait, 1=should do soon, 2=high priority, 3=critical/immediate
-- intensity_score: 0=light week, 1=normal load, 2=heavy week, 3=overwhelming`;
+${assignmentsData.overdue.slice(0, 5).map(a => `- ${a.name} (${a.course}) - Was due: ${new Date(a.dueDate).toLocaleDateString()}, ${a.points} points`).join('\n')}`;
 
   if (promptType === 'dashboard') {
     return basePrompt + `
-- workload_score: 0=light day, 1=moderate day, 2=heavy day, 3=extreme day
-- start_hour: Use 24-hour format (0-23), e.g., 9 for 9 AM, 14 for 2 PM
-- duration_hours: Decimal hours, e.g., 1.5 for 90 minutes, 2.5 for 2 hours 30 minutes
 
 Create a realistic 7-day plan starting from TODAY (${todayFormatted}).
 The first day should be ${todayFormatted.split(',')[0]} (today).
-Be practical with time estimates and daily schedules.`;
+Use 24-hour format for times (0-23). Be practical with time estimates and daily schedules.`;
   } else {
     return basePrompt + `
 

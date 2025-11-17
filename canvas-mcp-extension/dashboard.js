@@ -258,7 +258,6 @@ async function generateAIInsights() {
     btn.disabled = false;
     const settingsPrompt = `
       <div class="insights-loaded" style="text-align: center; padding: 60px 20px;">
-        <div style="font-size: 64px; margin-bottom: 20px;">🔑</div>
         <h3 style="margin-bottom: 16px; color: #111827; font-size: 24px;">Claude API Key Required</h3>
         <p style="margin-bottom: 32px; color: #6B7280; font-size: 16px; max-width: 500px; margin-left: auto; margin-right: auto; line-height: 1.6;">
           To generate AI-powered weekly schedules and study insights, you need to configure your Claude API key.

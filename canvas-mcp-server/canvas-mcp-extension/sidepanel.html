@@ -223,11 +223,16 @@
       border-left: 3px solid #00539B;
       border-radius: 6px;
       transition: all 0.15s ease;
+      cursor: pointer;
+      text-decoration: none;
+      color: inherit;
+      display: block;
     }
 
     .assignment-card:hover {
       background: #F3F4F6;
       border-left-color: #012169;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
     }
 
     .assignment-card.overdue {
@@ -692,6 +697,16 @@
         <button class="ghost small" id="autoDetectUrl">Auto-Detect</button>
       </div>
       <div class="status-message" id="canvasUrlStatus"></div>
+    </div>
+
+    <div class="canvas-url">
+      <label class="canvas-url-label">Auto-Refresh</label>
+      <div style="display: flex; align-items: center; gap: 8px; padding: 8px 0;">
+        <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; flex: 1;">
+          <input type="checkbox" id="autoRefreshToggle" style="cursor: pointer;">
+          <span style="font-size: 13px; color: #374151;">Automatically refresh data every 5 minutes</span>
+        </label>
+      </div>
     </div>
 
     <div class="status-section">

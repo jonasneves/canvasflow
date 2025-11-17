@@ -1,6 +1,7 @@
 // Global state
 let allAssignments = [];
 let currentFilter = 'all';
+let autoRefreshInterval = null;
 
 // Tab switching
 const tabButtons = document.querySelectorAll('.tab-button');
@@ -161,15 +162,17 @@ function renderAssignments() {
     else if (isOverdue) statusText = '⚠ Overdue';
     else if (isDueSoon) statusText = '⏰ Due soon';
 
+    const assignmentUrl = assignment.url || '#';
+
     return `
-      <div class="${cardClass}">
+      <a href="${escapeHtml(assignmentUrl)}" target="_blank" class="${cardClass}">
         <div class="assignment-title">${escapeHtml(assignment.name || 'Untitled Assignment')}</div>
         <div class="assignment-meta">
           <span>${escapeHtml(assignment.courseName || 'Unknown Course')}</span>
           ${statusText ? `<span>${statusText}</span>` : ''}
         </div>
         <div class="assignment-due-date ${dueDateClass}">Due: ${dueDateText}</div>
-      </div>
+      </a>
     `;
   }).join('');
 }
@@ -467,6 +470,79 @@ document.getElementById('autoDetectUrl').addEventListener('click', async () => {
   await autoDetectCanvasUrl(true);
 });
 
+// Auto-refresh functionality
+async function refreshCanvasData() {
+  try {
+    const response = await new Promise((resolve) => {
+      chrome.runtime.sendMessage({ type: 'REFRESH_DATA' }, resolve);
+    });
+
+    if (response && response.success) {
+      updateStatus();
+      loadAssignments();
+    }
+  } catch (error) {
+    console.error('Error during auto-refresh:', error);
+  }
+}
+
+function startAutoRefresh() {
+  if (autoRefreshInterval) {
+    clearInterval(autoRefreshInterval);
+  }
+
+  // Refresh every 5 minutes (300000 ms)
+  autoRefreshInterval = setInterval(() => {
+    refreshCanvasData();
+  }, 300000);
+}
+
+function stopAutoRefresh() {
+  if (autoRefreshInterval) {
+    clearInterval(autoRefreshInterval);
+    autoRefreshInterval = null;
+  }
+}
+
+// Load auto-refresh setting
+async function loadAutoRefreshSetting() {
+  try {
+    const result = await chrome.storage.local.get(['autoRefreshEnabled']);
+    const enabled = result.autoRefreshEnabled !== false; // Default to true
+
+    const toggle = document.getElementById('autoRefreshToggle');
+    if (toggle) {
+      toggle.checked = enabled;
+
+      if (enabled) {
+        startAutoRefresh();
+      }
+    }
+  } catch (error) {
+    console.error('Error loading auto-refresh setting:', error);
+  }
+}
+
+// Save auto-refresh setting
+async function saveAutoRefreshSetting(enabled) {
+  try {
+    await chrome.storage.local.set({ autoRefreshEnabled: enabled });
+
+    if (enabled) {
+      startAutoRefresh();
+    } else {
+      stopAutoRefresh();
+    }
+  } catch (error) {
+    console.error('Error saving auto-refresh setting:', error);
+  }
+}
+
+// Auto-refresh toggle event listener
+document.getElementById('autoRefreshToggle').addEventListener('change', (e) => {
+  saveAutoRefreshSetting(e.target.checked);
+});
+
 // Initial load
 async function initialize() {
   await updateCanvasUrl();
@@ -487,7 +563,11 @@ async function initialize() {
     }
   }
 
-  loadAssignments();
+  // Load auto-refresh setting
+  await loadAutoRefreshSetting();
+
+  // Trigger initial refresh on extension open
+  await refreshCanvasData();
 }
 
 initialize();

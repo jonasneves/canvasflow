@@ -750,6 +750,58 @@ async function loadTimeRangeSettings() {
   }
 }
 
+// Update insights timestamp display
+function updateInsightsTimestamp(timestamp) {
+  const timestampEl = document.getElementById('insightsTimestamp');
+  const timestampText = document.getElementById('insightsTimestampText');
+
+  if (timestamp) {
+    const now = Date.now();
+    const diff = now - timestamp;
+    const minutes = Math.floor(diff / 60000);
+    const hours = Math.floor(minutes / 60);
+    const days = Math.floor(hours / 24);
+
+    let timeAgo;
+    if (days > 0) {
+      timeAgo = `${days} day${days > 1 ? 's' : ''} ago`;
+    } else if (hours > 0) {
+      timeAgo = `${hours} hour${hours > 1 ? 's' : ''} ago`;
+    } else if (minutes > 0) {
+      timeAgo = `${minutes} minute${minutes > 1 ? 's' : ''} ago`;
+    } else {
+      timeAgo = 'just now';
+    }
+
+    timestampText.textContent = timeAgo;
+    timestampEl.style.display = 'block';
+  } else {
+    timestampEl.style.display = 'none';
+  }
+}
+
+// Load saved insights from storage
+async function loadSavedInsights() {
+  try {
+    const result = await chrome.storage.local.get(['savedInsights', 'insightsTimestamp']);
+    if (result.savedInsights) {
+      const insightsContent = document.getElementById('insightsContent');
+      insightsContent.innerHTML = `
+        <div class="insights-loaded">
+          ${result.savedInsights}
+        </div>
+      `;
+
+      // Update timestamp if available
+      if (result.insightsTimestamp) {
+        updateInsightsTimestamp(result.insightsTimestamp);
+      }
+    }
+  } catch (error) {
+    console.error('Error loading saved insights:', error);
+  }
+}
+
 // Initial load
 async function initialize() {
   await updateCanvasUrl();
@@ -779,6 +831,9 @@ async function initialize() {
   // Update AI insights button text
   await updateInsightsButtonText();
 
+  // Load saved insights
+  await loadSavedInsights();
+
   // Trigger initial refresh on extension open
   await refreshCanvasData();
 }
@@ -805,7 +860,7 @@ async function generateAIInsights() {
   if (!result.claudeApiKey) {
     // Show MCP guidance if no API key
     const assignmentsData = prepareAssignmentsForAI();
-    insightsContent.innerHTML = `
+    const mcpGuidance = `
       <div class="insights-loaded">
         <h3 style="margin-bottom: 12px;">Ask Claude for AI-Powered Insights</h3>
         <p style="margin-bottom: 16px; color: #6B7280; font-size: 14px;">Claude Desktop already has access to all your Canvas data via MCP. Open Claude and try asking:</p>
@@ -834,6 +889,15 @@ async function generateAIInsights() {
         </div>
       </div>
     `;
+    insightsContent.innerHTML = mcpGuidance;
+
+    // Save MCP guidance (so it persists)
+    await chrome.storage.local.set({
+      savedInsights: mcpGuidance,
+      insightsTimestamp: Date.now()
+    });
+    document.getElementById('insightsTimestamp').style.display = 'none';
+
     return;
   }
 
@@ -850,19 +914,39 @@ async function generateAIInsights() {
     const assignmentsData = prepareAssignmentsForAI();
     const insights = await callClaudeWithStructuredOutput(result.claudeApiKey, assignmentsData);
 
+    const formattedInsights = formatStructuredInsights(insights);
     insightsContent.innerHTML = `
       <div class="insights-loaded fade-in">
-        ${formatStructuredInsights(insights)}
+        ${formattedInsights}
       </div>
     `;
+
+    // Save insights and timestamp to storage
+    const timestamp = Date.now();
+    await chrome.storage.local.set({
+      savedInsights: formattedInsights,
+      insightsTimestamp: timestamp
+    });
+
+    // Update timestamp display
+    updateInsightsTimestamp(timestamp);
+
   } catch (error) {
     console.error('Error generating insights:', error);
-    insightsContent.innerHTML = `
+    const errorHtml = `
       <div class="insights-error">
         <strong>Failed to generate insights:</strong> ${escapeHtml(error.message)}
         <p style="margin-top: 8px; font-size: 12px;">Check your API key in settings or use Claude Desktop via MCP instead.</p>
       </div>
     `;
+    insightsContent.innerHTML = errorHtml;
+
+    // Save error state
+    await chrome.storage.local.set({
+      savedInsights: errorHtml,
+      insightsTimestamp: Date.now()
+    });
+    document.getElementById('insightsTimestamp').style.display = 'none';
   } finally {
     btn.disabled = false;
   }
@@ -1055,6 +1139,11 @@ function escapeHtml(text) {
 
 // Generate Insights Button
 document.getElementById('generateInsightsBtn').addEventListener('click', generateAIInsights);
+
+// Open Dashboard Button
+document.getElementById('openDashboardBtn').addEventListener('click', () => {
+  chrome.tabs.create({ url: chrome.runtime.getURL('dashboard.html') });
+});
 
 // Setup instructions toggle
 const setupToggle = document.getElementById('setupToggle');

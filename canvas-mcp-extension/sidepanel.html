@@ -917,11 +917,19 @@
 
   <!-- AI Dashboard Tab -->
   <div class="tab-content" id="ai-dashboard">
-    <div style="margin-bottom: 16px;">
-      <button class="btn-primary" id="generateInsightsBtn" style="width: 100%; padding: 14px; font-size: 15px; display: flex; align-items: center; justify-content: center; gap: 8px;">
+    <div style="margin-bottom: 12px; display: flex; gap: 8px;">
+      <button class="btn-primary" id="generateInsightsBtn" style="flex: 1; padding: 14px; font-size: 15px; display: flex; align-items: center; justify-content: center; gap: 8px;">
         <i data-lucide="zap" style="width: 18px; height: 18px;"></i>
         <span id="generateInsightsBtnText">Loading...</span>
       </button>
+      <button class="btn-secondary" id="openDashboardBtn" style="padding: 14px; font-size: 15px; display: flex; align-items: center; justify-content: center; gap: 8px; white-space: nowrap;" title="Open full dashboard in new tab">
+        <i data-lucide="layout-dashboard" style="width: 18px; height: 18px;"></i>
+        <span>Full Dashboard</span>
+      </button>
+    </div>
+
+    <div id="insightsTimestamp" style="display: none; font-size: 11px; color: #6B7280; text-align: center; margin-bottom: 12px;">
+      Last generated: <span id="insightsTimestampText">-</span>
     </div>
 
     <div id="insightsContent">

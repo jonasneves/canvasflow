@@ -17,11 +17,11 @@ body {
 .header {
   background: linear-gradient(to right, #dc2626, #339898);
   border-bottom: 1px solid #E5E7EB;
-  padding: 24px 32px;
+  padding: 32px 40px;
   position: sticky;
   top: 0;
   z-index: 100;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
 }
 
 .header::before {
@@ -51,15 +51,17 @@ body {
 }
 
 .header-title {
-  font-size: 24px;
+  font-size: 28px;
   font-weight: 700;
   color: white;
-  margin-bottom: 4px;
+  margin-bottom: 6px;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
 }
 
 .header-subtitle {
-  font-size: 14px;
-  color: rgba(255, 255, 255, 0.9);
+  font-size: 15px;
+  color: rgba(255, 255, 255, 0.95);
+  font-weight: 500;
 }
 
 .header-right {
@@ -70,8 +72,8 @@ body {
 }
 
 .btn-icon {
-  width: 40px;
-  height: 40px;
+  width: 44px;
+  height: 44px;
   border: 1px solid rgba(255, 255, 255, 0.3);
   background: rgba(255, 255, 255, 0.1);
   border-radius: 8px;
@@ -81,12 +83,14 @@ body {
   justify-content: center;
   color: white;
   transition: all 0.2s ease;
+  backdrop-filter: blur(8px);
 }
 
 .btn-icon:hover {
-  background: rgba(255, 255, 255, 0.2);
+  background: rgba(255, 255, 255, 0.25);
   color: white;
-  border-color: rgba(255, 255, 255, 0.4);
+  border-color: rgba(255, 255, 255, 0.5);
+  transform: translateY(-1px);
 }
 
 .btn-icon:active {

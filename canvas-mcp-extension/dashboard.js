@@ -61,16 +61,13 @@ function setupEventListeners() {
     openSettingsModal();
   });
 
-  // Settings modal
+  // Settings modal close handlers
   document.getElementById('closeSettingsBtn').addEventListener('click', closeSettingsModal);
   document.getElementById('cancelSettingsBtn').addEventListener('click', closeSettingsModal);
-  document.getElementById('saveSettingsBtn').addEventListener('click', saveSettings);
+  document.getElementById('saveSettingsBtn').addEventListener('click', closeSettingsModal);
 
   // Click outside modal to close
   document.querySelector('.modal-overlay').addEventListener('click', closeSettingsModal);
-
-  // Toggle API key visibility
-  document.getElementById('toggleApiKeyBtn').addEventListener('click', toggleApiKeyVisibility);
 
   // Generate insights button
   document.getElementById('generateInsightsBtn').addEventListener('click', generateAIInsights);
@@ -427,54 +424,11 @@ function escapeHtml(text) {
 function openSettingsModal() {
   const modal = document.getElementById('settingsModal');
   modal.classList.add('open');
-
-  // Load current settings
-  chrome.storage.local.get(['canvasUrl', 'autoRefresh', 'claudeApiKey'], (result) => {
-    document.getElementById('canvasUrlDisplay').value = result.canvasUrl || 'Not configured';
-    document.getElementById('autoRefresh').checked = result.autoRefresh || false;
-    document.getElementById('claudeApiKey').value = result.claudeApiKey || '';
-  });
 }
 
 function closeSettingsModal() {
   const modal = document.getElementById('settingsModal');
   modal.classList.remove('open');
-}
-
-function toggleApiKeyVisibility() {
-  const input = document.getElementById('claudeApiKey');
-  const eyeIcon = document.getElementById('eyeIcon');
-  const eyeOffIcon = document.getElementById('eyeOffIcon');
-
-  if (input.type === 'password') {
-    input.type = 'text';
-    eyeIcon.style.display = 'none';
-    eyeOffIcon.style.display = 'block';
-  } else {
-    input.type = 'password';
-    eyeIcon.style.display = 'block';
-    eyeOffIcon.style.display = 'none';
-  }
-}
-
-async function saveSettings() {
-  const autoRefresh = document.getElementById('autoRefresh').checked;
-  const claudeApiKey = document.getElementById('claudeApiKey').value.trim();
-
-  try {
-    await chrome.storage.local.set({
-      autoRefresh: autoRefresh,
-      claudeApiKey: claudeApiKey
-    });
-
-    closeSettingsModal();
-
-    // Update auto-refresh
-    setupAutoRefresh(autoRefresh);
-  } catch (error) {
-    console.error('Error saving settings:', error);
-    alert('Failed to save settings');
-  }
 }
 
 // Load time range settings
@@ -562,21 +516,21 @@ function updateInsightsTimestamp(timestamp) {
   }
 }
 
-// Load saved insights from storage
+// Load saved insights from storage (dashboard-specific)
 async function loadSavedInsights() {
   try {
-    const result = await chrome.storage.local.get(['savedInsights', 'insightsTimestamp']);
-    if (result.savedInsights) {
+    const result = await chrome.storage.local.get(['dashboardInsights', 'dashboardInsightsTimestamp']);
+    if (result.dashboardInsights) {
       const insightsContent = document.getElementById('insightsContent');
       insightsContent.innerHTML = `
         <div class="insights-loaded">
-          ${result.savedInsights}
+          ${result.dashboardInsights}
         </div>
       `;
 
       // Update timestamp if available
-      if (result.insightsTimestamp) {
-        updateInsightsTimestamp(result.insightsTimestamp);
+      if (result.dashboardInsightsTimestamp) {
+        updateInsightsTimestamp(result.dashboardInsightsTimestamp);
       }
     }
   } catch (error) {
@@ -626,12 +580,8 @@ async function generateAIInsights() {
     `;
     insightsContent.innerHTML = mcpGuidance;
 
-    // Save MCP guidance (so it persists)
-    await chrome.storage.local.set({
-      savedInsights: mcpGuidance,
-      insightsTimestamp: Date.now()
-    });
-    updateInsightsTimestamp(null); // Hide timestamp for MCP guidance
+    // Don't save MCP guidance to storage - it's just a placeholder
+    // updateInsightsTimestamp(null); // Hide timestamp for MCP guidance
 
     return;
   }
@@ -656,11 +606,11 @@ async function generateAIInsights() {
       </div>
     `;
 
-    // Save insights and timestamp to storage
+    // Save insights and timestamp to storage (dashboard-specific)
     const timestamp = Date.now();
     await chrome.storage.local.set({
-      savedInsights: formattedInsights,
-      insightsTimestamp: timestamp
+      dashboardInsights: formattedInsights,
+      dashboardInsightsTimestamp: timestamp
     });
 
     // Update timestamp display
@@ -676,12 +626,8 @@ async function generateAIInsights() {
     `;
     insightsContent.innerHTML = errorHtml;
 
-    // Save error state
-    await chrome.storage.local.set({
-      savedInsights: errorHtml,
-      insightsTimestamp: Date.now()
-    });
-    updateInsightsTimestamp(null); // Hide timestamp for errors
+    // Don't save error state to storage - let user retry
+    // updateInsightsTimestamp(null); // Hide timestamp for errors
   } finally {
     btn.disabled = false;
   }
@@ -689,7 +635,20 @@ async function generateAIInsights() {
 
 function prepareAssignmentsForAI() {
   const now = new Date();
-  const assignments = canvasData.allAssignments || [];
+
+  // Apply the SAME time range filter as Dashboard display
+  const timeRangeStart = new Date(now.getTime() - assignmentTimeRange.weeksBefore * 7 * 24 * 60 * 60 * 1000);
+  const timeRangeEnd = new Date(now.getTime() + assignmentTimeRange.weeksAfter * 7 * 24 * 60 * 60 * 1000);
+
+  // Filter assignments to only those within the configured time range
+  const assignments = (canvasData.allAssignments || []).filter(a => {
+    if (!a.dueDate) return true; // Include assignments without due dates
+    const dueDate = new Date(a.dueDate);
+    return dueDate >= timeRangeStart && dueDate <= timeRangeEnd;
+  });
+
+  console.log('[prepareAssignmentsForAI] Time range:', timeRangeStart.toLocaleDateString(), 'to', timeRangeEnd.toLocaleDateString());
+  console.log('[prepareAssignmentsForAI] Filtered assignments:', assignments.length, 'of', (canvasData.allAssignments || []).length, 'total');
 
   return {
     totalAssignments: assignments.length,
@@ -798,12 +757,27 @@ Return ONLY the JSON object, no other text. Be realistic with time estimates. Cr
   const textContent = data.content[0].text;
 
   // Extract JSON from the response (Claude might wrap it in markdown code blocks)
-  const jsonMatch = textContent.match(/\{[\s\S]*\}/);
+  let jsonText = textContent;
+
+  // Remove markdown code blocks if present
+  const codeBlockMatch = textContent.match(/```(?:json)?\s*([\s\S]*?)\s*```/);
+  if (codeBlockMatch) {
+    jsonText = codeBlockMatch[1];
+  }
+
+  // Find the outermost JSON object
+  const jsonMatch = jsonText.match(/\{[\s\S]*\}/);
   if (!jsonMatch) {
     throw new Error('No valid JSON found in response');
   }
 
-  return JSON.parse(jsonMatch[0]);
+  try {
+    return JSON.parse(jsonMatch[0]);
+  } catch (parseError) {
+    console.error('JSON parse error:', parseError);
+    console.error('Attempted to parse:', jsonMatch[0].substring(0, 500));
+    throw new Error(`Failed to parse AI response: ${parseError.message}`);
+  }
 }
 
 // Format structured insights for display

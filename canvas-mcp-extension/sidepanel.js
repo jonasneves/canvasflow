@@ -1024,7 +1024,20 @@ async function generateAIInsights() {
 
 function prepareAssignmentsForAI() {
   const now = new Date();
-  const assignments = allAssignments || [];
+
+  // Apply the SAME time range filter as Dashboard tab
+  const timeRangeStart = new Date(now.getTime() - assignmentTimeRange.weeksBefore * 7 * 24 * 60 * 60 * 1000);
+  const timeRangeEnd = new Date(now.getTime() + assignmentTimeRange.weeksAfter * 7 * 24 * 60 * 60 * 1000);
+
+  // Filter assignments to only those within the configured time range
+  const assignments = (allAssignments || []).filter(a => {
+    if (!a.dueDate) return true; // Include assignments without due dates
+    const dueDate = new Date(a.dueDate);
+    return dueDate >= timeRangeStart && dueDate <= timeRangeEnd;
+  });
+
+  console.log('[prepareAssignmentsForAI] Time range:', timeRangeStart.toLocaleDateString(), 'to', timeRangeEnd.toLocaleDateString());
+  console.log('[prepareAssignmentsForAI] Filtered assignments:', assignments.length, 'of', allAssignments.length, 'total');
 
   return {
     totalAssignments: assignments.length,
@@ -1033,7 +1046,7 @@ function prepareAssignmentsForAI() {
       if (!a.dueDate) return false;
       const dueDate = new Date(a.dueDate);
       const weekFromNow = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000);
-      return dueDate >= now && dueDate <= weekFromNow && !a.submitted;
+      return dueDate >= now && dueDate <= weekFromNow && !a.submission?.submitted;
     }).map(a => ({
       name: a.name,
       course: a.courseName,
@@ -1043,14 +1056,14 @@ function prepareAssignmentsForAI() {
     overdue: assignments.filter(a => {
       if (!a.dueDate) return false;
       const dueDate = new Date(a.dueDate);
-      return dueDate < now && !a.submitted;
+      return dueDate < now && !a.submission?.submitted;
     }).map(a => ({
       name: a.name,
       course: a.courseName,
       dueDate: a.dueDate,
       points: a.pointsPossible
     })),
-    completed: assignments.filter(a => a.submitted).length
+    completed: assignments.filter(a => a.submission?.submitted || a.submission?.workflowState === 'graded').length
   };
 }
 

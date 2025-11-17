@@ -131,7 +131,11 @@ function renderAssignments() {
     assignmentsList.innerHTML = `
       <div class="empty-state">
         <div class="empty-state-icon">
-          <i data-lucide="alert-circle" style="width: 48px; height: 48px; color: #F59E0B;"></i>
+          <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#F59E0B" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="10"></circle>
+            <line x1="12" y1="8" x2="12" y2="12"></line>
+            <line x1="12" y1="16" x2="12.01" y2="16"></line>
+          </svg>
         </div>
         <div class="empty-state-text">Canvas URL Not Configured</div>
         <div style="font-size: 13px; margin-top: 12px; line-height: 1.6; color: #6B7280; max-width: 320px;">
@@ -143,12 +147,14 @@ function renderAssignments() {
           </ol>
         </div>
         <button class="primary" onclick="document.getElementById('settingsBtn').click()" style="margin-top: 16px; display: inline-flex; align-items: center; gap: 6px; padding: 8px 16px; font-size: 13px;">
-          <i data-lucide="settings" style="width: 16px; height: 16px;"></i>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="3"></circle>
+            <path d="M12 1v6m0 6v6m5.2-13.2l-4.2 4.2m-6 6l-4.2 4.2m13.2-4.2l-4.2-4.2m-6-6L1.8 5.8"></path>
+          </svg>
           <span>Open Settings</span>
         </button>
       </div>
     `;
-    lucide.createIcons();
     return;
   }
 
@@ -416,7 +422,11 @@ async function loadAssignments() {
       assignmentsList.innerHTML = `
         <div class="empty-state">
           <div class="empty-state-icon">
-            <i data-lucide="alert-circle" style="width: 48px; height: 48px; color: #F59E0B;"></i>
+            <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#F59E0B" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="12" r="10"></circle>
+              <line x1="12" y1="8" x2="12" y2="12"></line>
+              <line x1="12" y1="16" x2="12.01" y2="16"></line>
+            </svg>
           </div>
           <div class="empty-state-text">Cannot Connect to Canvas</div>
           <div style="font-size: 13px; margin-top: 12px; line-height: 1.6; color: #6B7280; max-width: 320px;">
@@ -428,19 +438,25 @@ async function loadAssignments() {
             </ul>
           </div>
           <button class="primary" onclick="document.getElementById('settingsBtn').click()" style="margin-top: 16px; display: inline-flex; align-items: center; gap: 6px; padding: 8px 16px; font-size: 13px;">
-            <i data-lucide="settings" style="width: 16px; height: 16px;"></i>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="12" r="3"></circle>
+              <path d="M12 1v6m0 6v6m5.2-13.2l-4.2 4.2m-6 6l-4.2 4.2m13.2-4.2l-4.2-4.2m-6-6L1.8 5.8"></path>
+            </svg>
             <span>Configure Canvas URL</span>
           </button>
         </div>
       `;
-      lucide.createIcons();
     }
   } catch (error) {
     console.error('Error loading assignments:', error);
     assignmentsList.innerHTML = `
       <div class="empty-state">
         <div class="empty-state-icon">
-          <i data-lucide="alert-circle" style="width: 48px; height: 48px; color: #DC2626;"></i>
+          <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#DC2626" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="10"></circle>
+            <line x1="12" y1="8" x2="12" y2="12"></line>
+            <line x1="12" y1="16" x2="12.01" y2="16"></line>
+          </svg>
         </div>
         <div class="empty-state-text">Connection Error</div>
         <div style="font-size: 13px; margin-top: 12px; line-height: 1.6; color: #6B7280; max-width: 320px;">
@@ -452,12 +468,14 @@ async function loadAssignments() {
           </ul>
         </div>
         <button class="primary" onclick="document.getElementById('settingsBtn').click()" style="margin-top: 16px; display: inline-flex; align-items: center; gap: 6px; padding: 8px 16px; font-size: 13px;">
-          <i data-lucide="settings" style="width: 16px; height: 16px;"></i>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="3"></circle>
+            <path d="M12 1v6m0 6v6m5.2-13.2l-4.2 4.2m-6 6l-4.2 4.2m13.2-4.2l-4.2-4.2m-6-6L1.8 5.8"></path>
+          </svg>
           <span>Open Settings</span>
         </button>
       </div>
     `;
-    lucide.createIcons();
   }
 }
 

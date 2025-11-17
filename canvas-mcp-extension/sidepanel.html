@@ -832,6 +832,30 @@
 
     .modal-body {
       padding: 24px;
+      background: #F9FAFB;
+    }
+
+    /* Settings Cards */
+    .settings-card {
+      background: white;
+      border: 1px solid #E5E7EB;
+      border-radius: 12px;
+      padding: 16px;
+      margin-bottom: 16px;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .settings-card:hover {
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+    }
+
+    .settings-card-title {
+      font-size: 11px;
+      font-weight: 600;
+      color: #6B7280;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 12px;
     }
 
     @keyframes fadeIn {
@@ -857,14 +881,19 @@
 
     /* Setup Card */
     .setup-card {
-      margin-bottom: 16px;
+      background: white;
       border: 1px solid #E5E7EB;
-      border-radius: 8px;
+      border-radius: 12px;
       overflow: hidden;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .setup-card:hover {
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
     }
 
     .setup-header {
-      padding: 12px;
+      padding: 14px 16px;
       background: #FAFAFA;
       cursor: pointer;
       user-select: none;
@@ -874,6 +903,7 @@
       font-size: 13px;
       font-weight: 500;
       color: #374151;
+      transition: all 0.2s ease;
     }
 
     .setup-header:hover {
@@ -895,8 +925,8 @@
       padding: 16px;
       font-size: 12px;
       color: #6B7280;
-      line-height: 1.6;
-      background: #fff;
+      line-height: 1.7;
+      background: white;
     }
 
     .setup-content.open {
@@ -909,16 +939,17 @@
     }
 
     .setup-content li {
-      margin-bottom: 4px;
+      margin-bottom: 6px;
     }
 
     .setup-content code {
-      background: #F3F4F6;
+      background: white;
       padding: 2px 6px;
-      border-radius: 3px;
+      border-radius: 4px;
       font-family: ui-monospace, 'SF Mono', Monaco, monospace;
       font-size: 11px;
       color: #111827;
+      border: 1px solid #E5E7EB;
     }
   </style>
 </head>
@@ -1000,6 +1031,43 @@
 
   <!-- MCP Server Tab (Status Only) -->
   <div class="tab-content" id="settings">
+    <!-- What is this? Card -->
+    <div style="background: white; padding: 18px; border-radius: 12px; border: 1px solid #E5E7EB; margin-bottom: 20px; box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);">
+      <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 12px;">
+        <div style="background: linear-gradient(135deg, #00539B 0%, #0577B1 100%); width: 36px; height: 36px; border-radius: 8px; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+          <i data-lucide="message-circle" style="width: 20px; height: 20px; color: white;"></i>
+        </div>
+        <div>
+          <h4 style="margin: 0; color: #111827; font-size: 15px; font-weight: 600;">Chat with Your Canvas Data</h4>
+          <p style="margin: 2px 0 0 0; font-size: 12px; color: #6B7280;">Ask questions about assignments, courses, and deadlines</p>
+        </div>
+      </div>
+      <p style="margin: 0 0 14px 0; font-size: 13px; color: #6B7280; line-height: 1.6;">
+        Connect this extension to ChatGPT or Claude Desktop to have natural conversations with your Canvas data.
+      </p>
+      <div style="background: #F9FAFB; padding: 14px; border-radius: 8px; border: 1px solid #E5E7EB;">
+        <div style="font-size: 11px; font-weight: 600; color: #6B7280; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 10px;">Example Questions</div>
+        <div style="display: flex; flex-direction: column; gap: 8px;">
+          <div style="display: flex; align-items: start; gap: 8px; font-size: 12px; color: #374151;">
+            <i data-lucide="calendar" style="width: 14px; height: 14px; color: #00539B; flex-shrink: 0; margin-top: 2px;"></i>
+            <span>"What assignments are due this week?"</span>
+          </div>
+          <div style="display: flex; align-items: start; gap: 8px; font-size: 12px; color: #374151;">
+            <i data-lucide="clock" style="width: 14px; height: 14px; color: #00539B; flex-shrink: 0; margin-top: 2px;"></i>
+            <span>"When is my next exam?"</span>
+          </div>
+          <div style="display: flex; align-items: start; gap: 8px; font-size: 12px; color: #374151;">
+            <i data-lucide="target" style="width: 14px; height: 14px; color: #00539B; flex-shrink: 0; margin-top: 2px;"></i>
+            <span>"Help me prioritize my homework"</span>
+          </div>
+          <div style="display: flex; align-items: start; gap: 8px; font-size: 12px; color: #374151;">
+            <i data-lucide="layers" style="width: 14px; height: 14px; color: #00539B; flex-shrink: 0; margin-top: 2px;"></i>
+            <span>"Create a study schedule for me"</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
     <div class="status-section">
       <div class="section-label">Status</div>
       <div class="status-grid">
@@ -1052,8 +1120,9 @@
         </button>
       </div>
       <div class="modal-body">
-        <div class="canvas-url">
-          <label class="canvas-url-label">Canvas Instance</label>
+        <!-- Canvas URL Card -->
+        <div class="settings-card">
+          <div class="settings-card-title">Canvas Instance</div>
           <input type="text" class="canvas-url-input" id="canvasUrlInput" placeholder="https://canvas.instructure.com">
           <div class="canvas-url-buttons">
             <button class="secondary small" id="saveCanvasUrl">Save</button>
@@ -1062,8 +1131,9 @@
           <div class="status-message" id="canvasUrlStatus"></div>
         </div>
 
-        <div class="canvas-url" style="margin-top: 16px;">
-          <label class="canvas-url-label">Claude API Key (Optional)</label>
+        <!-- API Key Card -->
+        <div class="settings-card">
+          <div class="settings-card-title">Claude API Key (Optional)</div>
           <div style="position: relative; margin-bottom: 8px;">
             <input type="password" class="canvas-url-input" id="claudeApiKey" placeholder="sk-ant-api03-..." style="padding-right: 40px; margin-bottom: 0;">
             <button type="button" id="toggleApiKeyBtn" style="position: absolute; right: 10px; top: 8px; background: none; border: none; cursor: pointer; padding: 6px; color: #6B7280; display: flex; align-items: center; justify-content: center; width: 24px; height: 24px; border-radius: 4px;" title="Show/Hide API Key">
@@ -1076,19 +1146,20 @@
           </p>
         </div>
 
-        <div class="canvas-url" style="margin-top: 16px;">
-          <label class="canvas-url-label">Assignment Time Range</label>
-          <p style="font-size: 12px; color: #6B7280; margin: 6px 0 12px 0;">
+        <!-- Time Range Card -->
+        <div class="settings-card">
+          <div class="settings-card-title">Assignment Time Range</div>
+          <p style="font-size: 12px; color: #6B7280; margin: 0 0 12px 0;">
             Limit which assignments are shown based on their due dates
           </p>
           <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
             <div>
               <label style="font-size: 12px; color: #374151; display: block; margin-bottom: 6px;">Weeks Before</label>
-              <input type="number" id="assignmentWeeksBefore" min="1" max="52" value="2" style="width: 100%; padding: 8px 12px; border: 1px solid #D1D5DB; border-radius: 6px; font-size: 13px;">
+              <input type="number" id="assignmentWeeksBefore" min="1" max="52" value="1" style="width: 100%; padding: 8px 12px; border: 1px solid #D1D5DB; border-radius: 6px; font-size: 13px;">
             </div>
             <div>
               <label style="font-size: 12px; color: #374151; display: block; margin-bottom: 6px;">Weeks After</label>
-              <input type="number" id="assignmentWeeksAfter" min="1" max="52" value="2" style="width: 100%; padding: 8px 12px; border: 1px solid #D1D5DB; border-radius: 6px; font-size: 13px;">
+              <input type="number" id="assignmentWeeksAfter" min="1" max="52" value="1" style="width: 100%; padding: 8px 12px; border: 1px solid #D1D5DB; border-radius: 6px; font-size: 13px;">
             </div>
           </div>
           <button id="saveTimeRange" style="width: 100%; margin-top: 12px; padding: 8px 16px; background: #00539B; color: white; border: none; border-radius: 6px; font-size: 13px; cursor: pointer; font-weight: 500;">
@@ -1097,21 +1168,15 @@
           <div class="status-message" id="timeRangeStatus"></div>
         </div>
 
-        <div class="canvas-url" style="margin-top: 16px;">
-          <label class="canvas-url-label">Auto-Refresh</label>
-          <div style="display: flex; align-items: center; gap: 8px; padding: 8px 0;">
+        <!-- Auto-Refresh Card -->
+        <div class="settings-card">
+          <div class="settings-card-title">Auto-Refresh</div>
+          <div style="display: flex; align-items: center; gap: 8px;">
             <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; flex: 1;">
               <input type="checkbox" id="autoRefreshToggle" style="cursor: pointer;">
               <span style="font-size: 13px; color: #374151;">Automatically refresh data every 5 minutes</span>
             </label>
           </div>
-        </div>
-
-        <div style="background: #F9FAFB; padding: 16px; border-radius: 8px; border-left: 4px solid #00539B; margin-top: 16px;">
-          <h4 style="margin: 0 0 8px 0; color: #00539B; font-size: 14px;">💡 Recommended: Use Claude Desktop</h4>
-          <p style="margin: 0; font-size: 12px; color: #6B7280; line-height: 1.6;">
-            This extension works best with Claude Desktop via MCP (Model Context Protocol). Claude has full access to your Canvas data and can provide personalized study advice through interactive conversations. No API key needed for MCP!
-          </p>
         </div>
       </div>
     </div>

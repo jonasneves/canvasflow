@@ -1277,7 +1277,7 @@ function formatStructuredInsights(insights) {
       </div>
       <div style="background: white; border-radius: 8px; padding: 14px; border: 1px solid #E5E7EB;">
         <div style="font-size: 11px; color: #6B7280; text-transform: uppercase; font-weight: 600; margin-bottom: 4px; letter-spacing: 0.5px;">Intensity</div>
-        <div style="font-size: 18px; font-weight: 700; color: ${intensityColors[insights.workload_assessment.intensity_level]}; text-transform: capitalize;">${insights.workload_assessment.intensity_level}</div>
+        <div style="font-size: 26px; font-weight: 700; color: ${intensityColors[insights.workload_assessment.intensity_level]}; text-transform: capitalize;">${insights.workload_assessment.intensity_level}</div>
       </div>
       <div style="background: white; border-radius: 8px; padding: 14px; border: 1px solid #E5E7EB;">
         <div style="font-size: 11px; color: #6B7280; text-transform: uppercase; font-weight: 600; margin-bottom: 4px; letter-spacing: 0.5px;">Critical Tasks</div>

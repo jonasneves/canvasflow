@@ -108,21 +108,37 @@
       color: #6B7280;
       background: transparent;
       border: none;
-      border-bottom: 2px solid transparent;
+      border-bottom: 3px solid transparent;
       cursor: pointer;
-      transition: all 0.15s ease;
+      transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
       font-family: inherit;
+      position: relative;
     }
 
     .tab-button:hover {
       color: #374151;
-      background: #F3F4F6;
+      background: linear-gradient(to bottom, transparent, rgba(220, 38, 38, 0.05));
     }
 
     .tab-button.active {
-      color: #00539B;
+      color: #1a202c;
       background: #fff;
-      border-bottom-color: #00539B;
+      font-weight: 600;
+      border-bottom: 3px solid transparent;
+      background-image: linear-gradient(to bottom, white, white), linear-gradient(to right, #dc2626, #339898);
+      background-origin: padding-box, border-box;
+      background-clip: padding-box, border-box;
+    }
+
+    .tab-button.active::after {
+      content: '';
+      position: absolute;
+      bottom: -3px;
+      left: 0;
+      right: 0;
+      height: 3px;
+      background: linear-gradient(to right, #dc2626, #339898);
+      border-radius: 3px 3px 0 0;
     }
 
     /* Tab Content */

@@ -375,17 +375,17 @@ async function loadAssignments() {
 
       // Filter to assignments within time range
       const assignmentsWithDates = allAssignments.filter(a => {
-        if (!a.dueDate || a.submitted) return false;
+        if (!a.dueDate || a.submission?.submitted) return false;
         const dueDate = new Date(a.dueDate);
         return dueDate >= timeRangeStart && dueDate <= timeRangeEnd;
       });
 
-      const overdueCount = assignmentsWithDates.filter(a => new Date(a.dueDate) < now).length;
+      const overdueCount = assignmentsWithDates.filter(a => new Date(a.dueDate) < now && !a.submission?.submitted).length;
       const dueTodayCount = assignmentsWithDates.filter(a => {
         const dueDate = new Date(a.dueDate);
-        return dueDate >= todayStart && dueDate < todayEnd;
+        return dueDate >= todayStart && dueDate < todayEnd && !a.submission?.submitted;
       }).length;
-      const upcomingCount = assignmentsWithDates.filter(a => new Date(a.dueDate) >= todayEnd).length;
+      const upcomingCount = assignmentsWithDates.filter(a => new Date(a.dueDate) >= todayEnd && !a.submission?.submitted).length;
 
       // Update summary cards
       document.getElementById('overdueCount').textContent = overdueCount;

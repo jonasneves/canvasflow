@@ -1149,17 +1149,18 @@ function getLucideIconPaths(iconName) {
     'activity': '<polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>',
     'target': '<circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/>',
     'lightbulb': '<path d="M15 14c.2-1 .7-1.7 1.5-2.5 1-.9 1.5-2.2 1.5-3.5A6 6 0 0 0 6 8c0 1 .2 2.2 1.5 3.5.7.7 1.3 1.5 1.5 2.5"/><path d="M9 18h6"/><path d="M10 22h4"/>',
-    'chevron-right': '<polyline points="9 18 15 12 9 6"/>'
+    'chevron-right': '<polyline points="9 18 15 12 9 6"/>',
+    'layers': '<polygon points="12 2 2 7 12 12 22 7 12 2"/><polyline points="2 17 12 22 22 17"/><polyline points="2 12 12 17 22 12"/>'
   };
   return icons[iconName] || '';
 }
 
 function formatStructuredInsights(insights) {
   const urgencyColors = {
-    critical: '#DC2626',
-    high: '#EA580C',
-    medium: '#FBBF24',
-    low: '#059669'
+    critical: '#C84E00',
+    high: '#E89923',
+    medium: '#E89923',
+    low: '#339898'
   };
 
   const urgencyLabels = {
@@ -1177,73 +1178,90 @@ function formatStructuredInsights(insights) {
   };
 
   const recommendationsHtml = insights.workload_assessment.recommendations.map(rec => {
-    return `<div style="margin: 6px 0; font-size: 13px; display: flex; gap: 8px; align-items: start;">
-      ${createLucideIcon('chevron-right', 14, '#6B7280')}
-      <span>${escapeHtml(rec)}</span>
-    </div>`;
+    return `
+      <div style="margin: 8px 0; font-size: 14px; display: flex; align-items: start; gap: 8px;">
+        ${createLucideIcon('chevron-right', 14, 'rgba(255,255,255,0.8)')}
+        <span>${escapeHtml(rec)}</span>
+      </div>
+    `;
   }).join('');
 
-  const priorityTasksHtml = insights.priority_tasks.slice(0, 5).map(task => {
+  const priorityTasksHtml = insights.priority_tasks.map(task => {
     return `
-      <div style="padding: 12px; background: white; border: 1px solid #E5E7EB; border-left: 3px solid ${urgencyColors[task.urgency]}; border-radius: 6px; margin-bottom: 8px;">
-        <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 6px;">
-          <strong style="color: #111827; font-size: 13px; flex: 1;">${escapeHtml(task.task)}</strong>
-          <div style="display: flex; gap: 6px; margin-left: 8px; flex-shrink: 0;">
-            <span style="background: ${urgencyColors[task.urgency]}15; color: ${urgencyColors[task.urgency]}; padding: 2px 8px; border-radius: 10px; font-size: 11px; font-weight: 600; white-space: nowrap; display: flex; align-items: center; gap: 4px;">
-              <span style="width: 8px; height: 8px; border-radius: 50%; background: ${urgencyColors[task.urgency]}; flex-shrink: 0;"></span>
+      <div style="padding: 16px; background: white; border: 1px solid #E5E7EB; border-left: 4px solid ${urgencyColors[task.urgency]}; border-radius: 8px; box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);">
+        <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 8px;">
+          <strong style="color: #111827; font-size: 14px; flex: 1;">${escapeHtml(task.task)}</strong>
+          <div style="display: flex; align-items: center; gap: 8px; margin-left: 12px; flex-shrink: 0;">
+            <span style="background: ${urgencyColors[task.urgency]}15; color: ${urgencyColors[task.urgency]}; padding: 4px 10px; border-radius: 12px; font-size: 12px; font-weight: 600; white-space: nowrap; display: flex; align-items: center; gap: 6px;">
+              <span style="width: 10px; height: 10px; border-radius: 50%; background: ${urgencyColors[task.urgency]}; flex-shrink: 0;"></span>
               ${urgencyLabels[task.urgency]}
             </span>
-            <span style="background: #F3F4F6; color: #374151; padding: 2px 6px; border-radius: 4px; font-size: 11px; font-weight: 600;">${task.estimated_hours}h</span>
+            <span style="background: #F3F4F6; color: #374151; padding: 4px 8px; border-radius: 6px; font-size: 12px; font-weight: 600;">${task.estimated_hours}h</span>
           </div>
         </div>
-        <p style="margin: 0; color: #6B7280; font-size: 12px; line-height: 1.4;">${escapeHtml(task.reason)}</p>
+        <p style="margin: 0; color: #6B7280; font-size: 13px; line-height: 1.5;">${escapeHtml(task.reason)}</p>
       </div>
     `;
   }).join('');
 
   const studyTipsHtml = insights.study_tips.map(tip => {
-    return `<div style="margin: 6px 0; font-size: 13px; display: flex; gap: 8px; align-items: start;">
-      <span style="margin-top: 2px;">•</span>
-      <span>${escapeHtml(tip)}</span>
-    </div>`;
+    return `
+      <div style="margin: 10px 0; font-size: 14px; color: #374151; display: flex; align-items: start; gap: 10px;">
+        <span style="margin-top: 2px;">•</span>
+        <span style="flex: 1;">${escapeHtml(tip)}</span>
+      </div>
+    `;
   }).join('');
 
   return `
-    <div style="margin-bottom: 20px; padding: 16px; background: linear-gradient(135deg, ${intensityColors[insights.workload_assessment.intensity_level]}15, ${intensityColors[insights.workload_assessment.intensity_level]}05); border: 1px solid ${intensityColors[insights.workload_assessment.intensity_level]}30; border-radius: 8px;">
-      <h3 style="margin: 0 0 8px 0; color: #00539B; font-size: 15px; display: flex; align-items: center; gap: 8px; font-weight: 700;">
-        ${createLucideIcon('activity', 18, '#00539B')}
-        Workload Assessment
-      </h3>
-      <p style="margin: 0 0 12px 0; color: #374151; font-size: 13px;">${escapeHtml(insights.workload_assessment.overall)}</p>
-      <div style="display: flex; gap: 12px; margin-bottom: 12px;">
-        <div style="flex: 1; padding: 8px; background: white; border-radius: 6px; text-align: center;">
-          <div style="font-size: 20px; font-weight: 700; color: ${intensityColors[insights.workload_assessment.intensity_level]};">${insights.workload_assessment.total_hours_needed}h</div>
-          <div style="font-size: 11px; color: #6B7280; text-transform: uppercase; letter-spacing: 0.5px;">Total Hours</div>
-        </div>
-        <div style="flex: 1; padding: 8px; background: white; border-radius: 6px; text-align: center;">
-          <div style="font-size: 14px; font-weight: 600; color: ${intensityColors[insights.workload_assessment.intensity_level]}; text-transform: capitalize;">${insights.workload_assessment.intensity_level}</div>
-          <div style="font-size: 11px; color: #6B7280; text-transform: uppercase; letter-spacing: 0.5px;">Intensity</div>
-        </div>
+    <h3 style="margin-bottom: 16px; display: flex; align-items: center; gap: 8px;">
+      ${createLucideIcon('layers', 24, '#00539B')}
+      Weekly Battle Plan
+    </h3>
+
+    <!-- Workload Stats -->
+    <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 20px;">
+      <div style="background: white; border-radius: 8px; padding: 14px; border: 1px solid #E5E7EB;">
+        <div style="font-size: 11px; color: #6B7280; text-transform: uppercase; font-weight: 600; margin-bottom: 4px; letter-spacing: 0.5px;">Total Hours</div>
+        <div style="font-size: 26px; font-weight: 700; color: #00539B;">${insights.workload_assessment.total_hours_needed}h</div>
       </div>
-      <div style="background: white; padding: 12px; border-radius: 6px;">
-        <strong style="font-size: 13px; color: #111827;">Key Recommendations:</strong>
+      <div style="background: white; border-radius: 8px; padding: 14px; border: 1px solid #E5E7EB;">
+        <div style="font-size: 11px; color: #6B7280; text-transform: uppercase; font-weight: 600; margin-bottom: 4px; letter-spacing: 0.5px;">Intensity</div>
+        <div style="font-size: 18px; font-weight: 700; color: ${intensityColors[insights.workload_assessment.intensity_level]}; text-transform: capitalize;">${insights.workload_assessment.intensity_level}</div>
+      </div>
+      <div style="background: white; border-radius: 8px; padding: 14px; border: 1px solid #E5E7EB;">
+        <div style="font-size: 11px; color: #6B7280; text-transform: uppercase; font-weight: 600; margin-bottom: 4px; letter-spacing: 0.5px;">Critical Tasks</div>
+        <div style="font-size: 26px; font-weight: 700; color: #C84E00;">${insights.priority_tasks.filter(t => t.urgency === 'critical').length}</div>
+      </div>
+    </div>
+
+    <!-- Workload Assessment -->
+    <div style="background: linear-gradient(135deg, #00539B 0%, #005587 100%); padding: 20px; border-radius: 12px; color: white; margin-bottom: 20px; box-shadow: 0 4px 12px rgba(0, 83, 155, 0.2);">
+      <h4 style="margin: 0 0 8px 0; font-size: 16px; display: flex; align-items: center; gap: 8px;">
+        ${createLucideIcon('activity', 20, 'currentColor')}
+        Workload Overview
+      </h4>
+      <p style="margin: 0 0 12px 0; font-size: 15px; line-height: 1.6; opacity: 0.95;">${escapeHtml(insights.workload_assessment.overall)}</p>
+      <div style="background: rgba(255, 255, 255, 0.15); padding: 12px; border-radius: 8px; backdrop-filter: blur(10px);">
         ${recommendationsHtml}
       </div>
     </div>
 
-    <div style="margin-bottom: 20px;">
-      <h3 style="margin: 0 0 12px 0; color: #C84E00; font-size: 15px; display: flex; align-items: center; gap: 8px; font-weight: 700;">
-        ${createLucideIcon('target', 18, '#C84E00')}
-        Priority Tasks
-      </h3>
+    <!-- Priority Tasks -->
+    <h4 style="margin: 24px 0 12px 0; color: #C84E00; font-size: 16px; display: flex; align-items: center; gap: 8px; font-weight: 700;">
+      ${createLucideIcon('target', 18, '#C84E00')}
+      Priority Tasks
+    </h4>
+    <div style="display: flex; flex-direction: column; gap: 12px; margin-bottom: 24px;">
       ${priorityTasksHtml}
     </div>
 
-    <div style="padding: 16px; background: #F9FAFB; border: 1px solid #E5E7EB; border-radius: 8px;">
-      <h3 style="margin: 0 0 12px 0; color: #339898; font-size: 15px; display: flex; align-items: center; gap: 8px; font-weight: 700;">
-        ${createLucideIcon('lightbulb', 18, '#339898')}
-        Study Tips
-      </h3>
+    <!-- Study Tips -->
+    <h4 style="margin: 24px 0 12px 0; color: #339898; font-size: 16px; display: flex; align-items: center; gap: 8px; font-weight: 700;">
+      ${createLucideIcon('lightbulb', 18, '#339898')}
+      Strategic Study Tips
+    </h4>
+    <div style="background: #F9FAFB; padding: 16px; border-radius: 8px; border: 1px solid #E5E7EB;">
       ${studyTipsHtml}
     </div>
   `;

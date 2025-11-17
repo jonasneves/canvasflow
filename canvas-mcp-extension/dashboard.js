@@ -39,7 +39,7 @@ async function updateInsightsButtonText() {
   const btnText = document.getElementById('generateInsightsBtnText');
 
   if (result.claudeApiKey) {
-    btnText.textContent = 'Generate AI Insights';
+    btnText.textContent = 'Generate Schedule';
   } else {
     btnText.textContent = 'Show Question Suggestions';
   }
@@ -248,30 +248,30 @@ async function generateAIInsights() {
     const assignmentsData = prepareAssignmentsForAI();
     const mcpGuidance = `
       <div class="insights-loaded">
-        <h3>Ask Claude for AI-Powered Insights</h3>
+        <h3>Ask Claude to Create Your Weekly Schedule</h3>
         <p style="margin-bottom: 16px; color: #6B7280;">Claude Desktop already has access to all your Canvas data via MCP. Open Claude and try asking:</p>
 
         <div style="background: #F9FAFB; padding: 16px; border-radius: 8px; border-left: 4px solid #00539B; margin-bottom: 12px;">
-          <strong style="color: #00539B;">💡 Priority Recommendations</strong>
-          <p style="margin: 8px 0 4px 0; font-size: 14px; color: #374151;">"What assignments should I focus on first based on due dates and importance?"</p>
+          <strong style="color: #00539B;">📅 Weekly Schedule</strong>
+          <p style="margin: 8px 0 4px 0; font-size: 14px; color: #374151;">"Create a day-by-day study schedule for this week based on my assignments"</p>
         </div>
 
         <div style="background: #F9FAFB; padding: 16px; border-radius: 8px; border-left: 4px solid #00539B; margin-bottom: 12px;">
-          <strong style="color: #00539B;">📊 Workload Analysis</strong>
-          <p style="margin: 8px 0 4px 0; font-size: 14px; color: #374151;">"Analyze my current workload and help me create a study schedule"</p>
+          <strong style="color: #00539B;">⏰ Time Blocking</strong>
+          <p style="margin: 8px 0 4px 0; font-size: 14px; color: #374151;">"Block out study times for each assignment with realistic hour estimates"</p>
         </div>
 
         <div style="background: #F9FAFB; padding: 16px; border-radius: 8px; border-left: 4px solid #00539B; margin-bottom: 16px;">
-          <strong style="color: #00539B;">🎯 Study Strategy</strong>
-          <p style="margin: 8px 0 4px 0; font-size: 14px; color: #374151;">"What's the best strategy to catch up on my ${assignmentsData.overdue.length} overdue assignments?"</p>
+          <strong style="color: #00539B;">🎯 Daily Focus</strong>
+          <p style="margin: 8px 0 4px 0; font-size: 14px; color: #374151;">"What should I focus on each day this week to stay on top of my ${assignmentsData.upcoming.length} upcoming assignments?"</p>
         </div>
 
         <p style="font-size: 13px; color: #9CA3AF;">
-          <strong>Tip:</strong> Claude can see all ${assignmentsData.totalAssignments} assignments across your ${assignmentsData.courses.length} courses, including submission status, due dates, and points. Ask follow-up questions for personalized advice!
+          <strong>Tip:</strong> Claude can see all ${assignmentsData.totalAssignments} assignments across your ${assignmentsData.courses.length} courses and create a personalized schedule based on due dates and workload.
         </p>
 
         <div style="margin-top: 16px; padding: 12px; background: #FCF7E5; border-radius: 8px; border-left: 4px solid #E89923;">
-          <p style="margin: 0; font-size: 13px; color: #374151;">💡 <strong>Want dashboard insights?</strong> Add your Claude API key in settings to get AI-powered insights right here!</p>
+          <p style="margin: 0; font-size: 13px; color: #374151;">💡 <strong>Want automatic scheduling?</strong> Add your Claude API key in settings to generate schedules instantly!</p>
         </div>
       </div>
     `;
@@ -496,62 +496,14 @@ function getLucideIconPaths(iconName) {
   return icons[iconName] || '';
 }
 
-// Format structured insights for display
+// Format structured insights for display (Dashboard focuses ONLY on weekly schedule)
 function formatStructuredInsights(insights) {
-  const urgencyColors = {
-    critical: '#C84E00',
-    high: '#E89923',
-    medium: '#E89923',
-    low: '#339898'
-  };
-
-  const urgencyLabels = {
-    critical: 'Critical',
-    high: 'High',
-    medium: 'Medium',
-    low: 'Low'
-  };
-
   const workloadColors = {
     extreme: '#EF4444',
     high: '#F97316',
     medium: '#FBBF24',
     low: '#10B981'
   };
-
-  const intensityColors = {
-    extreme: '#DC2626',
-    high: '#EA580C',
-    moderate: '#FBBF24',
-    manageable: '#059669'
-  };
-
-  const recommendationsHtml = insights.workload_assessment.recommendations.map(rec => {
-    return `
-      <div style="margin: 8px 0; font-size: 14px; display: flex; align-items: start; gap: 8px;">
-        ${createLucideIcon('chevron-right', 14, 'rgba(255,255,255,0.8)')}
-        <span>${escapeHtml(rec)}</span>
-      </div>
-    `;
-  }).join('');
-
-  const priorityTasksHtml = insights.priority_tasks.map(task => {
-    return `
-      <div style="padding: 16px; background: white; border: 1px solid #E5E7EB; border-left: 4px solid ${urgencyColors[task.urgency]}; border-radius: 8px; box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);">
-        <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 8px;">
-          <strong style="color: #111827; font-size: 14px; flex: 1;">${escapeHtml(task.task)}</strong>
-          <div style="display: flex; align-items: center; gap: 8px; margin-left: 12px; flex-shrink: 0;">
-            <span style="background: ${urgencyColors[task.urgency]}15; color: ${urgencyColors[task.urgency]}; padding: 4px 10px; border-radius: 12px; font-size: 12px; font-weight: 600; white-space: nowrap; display: flex; align-items: center; gap: 6px;">
-              <span style="width: 10px; height: 10px; border-radius: 50%; background: ${urgencyColors[task.urgency]}; flex-shrink: 0;"></span>
-              ${urgencyLabels[task.urgency]}
-            </span>
-            <span style="background: #F3F4F6; color: #374151; padding: 4px 8px; border-radius: 6px; font-size: 12px; font-weight: 600;">${task.estimated_hours}h</span>
-          </div>
-        </div>
-        <p style="margin: 0; color: #6B7280; font-size: 13px; line-height: 1.5;">${escapeHtml(task.reason)}</p>
-      </div>
-    `;
-  }).join('');
 
   // Generate Weekly Plan HTML
   const weeklyPlanHtml = insights.weekly_plan.map((day, dayIdx) => {
@@ -606,15 +558,6 @@ function formatStructuredInsights(insights) {
     `;
   }).join('');
 
-  const studyTipsHtml = insights.study_tips.map(tip => {
-    return `
-      <div style="margin: 10px 0; font-size: 14px; color: #374151; display: flex; align-items: start; gap: 10px;">
-        <span style="margin-top: 2px;">•</span>
-        <span style="flex: 1;">${escapeHtml(tip)}</span>
-      </div>
-    `;
-  }).join('');
-
   // Setup event listeners after content is rendered
   setTimeout(() => {
     document.querySelectorAll('.day-plan-toggle').forEach(btn => {
@@ -643,65 +586,14 @@ function formatStructuredInsights(insights) {
     });
   }, 0);
 
+  // Dashboard only shows the daily schedule - other insights are in the sidepanel
   return `
     <h3 style="margin-bottom: 16px; display: flex; align-items: center; gap: 8px;">
-      ${createLucideIcon('layers', 24, '#00539B')}
-      Weekly Battle Plan
-    </h3>
-
-    <!-- Workload Stats -->
-    <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 20px;">
-      <div style="background: white; border-radius: 8px; padding: 14px; border: 1px solid #E5E7EB;">
-        <div style="font-size: 11px; color: #6B7280; text-transform: uppercase; font-weight: 600; margin-bottom: 4px; letter-spacing: 0.5px;">Total Hours</div>
-        <div style="font-size: 26px; font-weight: 700; color: #00539B;">${insights.workload_assessment.total_hours_needed}h</div>
-      </div>
-      <div style="background: white; border-radius: 8px; padding: 14px; border: 1px solid #E5E7EB;">
-        <div style="font-size: 11px; color: #6B7280; text-transform: uppercase; font-weight: 600; margin-bottom: 4px; letter-spacing: 0.5px;">Intensity</div>
-        <div style="font-size: 18px; font-weight: 700; color: ${intensityColors[insights.workload_assessment.intensity_level]}; text-transform: capitalize;">${insights.workload_assessment.intensity_level}</div>
-      </div>
-      <div style="background: white; border-radius: 8px; padding: 14px; border: 1px solid #E5E7EB;">
-        <div style="font-size: 11px; color: #6B7280; text-transform: uppercase; font-weight: 600; margin-bottom: 4px; letter-spacing: 0.5px;">Critical Tasks</div>
-        <div style="font-size: 26px; font-weight: 700; color: #C84E00;">${insights.priority_tasks.filter(t => t.urgency === 'critical').length}</div>
-      </div>
-    </div>
-
-    <!-- Workload Assessment -->
-    <div style="background: linear-gradient(135deg, #00539B 0%, #005587 100%); padding: 20px; border-radius: 12px; color: white; margin-bottom: 20px; box-shadow: 0 4px 12px rgba(0, 83, 155, 0.2);">
-      <h4 style="margin: 0 0 8px 0; font-size: 16px; display: flex; align-items: center; gap: 8px;">
-        ${createLucideIcon('activity', 20, 'currentColor')}
-        Workload Overview
-      </h4>
-      <p style="margin: 0 0 12px 0; font-size: 15px; line-height: 1.6; opacity: 0.95;">${escapeHtml(insights.workload_assessment.overall)}</p>
-      <div style="background: rgba(255, 255, 255, 0.15); padding: 12px; border-radius: 8px; backdrop-filter: blur(10px);">
-        ${recommendationsHtml}
-      </div>
-    </div>
-
-    <!-- Priority Tasks -->
-    <h4 style="margin: 24px 0 12px 0; color: #C84E00; font-size: 16px; display: flex; align-items: center; gap: 8px; font-weight: 700;">
-      ${createLucideIcon('target', 18, '#C84E00')}
-      Priority Tasks
-    </h4>
-    <div style="display: flex; flex-direction: column; gap: 12px; margin-bottom: 24px;">
-      ${priorityTasksHtml}
-    </div>
-
-    <!-- Daily Schedule -->
-    <h4 style="margin: 24px 0 12px 0; font-size: 16px; color: #111827; display: flex; align-items: center; gap: 8px;">
-      ${createLucideIcon('calendar', 18, '#111827')}
+      ${createLucideIcon('calendar', 24, '#00539B')}
       This Week's Schedule
-    </h4>
+    </h3>
     <div style="margin-bottom: 24px;">
       ${weeklyPlanHtml}
-    </div>
-
-    <!-- Study Tips -->
-    <h4 style="margin: 24px 0 12px 0; color: #339898; font-size: 16px; display: flex; align-items: center; gap: 8px; font-weight: 700;">
-      ${createLucideIcon('lightbulb', 18, '#339898')}
-      Strategic Study Tips
-    </h4>
-    <div style="background: #F9FAFB; padding: 16px; border-radius: 8px; border: 1px solid #E5E7EB;">
-      ${studyTipsHtml}
     </div>
   `;
 }

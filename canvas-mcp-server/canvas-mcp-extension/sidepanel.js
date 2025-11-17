@@ -133,25 +133,38 @@ function renderAssignments() {
   }
 
   // Filter assignments based on currentFilter
-  let filteredAssignments = allAssignments.filter(a => a.dueDate);
+  let filteredAssignments;
 
-  if (currentFilter === 'overdue') {
-    filteredAssignments = filteredAssignments.filter(a => {
-      return new Date(a.dueDate) < now && !a.submitted;
-    });
-  } else if (currentFilter === 'due-today') {
-    filteredAssignments = filteredAssignments.filter(a => {
-      const dueDate = new Date(a.dueDate);
-      return dueDate >= todayStart && dueDate < todayEnd && !a.submitted;
-    });
-  } else if (currentFilter === 'upcoming') {
-    filteredAssignments = filteredAssignments.filter(a => {
-      return new Date(a.dueDate) >= todayEnd && !a.submitted;
-    });
+  if (currentFilter === 'all') {
+    // Show all assignments, including those without due dates
+    filteredAssignments = allAssignments;
+  } else {
+    // For other filters, only show assignments with due dates
+    filteredAssignments = allAssignments.filter(a => a.dueDate);
+
+    if (currentFilter === 'overdue') {
+      filteredAssignments = filteredAssignments.filter(a => {
+        return new Date(a.dueDate) < now && !a.submitted;
+      });
+    } else if (currentFilter === 'due-today') {
+      filteredAssignments = filteredAssignments.filter(a => {
+        const dueDate = new Date(a.dueDate);
+        return dueDate >= todayStart && dueDate < todayEnd && !a.submitted;
+      });
+    } else if (currentFilter === 'upcoming') {
+      filteredAssignments = filteredAssignments.filter(a => {
+        return new Date(a.dueDate) >= todayEnd && !a.submitted;
+      });
+    }
   }
 
-  // Sort by due date (closest first)
-  filteredAssignments.sort((a, b) => new Date(a.dueDate) - new Date(b.dueDate));
+  // Sort by due date (closest first, assignments without due dates at the end)
+  filteredAssignments.sort((a, b) => {
+    if (!a.dueDate && !b.dueDate) return 0;
+    if (!a.dueDate) return 1; // No due date goes to end
+    if (!b.dueDate) return -1; // No due date goes to end
+    return new Date(a.dueDate) - new Date(b.dueDate);
+  });
 
   // Limit to 20 assignments
   filteredAssignments = filteredAssignments.slice(0, 20);
@@ -176,22 +189,31 @@ function renderAssignments() {
 
   // Render assignments
   assignmentsList.innerHTML = filteredAssignments.map(assignment => {
-    const dueDate = new Date(assignment.dueDate);
-    const isOverdue = dueDate < now;
-    const isDueToday = !isOverdue && dueDate >= todayStart && dueDate < todayEnd;
-    const isUpcoming = dueDate >= todayEnd;
     const isCompleted = assignment.submitted;
+    const hasDueDate = !!assignment.dueDate;
+
+    let isOverdue = false;
+    let isDueToday = false;
+    let isUpcoming = false;
+    let dueDateText = 'No due date';
+
+    if (hasDueDate) {
+      const dueDate = new Date(assignment.dueDate);
+      isOverdue = dueDate < now;
+      isDueToday = !isOverdue && dueDate >= todayStart && dueDate < todayEnd;
+      isUpcoming = dueDate >= todayEnd;
+
+      dueDateText = dueDate.toLocaleDateString('en-US', {
+        month: 'short',
+        day: 'numeric',
+        hour: 'numeric',
+        minute: '2-digit'
+      });
+    }
 
     let cardClass = 'assignment-card';
     if (isCompleted) cardClass += ' completed';
     else if (isOverdue) cardClass += ' overdue';
-
-    let dueDateText = dueDate.toLocaleDateString('en-US', {
-      month: 'short',
-      day: 'numeric',
-      hour: 'numeric',
-      minute: '2-digit'
-    });
 
     // Color-code due date based on category
     let dueDateClass = 'assignment-due-date';
@@ -250,6 +272,7 @@ async function loadAssignments() {
       document.getElementById('overdueCount').textContent = overdueCount;
       document.getElementById('dueTodayCount').textContent = dueTodayCount;
       document.getElementById('upcomingCount').textContent = upcomingCount;
+      document.getElementById('allCount').textContent = allAssignments.length;
 
       // Set initial active state on due-today card
       document.querySelectorAll('.summary-card').forEach(card => {

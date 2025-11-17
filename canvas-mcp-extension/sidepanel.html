@@ -1045,7 +1045,7 @@
       <p style="margin: 0 0 14px 0; font-size: 13px; color: #6B7280; line-height: 1.6;">
         Connect this extension to Claude Desktop to have natural conversations with your Canvas data.
       </p>
-      <div style="background: #F9FAFB; padding: 14px; border-radius: 8px; border: 1px solid #E5E7EB;">
+      <div style="background: #F9FAFB; padding: 14px; border-radius: 8px; border: 1px solid #E5E7EB; margin-bottom: 14px;">
         <div style="font-size: 11px; font-weight: 600; color: #6B7280; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 10px;">Example Questions</div>
         <div style="display: flex; flex-direction: column; gap: 8px;">
           <div style="display: flex; align-items: start; gap: 8px; font-size: 12px; color: #374151;">
@@ -1064,6 +1064,23 @@
             <i data-lucide="layers" style="width: 14px; height: 14px; color: #00539B; flex-shrink: 0; margin-top: 2px;"></i>
             <span>"Create a study schedule for me"</span>
           </div>
+        </div>
+      </div>
+
+      <!-- Claude Desktop Setup Instructions -->
+      <div style="background: #F9FAFB; border-radius: 8px; border: 1px solid #E5E7EB; overflow: hidden;">
+        <div class="setup-header" id="setupToggle" style="padding: 12px 14px; background: #F9FAFB;">
+          <span style="font-size: 11px; font-weight: 600; color: #6B7280; text-transform: uppercase; letter-spacing: 0.5px;">Claude Desktop Setup Instructions</span>
+          <span class="chevron">▶</span>
+        </div>
+        <div class="setup-content" id="setupContent" style="padding: 14px; background: white;">
+          <ol style="margin: 0; padding-left: 20px;">
+            <li style="margin-bottom: 6px;">Open Claude Desktop → Settings → Extensions</li>
+            <li style="margin-bottom: 6px;">Click "Install Unpacked Extension"</li>
+            <li style="margin-bottom: 6px;">Select folder: <code>canvas-mcp-native</code></li>
+            <li style="margin-bottom: 6px;">Click the refresh button below to sync Canvas data</li>
+            <li style="margin-bottom: 0;">Ask Claude: "What are my Canvas courses?"</li>
+          </ol>
         </div>
       </div>
     </div>
@@ -1090,22 +1107,6 @@
           <i data-lucide="refresh-cw" style="width: 16px; height: 16px;"></i>
           <span>Refresh Canvas Data</span>
         </button>
-      </div>
-    </div>
-
-    <div class="setup-card">
-      <div class="setup-header" id="setupToggle">
-        <span>Setup Instructions</span>
-        <span class="chevron">▶</span>
-      </div>
-      <div class="setup-content" id="setupContent">
-        <ol>
-          <li>Open Claude Desktop → Settings → Extensions</li>
-          <li>Click "Install Unpacked Extension"</li>
-          <li>Select folder: <code>canvas-mcp-native</code></li>
-          <li>Click the refresh button above to sync Canvas data</li>
-          <li>Ask Claude: "What are my Canvas courses?"</li>
-        </ol>
       </div>
     </div>
   </div>

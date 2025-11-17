@@ -330,8 +330,14 @@ const settingsModal = document.getElementById('settingsModal');
 const settingsBtn = document.getElementById('settingsBtn');
 const closeSettingsModal = document.getElementById('closeSettingsModal');
 
-settingsBtn.addEventListener('click', () => {
+settingsBtn.addEventListener('click', async () => {
   settingsModal.classList.add('show');
+
+  // Load current API key
+  const result = await chrome.storage.local.get(['claudeApiKey']);
+  if (result.claudeApiKey) {
+    document.getElementById('claudeApiKey').value = result.claudeApiKey;
+  }
 });
 
 closeSettingsModal.addEventListener('click', () => {
@@ -574,6 +580,34 @@ async function saveAutoRefreshSetting(enabled) {
 // Auto-refresh toggle event listener
 document.getElementById('autoRefreshToggle').addEventListener('change', (e) => {
   saveAutoRefreshSetting(e.target.checked);
+});
+
+// API Key toggle visibility
+document.getElementById('toggleApiKeyBtn').addEventListener('click', () => {
+  const input = document.getElementById('claudeApiKey');
+  const eyeIcon = document.getElementById('eyeIcon');
+  const eyeOffIcon = document.getElementById('eyeOffIcon');
+
+  if (input.type === 'password') {
+    input.type = 'text';
+    eyeIcon.style.display = 'none';
+    eyeOffIcon.style.display = 'block';
+  } else {
+    input.type = 'password';
+    eyeIcon.style.display = 'block';
+    eyeOffIcon.style.display = 'none';
+  }
+});
+
+// Save API key
+document.getElementById('claudeApiKey').addEventListener('change', async (e) => {
+  const apiKey = e.target.value.trim();
+  try {
+    await chrome.storage.local.set({ claudeApiKey: apiKey });
+    console.log('API key saved');
+  } catch (error) {
+    console.error('Error saving API key:', error);
+  }
 });
 
 // Initial load

@@ -158,63 +158,13 @@
       </div>
       <div class="modal-body">
         <div class="settings-group">
-          <label class="settings-label" for="canvasUrlDisplay">Canvas Instance</label>
-          <input
-            type="text"
-            class="settings-input"
-            id="canvasUrlDisplay"
-            readonly
-            placeholder="Not configured"
-          />
-          <p class="settings-help">
-            Configure your Canvas URL in the extension popup
+          <p class="settings-info" style="text-align: center; padding: 20px; color: #6B7280;">
+            Settings are now managed in the extension side panel.<br>
+            Click the CanvasFlow extension icon and then the settings gear icon.
           </p>
         </div>
 
-        <div class="settings-group">
-          <label class="settings-label" for="claudeApiKey">Claude API Key (Optional)</label>
-          <div style="position: relative;">
-            <input
-              type="password"
-              class="settings-input"
-              id="claudeApiKey"
-              placeholder="sk-ant-api03-..."
-              style="padding-right: 40px;"
-            />
-            <button
-              type="button"
-              id="toggleApiKeyBtn"
-              style="position: absolute; right: 8px; top: 50%; transform: translateY(-50%); background: none; border: none; cursor: pointer; padding: 4px; color: #6B7280; display: flex; align-items: center; justify-content: center;"
-              title="Show/Hide API Key"
-            >
-              <svg id="eyeIcon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
-                <circle cx="12" cy="12" r="3"></circle>
-              </svg>
-              <svg id="eyeOffIcon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display: none;">
-                <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path>
-                <line x1="1" y1="1" x2="23" y2="23"></line>
-              </svg>
-            </button>
-          </div>
-          <p class="settings-help">
-            Optional: For direct API access. Get your key from <a href="https://console.anthropic.com/" target="_blank">console.anthropic.com</a>
-          </p>
-        </div>
-
-        <div class="settings-group">
-          <label class="settings-checkbox">
-            <input type="checkbox" id="autoRefresh" />
-            <span>Auto-refresh data every 5 minutes</span>
-          </label>
-        </div>
-
-        <div class="settings-group" style="background: #F9FAFB; padding: 16px; border-radius: 8px; border-left: 4px solid #00539B;">
-          <h4 style="margin: 0 0 8px 0; color: #00539B; font-size: 14px;">💡 Recommended: Use Claude Desktop</h4>
-          <p style="margin: 0; font-size: 13px; color: #6B7280; line-height: 1.6;">
-            This dashboard works best with Claude Desktop via MCP (Model Context Protocol). Claude has full access to your Canvas data and can provide personalized study advice through interactive conversations. No API key needed for MCP!
-          </p>
-        </div>
+        <!-- Reserved for future dashboard-specific settings -->
       </div>
       <div class="modal-footer">
         <button class="btn-secondary" id="cancelSettingsBtn">Cancel</button>

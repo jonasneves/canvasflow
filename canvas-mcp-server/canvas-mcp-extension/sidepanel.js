@@ -1,6 +1,6 @@
 // Global state
 let allAssignments = [];
-let currentFilter = 'all';
+let currentFilter = 'due-today';
 let autoRefreshInterval = null;
 
 // Tab switching
@@ -71,8 +71,46 @@ async function updateStatus() {
   });
 }
 
+// Update section header based on current filter
+function updateSectionHeader() {
+  const iconEl = document.getElementById('assignmentsSectionIcon');
+  const textEl = document.getElementById('assignmentsSectionText');
+
+  const filterConfig = {
+    'all': {
+      text: 'All Assignments',
+      icon: `<path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path>`,
+      color: '#6B7280'
+    },
+    'overdue': {
+      text: 'Overdue',
+      icon: `<circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line>`,
+      color: '#DC2626'
+    },
+    'due-today': {
+      text: 'Due Today',
+      icon: `<circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline>`,
+      color: '#D97706'
+    },
+    'upcoming': {
+      text: 'Upcoming',
+      icon: `<rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line>`,
+      color: '#00539B'
+    }
+  };
+
+  const config = filterConfig[currentFilter] || filterConfig['all'];
+
+  if (iconEl && textEl) {
+    iconEl.innerHTML = config.icon;
+    iconEl.style.color = config.color;
+    textEl.textContent = config.text;
+  }
+}
+
 // Render assignments based on current filter
 function renderAssignments() {
+  updateSectionHeader();
   const assignmentsList = document.getElementById('assignmentsList');
   const now = new Date();
   const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate());
@@ -209,6 +247,15 @@ async function loadAssignments() {
       document.getElementById('overdueCount').textContent = overdueCount;
       document.getElementById('dueTodayCount').textContent = dueTodayCount;
       document.getElementById('upcomingCount').textContent = upcomingCount;
+
+      // Set initial active state on due-today card
+      document.querySelectorAll('.summary-card').forEach(card => {
+        if (card.getAttribute('data-filter') === currentFilter) {
+          card.classList.add('active');
+        } else {
+          card.classList.remove('active');
+        }
+      });
 
       // Render assignments with current filter
       renderAssignments();

@@ -3,8 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CanvasFlow - Connect Claude Desktop to Canvas LMS</title>
-    <meta name="description" content="Access your Canvas LMS courses, assignments, and grades directly from Claude Desktop through the CanvasFlow Chrome extension and MCP server.">
+    <title>CanvasFlow - AI-Powered Canvas LMS Assistant</title>
+    <meta name="description" content="Chrome extension that enhances your Canvas LMS experience with AI-powered insights, weekly schedule generation, and intelligent assignment management.">
     <style>
         * {
             margin: 0;
@@ -206,24 +206,33 @@
 <body>
     <div class="header">
         <h1>CanvasFlow</h1>
-        <p>Connect Claude Desktop to your Canvas LMS data through a Chrome extension and MCP server</p>
+        <p>Enhance your Canvas LMS experience with AI-powered insights and intelligent schedule planning</p>
     </div>
 
     <div class="container">
         <div class="section">
             <h2>What is CanvasFlow?</h2>
-            <p>CanvasFlow enables you to access your Canvas LMS courses, assignments, and grades directly from Claude Desktop through natural conversation. Simply install the Chrome extension and MCP server, then ask Claude about your coursework.</p>
+            <p>CanvasFlow is a Chrome extension that transforms how you manage your Canvas LMS coursework. View assignments instantly, get AI-powered insights with Claude Extended Thinking, and generate optimized weekly study schedules—all without needing a Canvas API key.</p>
 
             <div class="features">
                 <div class="feature">
                     <h3>
                         <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
-                            <polyline points="9 22 9 12 15 12 15 22"></polyline>
+                            <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"></path>
                         </svg>
-                        List Courses
+                        Direct Canvas Integration
                     </h3>
-                    <p>View all your active Canvas courses with enrollment details and course information.</p>
+                    <p>View assignments instantly—no Canvas API key or authentication required. Just open the extension on any Canvas page.</p>
+                </div>
+
+                <div class="feature">
+                    <h3>
+                        <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"></path>
+                        </svg>
+                        AI-Powered Insights
+                    </h3>
+                    <p>Claude AI with Extended Thinking analyzes your workload and provides strategic recommendations for tackling assignments.</p>
                 </div>
 
                 <div class="feature">
@@ -234,19 +243,9 @@
                             <line x1="8" y1="2" x2="8" y2="6"></line>
                             <line x1="3" y1="10" x2="21" y2="10"></line>
                         </svg>
-                        Track Assignments
+                        Weekly Schedule Generation
                     </h3>
-                    <p>Check upcoming assignments with due dates, submission status, and grading information.</p>
-                </div>
-
-                <div class="feature">
-                    <h3>
-                        <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline>
-                        </svg>
-                        View Grades
-                    </h3>
-                    <p>Access your grades and submission history for completed assignments.</p>
+                    <p>AI-generated 7-day study plans with time-blocked schedules optimized for your deadlines and workload.</p>
                 </div>
 
                 <div class="feature">
@@ -256,9 +255,29 @@
                             <polyline points="7 10 12 15 17 10"></polyline>
                             <line x1="12" y1="15" x2="12" y2="3"></line>
                         </svg>
-                        Natural Queries
+                        Smart Filtering
                     </h3>
-                    <p>Ask Claude in plain language about your courses, deadlines, and academic progress.</p>
+                    <p>Filter assignments by time range, course, and completion status. Grade visibility toggle for focus mode.</p>
+                </div>
+
+                <div class="feature">
+                    <h3>
+                        <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path>
+                        </svg>
+                        Structured Outputs
+                    </h3>
+                    <p>Consistent, reliable AI responses using Claude's latest structured output capabilities for guaranteed JSON format.</p>
+                </div>
+
+                <div class="feature">
+                    <h3>
+                        <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
+                        </svg>
+                        Privacy First
+                    </h3>
+                    <p>Canvas data stays in your browser. Only assignment info is sent to Claude AI when you request insights.</p>
                 </div>
             </div>
         </div>
@@ -270,30 +289,32 @@
                 <div class="install-option">
                     <h3>Step 1: Install Chrome Extension</h3>
                     <ol>
-                        <li>Download the extension from the Chrome Web Store (coming soon) or load from source</li>
-                        <li>Configure your Canvas URL using the Auto-Detect feature</li>
-                        <li>Click "Refresh Canvas Data" to sync your information</li>
+                        <li>Download or clone the <a href="https://github.com/jonasneves/canvasflow" style="color: #00539B; text-decoration: underline;">repository</a></li>
+                        <li>Open Chrome and navigate to <code>chrome://extensions/</code></li>
+                        <li>Enable "Developer mode" in the top-right corner</li>
+                        <li>Click "Load unpacked" and select the <code>extension/</code> directory</li>
                     </ol>
                 </div>
 
                 <div class="install-option">
-                    <h3>Step 2: Install MCP Server for Claude Desktop</h3>
+                    <h3>Step 2: Configure Canvas & Claude API</h3>
+                    <ol>
+                        <li>Click the CanvasFlow icon while on any Canvas LMS page</li>
+                        <li>Open Settings (gear icon) and use "Auto-Detect" to configure Canvas URL</li>
+                        <li>Get your Claude API key from <a href="https://console.anthropic.com/" style="color: #00539B; text-decoration: underline;">console.anthropic.com</a></li>
+                        <li>Enter the API key in Settings for AI-powered features</li>
+                    </ol>
+                </div>
+
+                <div class="install-option">
+                    <h3>Step 3: Optional - MCP Server for Claude Desktop</h3>
+                    <p style="margin-bottom: 0.75rem; color: #6b7280; font-size: 0.95rem;">Connect Claude Desktop to your Canvas data for natural conversation queries.</p>
                     <ol style="margin: 0.5rem 0 0 1.25rem; color: #374151;">
                         <li style="margin-bottom: 0.5rem;">Download <a href="https://github.com/jonasneves/canvasflow/releases/download/nightly/canvasflow-native-host.dxt" style="color: #00539B; text-decoration: underline;">canvasflow-native-host.dxt</a></li>
                         <li style="margin-bottom: 0.5rem;">Open Claude Desktop → Extensions</li>
-                        <li>Drag the .dxt file into the extensions area</li>
-                    </ol>
-                    <p style="margin-top: 1rem; font-size: 0.9rem; color: #6b7280;">
-                        <strong>Advanced:</strong> For Chrome extension configuration, download <a href="https://github.com/jonasneves/canvasflow/releases/download/nightly/canvasflow-chrome-extension.zip" style="color: #00539B; text-decoration: underline;">canvasflow-chrome-extension.zip</a> and run the installer.
-                    </p>
-                </div>
-
-                <div class="install-option">
-                    <h3>Step 3: Start Using CanvasFlow</h3>
-                    <ol>
-                        <li>Restart Chrome and Claude Desktop</li>
-                        <li>In Claude Desktop, ask: <em>"What are my Canvas courses?"</em></li>
-                        <li>Enjoy seamless access to your Canvas data!</li>
+                        <li style="margin-bottom: 0.5rem;">Drag the .dxt file into the extensions area</li>
+                        <li style="margin-bottom: 0.5rem;">Download <a href="https://github.com/jonasneves/canvasflow/releases/download/nightly/canvasflow-chrome-extension.zip" style="color: #00539B; text-decoration: underline;">canvasflow-chrome-extension.zip</a> and run the installer to configure extension ID</li>
+                        <li>Restart Chrome and Claude Desktop, then ask: <em>"What are my Canvas courses?"</em></li>
                     </ol>
                 </div>
             </div>

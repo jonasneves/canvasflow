@@ -56,9 +56,16 @@ window.ClaudeClient.callClaude = async function(apiKey, assignmentsData, schema,
 
   const data = await response.json();
 
+  // With Extended Thinking enabled, we need to find the text block (not thinking block)
+  // Response structure: { content: [{ type: "thinking", thinking: "..." }, { type: "text", text: "{...}" }] }
+  const textBlock = data.content.find(block => block.type === 'text');
+
+  if (!textBlock || !textBlock.text) {
+    throw new Error('No text content found in API response');
+  }
+
   // Structured outputs guarantee valid JSON - no regex extraction needed!
-  const textContent = data.content[0].text;
-  return JSON.parse(textContent);
+  return JSON.parse(textBlock.text);
 };
 
 /**

@@ -8,9 +8,11 @@ let canvasData = {
 
 let currentFilter = 'all';
 let autoRefreshInterval = null;
+let assignmentTimeRange = { weeksBefore: 2, weeksAfter: 2 }; // Default 2 weeks before and after
 
 // Initialize dashboard
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', async () => {
+  await loadTimeRangeSettings();
   initializeDashboard();
   setupEventListeners();
   loadSettings();
@@ -169,22 +171,31 @@ function renderSummaryCards() {
   const now = new Date();
   const weekFromNow = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000);
 
-  // Calculate stats
-  const total = assignments.length;
+  // Calculate time range boundaries
+  const timeRangeStart = new Date(now.getTime() - assignmentTimeRange.weeksBefore * 7 * 24 * 60 * 60 * 1000);
+  const timeRangeEnd = new Date(now.getTime() + assignmentTimeRange.weeksAfter * 7 * 24 * 60 * 60 * 1000);
 
-  const upcoming = assignments.filter(a => {
+  // Filter to assignments within time range
+  const timeFilteredAssignments = assignments.filter(a => {
     if (!a.dueDate) return false;
+    const dueDate = new Date(a.dueDate);
+    return dueDate >= timeRangeStart && dueDate <= timeRangeEnd;
+  });
+
+  // Calculate stats
+  const total = timeFilteredAssignments.length;
+
+  const upcoming = timeFilteredAssignments.filter(a => {
     const dueDate = new Date(a.dueDate);
     return dueDate >= now && dueDate <= weekFromNow && !a.submission?.submitted;
   }).length;
 
-  const overdue = assignments.filter(a => {
-    if (!a.dueDate) return false;
+  const overdue = timeFilteredAssignments.filter(a => {
     const dueDate = new Date(a.dueDate);
     return dueDate < now && !a.submission?.submitted;
   }).length;
 
-  const completed = assignments.filter(a => {
+  const completed = timeFilteredAssignments.filter(a => {
     return a.submission?.submitted || a.submission?.workflowState === 'graded';
   }).length;
 
@@ -289,29 +300,38 @@ function filterAssignments(assignments) {
   const now = new Date();
   const weekFromNow = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000);
 
+  // Calculate time range boundaries
+  const timeRangeStart = new Date(now.getTime() - assignmentTimeRange.weeksBefore * 7 * 24 * 60 * 60 * 1000);
+  const timeRangeEnd = new Date(now.getTime() + assignmentTimeRange.weeksAfter * 7 * 24 * 60 * 60 * 1000);
+
+  // Apply time range filter first
+  const timeFilteredAssignments = assignments.filter(a => {
+    if (!a.dueDate) return false;
+    const dueDate = new Date(a.dueDate);
+    return dueDate >= timeRangeStart && dueDate <= timeRangeEnd;
+  });
+
   switch (currentFilter) {
     case 'upcoming':
-      return assignments.filter(a => {
-        if (!a.dueDate) return false;
+      return timeFilteredAssignments.filter(a => {
         const dueDate = new Date(a.dueDate);
         return dueDate >= now && dueDate <= weekFromNow && !a.submission?.submitted;
       });
 
     case 'overdue':
-      return assignments.filter(a => {
-        if (!a.dueDate) return false;
+      return timeFilteredAssignments.filter(a => {
         const dueDate = new Date(a.dueDate);
         return dueDate < now && !a.submission?.submitted;
       });
 
     case 'completed':
-      return assignments.filter(a =>
+      return timeFilteredAssignments.filter(a =>
         a.submission?.submitted || a.submission?.workflowState === 'graded'
       );
 
     case 'all':
     default:
-      return assignments;
+      return [...timeFilteredAssignments, ...assignments.filter(a => !a.dueDate)];
   }
 }
 
@@ -456,10 +476,34 @@ async function saveSettings() {
   }
 }
 
+// Load time range settings
+async function loadTimeRangeSettings() {
+  try {
+    const result = await chrome.storage.local.get(['assignmentWeeksBefore', 'assignmentWeeksAfter']);
+    assignmentTimeRange = {
+      weeksBefore: result.assignmentWeeksBefore || 2,
+      weeksAfter: result.assignmentWeeksAfter || 2
+    };
+    console.log('Loaded time range settings:', assignmentTimeRange);
+  } catch (error) {
+    console.error('Error loading time range settings:', error);
+  }
+}
+
 function loadSettings() {
   chrome.storage.local.get(['autoRefresh'], (result) => {
     if (result.autoRefresh) {
       setupAutoRefresh(true);
+    }
+  });
+
+  // Listen for time range setting changes
+  chrome.storage.onChanged.addListener((changes, namespace) => {
+    if (namespace === 'local' && (changes.assignmentWeeksBefore || changes.assignmentWeeksAfter)) {
+      // Reload time range settings and re-render
+      loadTimeRangeSettings().then(() => {
+        renderDashboard();
+      });
     }
   });
 }

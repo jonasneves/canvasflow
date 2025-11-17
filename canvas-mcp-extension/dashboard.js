@@ -516,21 +516,21 @@ function updateInsightsTimestamp(timestamp) {
   }
 }
 
-// Load saved insights from storage
+// Load saved insights from storage (dashboard-specific)
 async function loadSavedInsights() {
   try {
-    const result = await chrome.storage.local.get(['savedInsights', 'insightsTimestamp']);
-    if (result.savedInsights) {
+    const result = await chrome.storage.local.get(['dashboardInsights', 'dashboardInsightsTimestamp']);
+    if (result.dashboardInsights) {
       const insightsContent = document.getElementById('insightsContent');
       insightsContent.innerHTML = `
         <div class="insights-loaded">
-          ${result.savedInsights}
+          ${result.dashboardInsights}
         </div>
       `;
 
       // Update timestamp if available
-      if (result.insightsTimestamp) {
-        updateInsightsTimestamp(result.insightsTimestamp);
+      if (result.dashboardInsightsTimestamp) {
+        updateInsightsTimestamp(result.dashboardInsightsTimestamp);
       }
     }
   } catch (error) {
@@ -580,12 +580,8 @@ async function generateAIInsights() {
     `;
     insightsContent.innerHTML = mcpGuidance;
 
-    // Save MCP guidance (so it persists)
-    await chrome.storage.local.set({
-      savedInsights: mcpGuidance,
-      insightsTimestamp: Date.now()
-    });
-    updateInsightsTimestamp(null); // Hide timestamp for MCP guidance
+    // Don't save MCP guidance to storage - it's just a placeholder
+    // updateInsightsTimestamp(null); // Hide timestamp for MCP guidance
 
     return;
   }
@@ -610,11 +606,11 @@ async function generateAIInsights() {
       </div>
     `;
 
-    // Save insights and timestamp to storage
+    // Save insights and timestamp to storage (dashboard-specific)
     const timestamp = Date.now();
     await chrome.storage.local.set({
-      savedInsights: formattedInsights,
-      insightsTimestamp: timestamp
+      dashboardInsights: formattedInsights,
+      dashboardInsightsTimestamp: timestamp
     });
 
     // Update timestamp display
@@ -630,12 +626,8 @@ async function generateAIInsights() {
     `;
     insightsContent.innerHTML = errorHtml;
 
-    // Save error state
-    await chrome.storage.local.set({
-      savedInsights: errorHtml,
-      insightsTimestamp: Date.now()
-    });
-    updateInsightsTimestamp(null); // Hide timestamp for errors
+    // Don't save error state to storage - let user retry
+    // updateInsightsTimestamp(null); // Hide timestamp for errors
   } finally {
     btn.disabled = false;
   }
@@ -752,12 +744,27 @@ Return ONLY the JSON object, no other text. Be realistic with time estimates. Cr
   const textContent = data.content[0].text;
 
   // Extract JSON from the response (Claude might wrap it in markdown code blocks)
-  const jsonMatch = textContent.match(/\{[\s\S]*\}/);
+  let jsonText = textContent;
+
+  // Remove markdown code blocks if present
+  const codeBlockMatch = textContent.match(/```(?:json)?\s*([\s\S]*?)\s*```/);
+  if (codeBlockMatch) {
+    jsonText = codeBlockMatch[1];
+  }
+
+  // Find the outermost JSON object
+  const jsonMatch = jsonText.match(/\{[\s\S]*\}/);
   if (!jsonMatch) {
     throw new Error('No valid JSON found in response');
   }
 
-  return JSON.parse(jsonMatch[0]);
+  try {
+    return JSON.parse(jsonMatch[0]);
+  } catch (parseError) {
+    console.error('JSON parse error:', parseError);
+    console.error('Attempted to parse:', jsonMatch[0].substring(0, 500));
+    throw new Error(`Failed to parse AI response: ${parseError.message}`);
+  }
 }
 
 // Format structured insights for display

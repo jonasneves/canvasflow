@@ -472,8 +472,9 @@ function formatStructuredInsights(insights) {
     const dayId = `day-${dayIdx}`;
     const defaultBg = dayIdx === 0 || dayIdx === 1 ? '#FAFAFA' : 'white';
 
-    // Phase 3: Map workload_score (0-3) to label
+    // Phase 3: Map workload_score (0-3) to label and color
     const workloadLabel = window.AIMappers.mapWorkloadToLabel(day.workload_score);
+    const workloadColor = window.AIMappers.mapWorkloadToColor(day.workload_score);
 
     return `
       <div style="background: white; border-radius: 10px; border: 1px solid #E5E7EB; overflow: hidden; margin-bottom: 16px;">
@@ -484,7 +485,7 @@ function formatStructuredInsights(insights) {
           style="width: 100%; padding: 18px 24px; background: ${defaultBg}; border: none; cursor: pointer; display: flex; align-items: center; justify-content: space-between; transition: background 0.2s;"
         >
           <div style="display: flex; align-items: center; gap: 16px;">
-            <div style="width: 12px; height: 12px; border-radius: 50%; background: ${workloadColors[day.workload]}; flex-shrink: 0;"></div>
+            <div style="width: 12px; height: 12px; border-radius: 50%; background: ${workloadColor}; flex-shrink: 0;"></div>
             <div style="text-align: left;">
               <div style="font-weight: 700; color: #111827; font-size: 18px;">${escapeHtml(day.day)}</div>
               <div style="font-size: 15px; color: #6B7280; margin-top: 4px;">${escapeHtml(day.focus)}</div>

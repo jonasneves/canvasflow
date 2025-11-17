@@ -1,0 +1,388 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CanvasFlow - Connect Claude Desktop to Canvas LMS</title>
+    <meta name="description" content="Access your Canvas LMS courses, assignments, and grades directly from Claude Desktop through the CanvasFlow Chrome extension and MCP server.">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            line-height: 1.6;
+            color: #1f2937;
+            background: #f9fafb;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #00539B 0%, #0077CC 100%);
+            color: white;
+            padding: 3rem 2rem;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+        }
+
+        .header p {
+            font-size: 1.25rem;
+            opacity: 0.95;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        .section {
+            background: white;
+            border-radius: 12px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        }
+
+        .section h2 {
+            font-size: 1.75rem;
+            margin-bottom: 1rem;
+            color: #111827;
+        }
+
+        .features {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+            margin-top: 1.5rem;
+        }
+
+        .feature {
+            padding: 1.5rem;
+            background: #f9fafb;
+            border-radius: 8px;
+            border: 1px solid #e5e7eb;
+        }
+
+        .feature h3 {
+            font-size: 1.125rem;
+            margin-bottom: 0.5rem;
+            color: #00539B;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .feature p {
+            color: #6b7280;
+            font-size: 0.95rem;
+        }
+
+        .cta-buttons {
+            display: flex;
+            gap: 1rem;
+            margin-top: 1.5rem;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.75rem 1.5rem;
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: 600;
+            transition: all 0.2s;
+            border: 2px solid transparent;
+        }
+
+        .btn-primary {
+            background: #00539B;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #004080;
+            transform: translateY(-1px);
+        }
+
+        .btn-secondary {
+            background: white;
+            color: #00539B;
+            border-color: #00539B;
+        }
+
+        .btn-secondary:hover {
+            background: #f0f9ff;
+        }
+
+        .install-steps {
+            margin-top: 1.5rem;
+        }
+
+        .install-option {
+            background: #f0fdf4;
+            border: 2px solid #bbf7d0;
+            border-radius: 8px;
+            padding: 1.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .install-option h3 {
+            color: #166534;
+            margin-bottom: 0.75rem;
+            font-size: 1.125rem;
+        }
+
+        .install-option ol {
+            margin-left: 1.25rem;
+            color: #374151;
+        }
+
+        .install-option ol li {
+            margin-bottom: 0.5rem;
+        }
+
+        .install-option code {
+            background: white;
+            padding: 0.25rem 0.5rem;
+            border-radius: 4px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9rem;
+            color: #dc2626;
+        }
+
+        .footer {
+            text-align: center;
+            padding: 2rem;
+            color: #6b7280;
+            border-top: 1px solid #e5e7eb;
+            margin-top: 3rem;
+        }
+
+        .footer a {
+            color: #00539B;
+            text-decoration: none;
+        }
+
+        .footer a:hover {
+            text-decoration: underline;
+        }
+
+        .icon {
+            width: 20px;
+            height: 20px;
+        }
+
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 2rem;
+            }
+
+            .header p {
+                font-size: 1rem;
+            }
+
+            .container {
+                padding: 1rem;
+            }
+
+            .section {
+                padding: 1.5rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>CanvasFlow</h1>
+        <p>Connect Claude Desktop to your Canvas LMS data through a Chrome extension and MCP server</p>
+    </div>
+
+    <div class="container">
+        <div class="section">
+            <h2>What is CanvasFlow?</h2>
+            <p>CanvasFlow enables you to access your Canvas LMS courses, assignments, and grades directly from Claude Desktop through natural conversation. Simply install the Chrome extension and MCP server, then ask Claude about your coursework.</p>
+
+            <div class="features">
+                <div class="feature">
+                    <h3>
+                        <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+                            <polyline points="9 22 9 12 15 12 15 22"></polyline>
+                        </svg>
+                        List Courses
+                    </h3>
+                    <p>View all your active Canvas courses with enrollment details and course information.</p>
+                </div>
+
+                <div class="feature">
+                    <h3>
+                        <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+                            <line x1="16" y1="2" x2="16" y2="6"></line>
+                            <line x1="8" y1="2" x2="8" y2="6"></line>
+                            <line x1="3" y1="10" x2="21" y2="10"></line>
+                        </svg>
+                        Track Assignments
+                    </h3>
+                    <p>Check upcoming assignments with due dates, submission status, and grading information.</p>
+                </div>
+
+                <div class="feature">
+                    <h3>
+                        <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline>
+                        </svg>
+                        View Grades
+                    </h3>
+                    <p>Access your grades and submission history for completed assignments.</p>
+                </div>
+
+                <div class="feature">
+                    <h3>
+                        <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                            <polyline points="7 10 12 15 17 10"></polyline>
+                            <line x1="12" y1="15" x2="12" y2="3"></line>
+                        </svg>
+                        Natural Queries
+                    </h3>
+                    <p>Ask Claude in plain language about your courses, deadlines, and academic progress.</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="section">
+            <h2>Installation</h2>
+
+            <div class="install-steps">
+                <div class="install-option">
+                    <h3>Step 1: Install Chrome Extension</h3>
+                    <ol>
+                        <li>Download the extension from the Chrome Web Store (coming soon) or load from source</li>
+                        <li>Configure your Canvas URL using the Auto-Detect feature</li>
+                        <li>Click "Refresh Canvas Data" to sync your information</li>
+                    </ol>
+                </div>
+
+                <div class="install-option">
+                    <h3>Step 2: Install MCP Server for Claude Desktop</h3>
+                    <p style="margin-bottom: 1rem; color: #374151;">Choose your preferred installation method:</p>
+
+                    <div style="background: white; padding: 1rem; border-radius: 6px; margin-bottom: 1rem;">
+                        <strong style="color: #166534;">Option A: Drag-and-Drop (Easiest)</strong>
+                        <ol style="margin-top: 0.5rem;">
+                            <li>Download <a href="https://github.com/jonasneves/canvasflow/releases/download/latest/canvasflow-native-host.dxt" style="color: #00539B;">canvasflow-native-host.dxt</a></li>
+                            <li>Open Claude Desktop → Extensions</li>
+                            <li>Drag the .dxt file into the extensions area</li>
+                        </ol>
+                    </div>
+
+                    <div style="background: white; padding: 1rem; border-radius: 6px;">
+                        <strong style="color: #374151;">Option B: Manual Installation</strong>
+                        <ol style="margin-top: 0.5rem;">
+                            <li>Download <a href="https://github.com/jonasneves/canvasflow/releases/download/latest/canvasflow-native-host.zip" style="color: #00539B;">canvasflow-native-host.zip</a></li>
+                            <li>Extract and run the installer:
+                                <ul style="margin-top: 0.25rem;">
+                                    <li><strong>macOS/Linux:</strong> <code>./install.sh</code></li>
+                                    <li><strong>Windows:</strong> <code>install.bat</code></li>
+                                </ul>
+                            </li>
+                            <li>Enter your Chrome extension ID when prompted</li>
+                        </ol>
+                    </div>
+                </div>
+
+                <div class="install-option">
+                    <h3>Step 3: Start Using CanvasFlow</h3>
+                    <ol>
+                        <li>Restart Chrome and Claude Desktop</li>
+                        <li>In Claude Desktop, ask: <em>"What are my Canvas courses?"</em></li>
+                        <li>Enjoy seamless access to your Canvas data!</li>
+                    </ol>
+                </div>
+            </div>
+
+            <div class="cta-buttons">
+                <a href="https://github.com/jonasneves/canvasflow/releases/latest" class="btn btn-primary">
+                    <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                        <polyline points="7 10 12 15 17 10"></polyline>
+                        <line x1="12" y1="15" x2="12" y2="3"></line>
+                    </svg>
+                    Download Latest Release
+                </a>
+                <a href="https://github.com/jonasneves/canvasflow" class="btn btn-secondary">
+                    <svg class="icon" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/>
+                    </svg>
+                    View on GitHub
+                </a>
+            </div>
+        </div>
+
+        <div class="section">
+            <h2>Requirements</h2>
+            <ul style="margin-left: 1.25rem; color: #374151;">
+                <li style="margin-bottom: 0.5rem;">Google Chrome or Chromium-based browser</li>
+                <li style="margin-bottom: 0.5rem;">Node.js 14 or higher (for MCP server)</li>
+                <li style="margin-bottom: 0.5rem;">Claude Desktop (for MCP integration)</li>
+                <li>Active Canvas LMS account</li>
+            </ul>
+        </div>
+
+        <div class="section">
+            <h2>Documentation</h2>
+            <div class="cta-buttons">
+                <a href="https://github.com/jonasneves/canvasflow/blob/main/README.md" class="btn btn-secondary">
+                    <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                        <polyline points="14 2 14 8 20 8"></polyline>
+                        <line x1="16" y1="13" x2="8" y2="13"></line>
+                        <line x1="16" y1="17" x2="8" y2="17"></line>
+                        <polyline points="10 9 9 9 8 9"></polyline>
+                    </svg>
+                    User Guide
+                </a>
+                <a href="https://github.com/jonasneves/canvasflow/blob/main/native-host/README.md" class="btn btn-secondary">
+                    <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <circle cx="12" cy="12" r="10"></circle>
+                        <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path>
+                        <line x1="12" y1="17" x2="12.01" y2="17"></line>
+                    </svg>
+                    Installation Guide
+                </a>
+                <a href="https://github.com/jonasneves/canvasflow/blob/main/PRIVACY.md" class="btn btn-secondary">
+                    <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+                        <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+                    </svg>
+                    Privacy Policy
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <div class="footer">
+        <p>
+            Created by <a href="https://github.com/jonasneves">Jonas Neves</a> •
+            <a href="https://github.com/jonasneves/canvasflow">View on GitHub</a> •
+            <a href="https://github.com/jonasneves/canvasflow/issues">Report Issues</a>
+        </p>
+        <p style="margin-top: 0.5rem; font-size: 0.9rem;">
+            CanvasFlow is an independent project and is not affiliated with Instructure or Canvas LMS.
+        </p>
+    </div>
+</body>
+</html>

@@ -809,6 +809,8 @@ document.getElementById('claudeApiKey').addEventListener('change', async (e) => 
   try {
     await chrome.storage.local.set({ claudeApiKey: apiKey });
     console.log('API key saved');
+    // Update button text to reflect API key is now configured
+    await updateInsightsButtonText();
   } catch (error) {
     console.error('Error saving API key:', error);
   }
@@ -819,8 +821,8 @@ async function loadTimeRangeSettings() {
   try {
     const result = await chrome.storage.local.get(['assignmentWeeksBefore', 'assignmentWeeksAfter']);
     assignmentTimeRange = {
-      weeksBefore: result.assignmentWeeksBefore || 2,
-      weeksAfter: result.assignmentWeeksAfter || 2
+      weeksBefore: result.assignmentWeeksBefore || 1,
+      weeksAfter: result.assignmentWeeksAfter || 1
     };
     console.log('Loaded time range settings:', assignmentTimeRange);
   } catch (error) {
@@ -887,7 +889,7 @@ async function loadSavedInsights() {
       const viewScheduleBtn = document.getElementById('viewScheduleBtn');
       if (viewScheduleBtn) {
         viewScheduleBtn.addEventListener('click', () => {
-          chrome.tabs.create({ url: chrome.runtime.getURL('dashboard.html') });
+          chrome.tabs.create({ url: chrome.runtime.getURL('schedule.html') });
         });
       }
 
@@ -1072,7 +1074,7 @@ async function generateAIInsights() {
     const viewScheduleBtn = document.getElementById('viewScheduleBtn');
     if (viewScheduleBtn) {
       viewScheduleBtn.addEventListener('click', () => {
-        chrome.tabs.create({ url: chrome.runtime.getURL('dashboard.html') });
+        chrome.tabs.create({ url: chrome.runtime.getURL('schedule.html') });
       });
     }
 
@@ -1295,7 +1297,7 @@ document.getElementById('generateInsightsBtn').addEventListener('click', generat
 
 // Open Dashboard Button (now in header)
 document.getElementById('openDashboardBtn').addEventListener('click', () => {
-  chrome.tabs.create({ url: chrome.runtime.getURL('dashboard.html') });
+  chrome.tabs.create({ url: chrome.runtime.getURL('schedule.html') });
 });
 
 // Setup instructions toggle

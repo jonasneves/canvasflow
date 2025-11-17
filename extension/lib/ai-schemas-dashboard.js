@@ -138,4 +138,3 @@ window.AISchemas.DASHBOARD_SCHEDULE_SCHEMA = {
   }
 };
 
-console.log('[AI Schemas - Dashboard] Loaded successfully');

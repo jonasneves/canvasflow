@@ -66,7 +66,6 @@ async function loadCanvasData() {
 
     updateStatus(response);
   } catch (error) {
-    console.error('Error loading Canvas data:', error);
     updateStatus({ error: error.message });
   }
 }
@@ -91,7 +90,6 @@ async function refreshCanvasData() {
       updateStatus({ error: response?.error || 'Failed to refresh data' });
     }
   } catch (error) {
-    console.error('Error refreshing Canvas data:', error);
     updateStatus({ error: error.message });
   }
 }
@@ -101,7 +99,6 @@ function updateStatus(response) {
   // Status indicators have been removed for a cleaner header
   // This function is kept for compatibility but does nothing
   if (response?.error) {
-    console.error('Error loading data:', response.error);
   }
 }
 
@@ -125,9 +122,7 @@ async function loadTimeRangeSettings() {
       weeksBefore: result.assignmentWeeksBefore || 1,
       weeksAfter: result.assignmentWeeksAfter || 1
     };
-    console.log('Loaded time range settings:', assignmentTimeRange);
   } catch (error) {
-    console.error('Error loading time range settings:', error);
   }
 }
 
@@ -230,7 +225,6 @@ async function loadSavedInsights() {
       }
     }
   } catch (error) {
-    console.error('Error loading saved insights:', error);
   }
 }
 
@@ -302,7 +296,6 @@ async function generateAIInsights() {
   try {
     await refreshCanvasData();
   } catch (error) {
-    console.error('Error refreshing Canvas data:', error);
     // Continue anyway with cached data
   }
 
@@ -339,7 +332,6 @@ async function generateAIInsights() {
     updateInsightsTimestamp(timestamp);
 
   } catch (error) {
-    console.error('Error generating insights:', error);
     const errorHtml = `
       <div class="insights-error">
         <strong>Failed to generate insights:</strong> ${escapeHtml(error.message)}
@@ -370,8 +362,6 @@ function prepareAssignmentsForAI() {
     return dueDate >= timeRangeStart && dueDate <= timeRangeEnd;
   });
 
-  console.log('[prepareAssignmentsForAI] Time range:', timeRangeStart.toLocaleDateString(), 'to', timeRangeEnd.toLocaleDateString());
-  console.log('[prepareAssignmentsForAI] Filtered assignments:', assignments.length, 'of', (canvasData.allAssignments || []).length, 'total');
 
   return {
     totalAssignments: assignments.length,

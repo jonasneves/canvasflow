@@ -4,12 +4,9 @@
 
   // Prevent multiple executions
   if (window.canvasMCPInitialized) {
-    console.log('Canvas MCP already initialized, skipping');
     return;
   }
   window.canvasMCPInitialized = true;
-
-  console.log('Canvas MCP content script loaded on:', window.location.href);
 
   const API_BASE = '/api/v1';
 
@@ -78,7 +75,6 @@
         url: `${window.location.origin}/courses/${course.id}`
       }));
     } catch (error) {
-      console.error('Failed to fetch courses:', error);
       return [];
     }
   }
@@ -96,7 +92,6 @@
         url: assignment.html_url || `${window.location.origin}/courses/${courseId}/assignments/${assignment.id}`
       }));
     } catch (error) {
-      console.error('Failed to fetch assignments:', error);
       return [];
     }
   }
@@ -139,13 +134,12 @@
             });
           });
         } catch (error) {
-          console.error(`Failed to fetch assignments for course ${course.id}:`, error);
+          // Continue with other courses
         }
       }
 
       return allAssignments;
     } catch (error) {
-      console.error('Failed to fetch all assignments:', error);
       return [];
     }
   }
@@ -183,7 +177,6 @@
         url: assignment.html_url || `${window.location.origin}/courses/${courseId}/assignments/${assignment.id}`
       };
     } catch (error) {
-      console.error('Failed to fetch assignment details:', error);
       throw error;
     }
   }
@@ -213,7 +206,6 @@
         url: event.html_url
       }));
     } catch (error) {
-      console.error('Failed to fetch calendar events:', error);
       return [];
     }
   }
@@ -241,7 +233,6 @@
         previewUrl: submission.preview_url
       }));
     } catch (error) {
-      console.error('Failed to fetch user submissions:', error);
       return [];
     }
   }
@@ -269,7 +260,6 @@
         }))
       }));
     } catch (error) {
-      console.error('Failed to fetch course modules:', error);
       return [];
     }
   }
@@ -298,7 +288,6 @@
         url: event.html_url
       }));
     } catch (error) {
-      console.error('Failed to fetch upcoming events:', error);
       return [];
     }
   }
@@ -317,7 +306,6 @@
       };
     } catch (error) {
       // Analytics may not be available
-      console.warn('Course analytics not available:', error);
       return null;
     }
   }
@@ -384,7 +372,6 @@
               try {
                 assignmentsData[course.id] = await fetchCourseAssignments(course.id);
               } catch (error) {
-                console.error(`Failed to fetch assignments for course ${course.id}:`, error);
                 assignmentsData[course.id] = [];
               }
             }
@@ -431,13 +418,10 @@
           });
         })
         .catch(error => {
-          console.error('Canvas MCP content script error:', error);
           sendResponse({ success: false, error: error.message });
         });
 
       return true;
     });
   }
-
-  console.log('Canvas MCP content script initialized');
 })();

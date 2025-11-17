@@ -46,7 +46,6 @@ async function updateCanvasUrl() {
       }
     }
   } catch (error) {
-    console.error('Error loading Canvas URL:', error);
   }
 }
 
@@ -123,9 +122,6 @@ function renderAssignments() {
   const timeRangeStart = new Date(now.getTime() - assignmentTimeRange.weeksBefore * 7 * 24 * 60 * 60 * 1000);
   const timeRangeEnd = new Date(now.getTime() + assignmentTimeRange.weeksAfter * 7 * 24 * 60 * 60 * 1000);
 
-  console.log('[renderAssignments] Current filter:', currentFilter);
-  console.log('[renderAssignments] Total assignments:', allAssignments.length);
-  console.log('[renderAssignments] Time range:', timeRangeStart, 'to', timeRangeEnd);
 
   if (allAssignments.length === 0) {
     assignmentsList.innerHTML = `
@@ -168,7 +164,6 @@ function renderAssignments() {
     return dueDate >= timeRangeStart && dueDate <= timeRangeEnd;
   });
 
-  console.log('[renderAssignments] After time filter:', timeFilteredAssignments.length);
 
   // Filter assignments based on currentFilter
   let filteredAssignments;
@@ -176,28 +171,23 @@ function renderAssignments() {
   if (currentFilter === 'all') {
     // Show all assignments within time range, plus those without due dates
     filteredAssignments = [...timeFilteredAssignments, ...allAssignments.filter(a => !a.dueDate)];
-    console.log('[renderAssignments] Showing ALL assignments (in range + no due date):', filteredAssignments.length);
   } else {
     // For other filters, only use time-filtered assignments
     filteredAssignments = timeFilteredAssignments;
-    console.log('[renderAssignments] Assignments with due dates in range:', filteredAssignments.length);
 
     if (currentFilter === 'overdue') {
       filteredAssignments = filteredAssignments.filter(a => {
         return new Date(a.dueDate) < now && !a.submission?.submitted;
       });
-      console.log('[renderAssignments] Overdue assignments:', filteredAssignments.length);
     } else if (currentFilter === 'due-today') {
       filteredAssignments = filteredAssignments.filter(a => {
         const dueDate = new Date(a.dueDate);
         return dueDate >= todayStart && dueDate < todayEnd && !a.submission?.submitted;
       });
-      console.log('[renderAssignments] Due today assignments:', filteredAssignments.length);
     } else if (currentFilter === 'upcoming') {
       filteredAssignments = filteredAssignments.filter(a => {
         return new Date(a.dueDate) >= todayEnd && !a.submission?.submitted;
       });
-      console.log('[renderAssignments] Upcoming assignments:', filteredAssignments.length);
     }
   }
 
@@ -248,7 +238,6 @@ function renderAssignments() {
     filteredAssignments = filteredAssignments.slice(0, 20);
   }
 
-  console.log('[renderAssignments] Displaying', filteredAssignments.length, 'assignments');
 
   if (filteredAssignments.length === 0) {
     const filterText = currentFilter === 'all' ? 'with due dates' :
@@ -454,7 +443,6 @@ async function loadAssignments() {
       });
     }
   } catch (error) {
-    console.error('Error loading assignments:', error);
     assignmentsList.innerHTML = `
       <div class="empty-state">
         <div class="empty-state-icon">
@@ -567,7 +555,6 @@ document.getElementById('refreshDataBtn').addEventListener('click', async () => 
       }, 2000);
     }
   } catch (error) {
-    console.error('Error refreshing data:', error);
     buttonText.textContent = 'Failed to refresh';
     setTimeout(() => {
       buttonText.textContent = originalText;
@@ -584,18 +571,15 @@ document.getElementById('refreshDataBtn').addEventListener('click', async () => 
 document.querySelectorAll('.summary-card').forEach(card => {
   card.addEventListener('click', () => {
     const filter = card.getAttribute('data-filter');
-    console.log('[Card Click] Clicked filter:', filter, 'Current filter:', currentFilter);
 
     // Toggle filter - if clicking the same card, reset to 'all'
     if (currentFilter === filter) {
       currentFilter = 'all';
       document.querySelectorAll('.summary-card').forEach(c => c.classList.remove('active'));
-      console.log('[Card Click] Toggled off, now showing: all');
     } else {
       currentFilter = filter;
       document.querySelectorAll('.summary-card').forEach(c => c.classList.remove('active'));
       card.classList.add('active');
-      console.log('[Card Click] Switched to filter:', currentFilter);
     }
 
     // Re-render with new filter
@@ -675,7 +659,6 @@ async function autoDetectCanvasUrl(showMessages = true) {
             detectedUrls.push(baseUrl);
           }
         } catch (e) {
-          console.error('Error parsing URL:', e);
         }
       }
     }
@@ -723,7 +706,6 @@ async function refreshCanvasData() {
       loadAssignments();
     }
   } catch (error) {
-    console.error('Error during auto-refresh:', error);
   }
 }
 
@@ -760,7 +742,6 @@ async function loadAutoRefreshSetting() {
       }
     }
   } catch (error) {
-    console.error('Error loading auto-refresh setting:', error);
   }
 }
 
@@ -775,7 +756,6 @@ async function saveAutoRefreshSetting(enabled) {
       stopAutoRefresh();
     }
   } catch (error) {
-    console.error('Error saving auto-refresh setting:', error);
   }
 }
 
@@ -860,11 +840,9 @@ document.getElementById('claudeApiKey').addEventListener('change', async (e) => 
   const apiKey = e.target.value.trim();
   try {
     await chrome.storage.local.set({ claudeApiKey: apiKey });
-    console.log('API key saved');
     // Update button text to reflect API key is now configured
     await updateInsightsButtonText();
   } catch (error) {
-    console.error('Error saving API key:', error);
   }
 });
 
@@ -876,9 +854,7 @@ async function loadTimeRangeSettings() {
       weeksBefore: result.assignmentWeeksBefore || 1,
       weeksAfter: result.assignmentWeeksAfter || 1
     };
-    console.log('Loaded time range settings:', assignmentTimeRange);
   } catch (error) {
-    console.error('Error loading time range settings:', error);
   }
 }
 
@@ -951,7 +927,6 @@ async function loadSavedInsights() {
       }
     }
   } catch (error) {
-    console.error('Error loading saved insights:', error);
   }
 }
 
@@ -963,10 +938,8 @@ async function initialize() {
   // Auto-detect Canvas URL if not already configured
   const result = await chrome.storage.local.get(['canvasUrl']);
   if (!result.canvasUrl) {
-    console.log('No Canvas URL configured, attempting auto-detect...');
     const detected = await autoDetectCanvasUrl(false);
     if (detected) {
-      console.log('Auto-detected Canvas URL:', detected);
       // Update the input field with detected URL
       const canvasUrlInput = document.getElementById('canvasUrlInput');
       if (canvasUrlInput) {
@@ -1090,7 +1063,6 @@ async function generateAIInsights() {
   try {
     await refreshCanvasData();
   } catch (error) {
-    console.error('Error refreshing Canvas data:', error);
     // Continue anyway with cached data
   }
 
@@ -1142,7 +1114,6 @@ async function generateAIInsights() {
     });
 
   } catch (error) {
-    console.error('Error generating insights:', error);
     const errorHtml = `
       <div class="insights-error">
         <strong>Failed to generate insights:</strong> ${escapeHtml(error.message)}
@@ -1178,8 +1149,6 @@ function prepareAssignmentsForAI() {
     return dueDate >= timeRangeStart && dueDate <= timeRangeEnd;
   });
 
-  console.log('[prepareAssignmentsForAI] Time range:', timeRangeStart.toLocaleDateString(), 'to', timeRangeEnd.toLocaleDateString());
-  console.log('[prepareAssignmentsForAI] Filtered assignments:', assignments.length, 'of', allAssignments.length, 'total');
 
   return {
     totalAssignments: assignments.length,

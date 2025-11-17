@@ -41,7 +41,6 @@ function initializeLucide(container = document) {
       }
     });
   } catch (error) {
-    console.error('Error initializing Lucide icons:', error);
   }
 }
 

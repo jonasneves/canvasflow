@@ -157,14 +157,11 @@ async function sendDataToMCPServer() {
 
     if (response.ok) {
       mcpServerConnected = true;
-      console.log('Successfully sent Canvas data to MCP server');
     } else {
       mcpServerConnected = false;
-      console.warn('MCP server responded with error:', response.status);
     }
   } catch (error) {
     mcpServerConnected = false;
-    console.log('MCP server not available (this is okay if not using Claude Desktop)');
   }
 }
 
@@ -188,7 +185,6 @@ async function getConfiguredCanvasUrl() {
     const result = await chrome.storage.local.get(['canvasUrl']);
     return result.canvasUrl || 'https://canvas.instructure.com'; // Default fallback
   } catch (error) {
-    console.error('Error getting Canvas URL from storage:', error);
     return 'https://canvas.instructure.com';
   }
 }
@@ -237,9 +233,8 @@ async function detectAndSaveCanvasUrl(url) {
     const trimmedUrls = detectedUrls.slice(0, 10);
 
     await chrome.storage.local.set({ detectedCanvasUrls: trimmedUrls });
-    console.log('Detected Canvas URL:', baseUrl);
   } catch (error) {
-    console.error('Error detecting Canvas URL:', error);
+    // Silent error handling
   }
 }
 
@@ -294,13 +289,10 @@ function sendMessageToContent(tabId, message) {
 
 // Handle messages from content scripts and popup
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
-  console.log('Background received message:', request.type);
-  
   if (request.type === 'CANVAS_DATA') {
     if (request.data.courses) {
       canvasData.courses = request.data.courses;
       canvasData.lastUpdate = new Date().toISOString();
-      console.log('Stored courses:', canvasData.courses.length);
     }
     if (request.data.assignments) {
       if (request.data.courseId) {
@@ -398,7 +390,6 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
 
           sendResponse({ success: true, data: data });
         } catch (error) {
-          console.error('Error refreshing data:', error);
           sendResponse({ success: false, error: error.message });
         }
       })
@@ -413,7 +404,6 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
 async function handleMCPRequest(payload) {
   const { method, params } = payload;
   
-  console.log('Handling MCP request:', method, params);
   
   switch(method) {
     case 'initialize':
@@ -460,7 +450,6 @@ async function handleToolCall(params) {
             canvasData.lastUpdate = new Date().toISOString();
           }
         } catch (error) {
-          console.error('Error fetching courses:', error);
         }
       }
 
@@ -496,7 +485,6 @@ async function handleToolCall(params) {
             canvasData.assignments[courseId] = assignments;
           }
         } catch (error) {
-          console.error('Error fetching assignments:', error);
         }
       }
 
@@ -534,7 +522,6 @@ async function handleToolCall(params) {
           }]
         };
       } catch (error) {
-        console.error('Error fetching all assignments:', error);
         return {
           content: [{
             type: "text",
@@ -568,7 +555,6 @@ async function handleToolCall(params) {
           throw new Error(response?.error || 'Failed to fetch assignment details');
         }
       } catch (error) {
-        console.error('Error fetching assignment details:', error);
         return {
           content: [{
             type: "text",
@@ -607,7 +593,6 @@ async function handleToolCall(params) {
           }]
         };
       } catch (error) {
-        console.error('Error fetching calendar events:', error);
         return {
           content: [{
             type: "text",
@@ -642,7 +627,6 @@ async function handleToolCall(params) {
           }]
         };
       } catch (error) {
-        console.error('Error fetching user submissions:', error);
         return {
           content: [{
             type: "text",
@@ -677,7 +661,6 @@ async function handleToolCall(params) {
           }]
         };
       } catch (error) {
-        console.error('Error fetching course modules:', error);
         return {
           content: [{
             type: "text",
@@ -708,7 +691,6 @@ async function handleToolCall(params) {
           }]
         };
       } catch (error) {
-        console.error('Error fetching upcoming events:', error);
         return {
           content: [{
             type: "text",
@@ -749,7 +731,6 @@ async function handleToolCall(params) {
           };
         }
       } catch (error) {
-        console.error('Error fetching course analytics:', error);
         return {
           content: [{
             type: "text",
@@ -771,12 +752,10 @@ if (chrome.alarms) {
   try {
     chrome.alarms.create('keepAlive', { periodInMinutes: 1 });
     chrome.alarms.onAlarm.addListener((alarm) => {
-      if (alarm.name === 'keepAlive') {
-        console.log('Service worker keepalive ping');
-      }
+      // Keep alive ping
     });
   } catch (error) {
-    console.warn('Failed to set up alarms:', error);
+    // Silent error handling
   }
 }
 
@@ -795,20 +774,15 @@ chrome.tabs.onActivated.addListener(async (activeInfo) => {
       detectAndSaveCanvasUrl(tab.url);
     }
   } catch (error) {
-    console.error('Error detecting Canvas URL on tab activation:', error);
+    // Silent error handling
   }
 });
 
 // Check MCP server connection on startup
 checkMCPServerHealth().then(connected => {
-  if (connected) {
-    console.log('MCP server is available');
+  if (connected && canvasData.courses.length > 0) {
     // Send any existing Canvas data
-    if (canvasData.courses.length > 0) {
-      sendDataToMCPServer();
-    }
-  } else {
-    console.log('MCP server not available (extension will work standalone)');
+    sendDataToMCPServer();
   }
 });
 
@@ -816,5 +790,3 @@ checkMCPServerHealth().then(connected => {
 chrome.action.onClicked.addListener((tab) => {
   chrome.sidePanel.open({ windowId: tab.windowId });
 });
-
-console.log('Canvas MCP Server initialized');

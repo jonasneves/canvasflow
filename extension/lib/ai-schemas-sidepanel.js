@@ -104,4 +104,3 @@ window.AISchemas.SIDEPANEL_INSIGHTS_SCHEMA = {
   }
 };
 
-console.log('[AI Schemas] Loaded successfully');

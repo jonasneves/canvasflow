@@ -114,4 +114,3 @@ Provide practical, actionable advice. Be realistic with time estimates. Keep it 
   }
 }
 
-console.log('[Claude Client] Loaded successfully');

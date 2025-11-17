@@ -159,4 +159,3 @@ window.AIMappers.formatTimeBlock = function(startHour, durationHours) {
   return `${formatTime(startHour)} - ${formatTime(endHour, endMinutes)}`;
 };
 
-console.log('[AI Mappers] Loaded successfully');

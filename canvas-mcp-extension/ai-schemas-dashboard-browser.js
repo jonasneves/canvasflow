@@ -34,15 +34,11 @@ window.AISchemas.DASHBOARD_SCHEDULE_SCHEMA = {
             },
             urgency_score: {
               type: "integer",
-              description: "0=manageable, 1=moderate, 2=high, 3=critical",
-              minimum: 0,
-              maximum: 3
+              description: "0=manageable, 1=moderate, 2=high, 3=critical"
             },
             estimated_hours: {
               type: "number",
-              description: "Estimated hours needed",
-              minimum: 0.5,
-              maximum: 8
+              description: "Estimated hours (0.5 to 8)"
             }
           },
           required: ["task", "reason", "urgency_score", "estimated_hours"],
@@ -59,14 +55,11 @@ window.AISchemas.DASHBOARD_SCHEDULE_SCHEMA = {
           },
           total_hours_needed: {
             type: "number",
-            description: "Total estimated hours",
-            minimum: 0
+            description: "Total estimated hours"
           },
           intensity_score: {
             type: "integer",
-            description: "0=manageable, 1=moderate, 2=high, 3=extreme",
-            minimum: 0,
-            maximum: 3
+            description: "0=manageable, 1=moderate, 2=high, 3=extreme"
           },
           recommendations: {
             type: "array",
@@ -97,9 +90,7 @@ window.AISchemas.DASHBOARD_SCHEDULE_SCHEMA = {
             },
             workload_score: {
               type: "integer",
-              description: "0=light, 1=moderate, 2=heavy, 3=extreme",
-              minimum: 0,
-              maximum: 3
+              description: "0=light, 1=moderate, 2=heavy, 3=extreme"
             },
             tasks: {
               type: "array",
@@ -113,15 +104,11 @@ window.AISchemas.DASHBOARD_SCHEDULE_SCHEMA = {
                   },
                   start_hour: {
                     type: "integer",
-                    description: "Starting hour in 24-hour format",
-                    minimum: 0,
-                    maximum: 23
+                    description: "Starting hour (0-23)"
                   },
                   duration_hours: {
                     type: "number",
-                    description: "Duration in hours",
-                    minimum: 0.5,
-                    maximum: 8
+                    description: "Duration in hours (0.5-8)"
                   },
                   notes: {
                     type: "string",

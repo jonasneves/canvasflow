@@ -3,6 +3,7 @@ let allAssignments = [];
 let currentFilter = 'all';
 let autoRefreshInterval = null;
 let assignmentTimeRange = { weeksBefore: 2, weeksAfter: 2 }; // Default 2 weeks before and after
+let showGrades = false; // Default to hidden
 
 // Tab switching
 const tabButtons = document.querySelectorAll('.tab-button');
@@ -284,23 +285,65 @@ function renderAssignments() {
     else if (isDueToday) dueDateClass += ' due-today';
     else if (isUpcoming) dueDateClass += ' upcoming';
 
-    let statusText = '';
-    if (isCompleted) statusText = '✓ Submitted';
-    // Due today and overdue status indicated by color, no label needed
-
     const assignmentUrl = assignment.url || '#';
+    const badges = getAssignmentBadges(assignment);
+    const gradeDisplay = getGradeDisplay(assignment);
 
     return `
       <a href="${escapeHtml(assignmentUrl)}" target="_blank" class="${cardClass}">
         <div class="assignment-title">${escapeHtml(assignment.name || 'Untitled Assignment')}</div>
         <div class="assignment-meta">
           <span>${escapeHtml(assignment.courseName || 'Unknown Course')}</span>
-          ${statusText ? `<span>${statusText}</span>` : ''}
+          ${assignment.pointsPossible ? `<span>${assignment.pointsPossible} pts</span>` : ''}
         </div>
         <div class="${dueDateClass}">Due: ${dueDateText}</div>
+        ${badges || gradeDisplay ? `<div class="assignment-badges">${badges}${gradeDisplay}</div>` : ''}
       </a>
     `;
   }).join('');
+}
+
+// Get assignment badges similar to dashboard
+function getAssignmentBadges(assignment) {
+  const badges = [];
+
+  if (assignment.submission?.submitted) {
+    if (assignment.submission.late) {
+      badges.push('<span class="assignment-badge late">Late</span>');
+    } else {
+      badges.push('<span class="assignment-badge submitted">Submitted</span>');
+    }
+  }
+
+  if (assignment.submission?.workflowState === 'graded') {
+    badges.push('<span class="assignment-badge completed">Graded</span>');
+  }
+
+  if (assignment.submission?.missing) {
+    badges.push('<span class="assignment-badge missing">Missing</span>');
+  }
+
+  return badges.join('');
+}
+
+// Get grade display if enabled
+function getGradeDisplay(assignment) {
+  if (!showGrades) return '';
+
+  const submission = assignment.submission;
+  if (!submission || submission.workflowState !== 'graded') return '';
+
+  const score = submission.score;
+  const pointsPossible = assignment.pointsPossible;
+
+  if (score !== undefined && score !== null && pointsPossible) {
+    const percentage = ((score / pointsPossible) * 100).toFixed(1);
+    return `<span class="assignment-grade">${score}/${pointsPossible} (${percentage}%)</span>`;
+  } else if (score !== undefined && score !== null) {
+    return `<span class="assignment-grade">${score} pts</span>`;
+  }
+
+  return '';
 }
 
 // Load and display assignments
@@ -421,7 +464,7 @@ settingsBtn.addEventListener('click', async () => {
   settingsModal.classList.add('show');
 
   // Load current settings
-  const result = await chrome.storage.local.get(['claudeApiKey', 'assignmentWeeksBefore', 'assignmentWeeksAfter']);
+  const result = await chrome.storage.local.get(['claudeApiKey', 'assignmentWeeksBefore', 'assignmentWeeksAfter', 'showGrades']);
   if (result.claudeApiKey) {
     document.getElementById('claudeApiKey').value = result.claudeApiKey;
   }
@@ -429,6 +472,9 @@ settingsBtn.addEventListener('click', async () => {
   // Load time range settings
   document.getElementById('assignmentWeeksBefore').value = result.assignmentWeeksBefore || 2;
   document.getElementById('assignmentWeeksAfter').value = result.assignmentWeeksAfter || 2;
+
+  // Load grade visibility setting
+  document.getElementById('showGradesToggle').checked = result.showGrades || false;
 });
 
 closeSettingsModal.addEventListener('click', () => {
@@ -670,6 +716,18 @@ async function saveAutoRefreshSetting(enabled) {
   }
 }
 
+// Show grades toggle event listener
+document.getElementById('showGradesToggle').addEventListener('change', async (e) => {
+  const checked = e.target.checked;
+  try {
+    await chrome.storage.local.set({ showGrades: checked });
+    showGrades = checked;
+    renderAssignments(); // Re-render to show/hide grades
+  } catch (error) {
+    console.error('Error saving show grades setting:', error);
+  }
+});
+
 // Auto-refresh toggle event listener
 document.getElementById('autoRefreshToggle').addEventListener('change', (e) => {
   saveAutoRefreshSetting(e.target.checked);
@@ -750,6 +808,17 @@ async function loadTimeRangeSettings() {
   }
 }
 
+// Load grade visibility setting
+async function loadGradeVisibilitySetting() {
+  try {
+    const result = await chrome.storage.local.get(['showGrades']);
+    showGrades = result.showGrades || false;
+    console.log('Loaded grade visibility setting:', showGrades);
+  } catch (error) {
+    console.error('Error loading grade visibility setting:', error);
+  }
+}
+
 // Update insights timestamp display
 function updateInsightsTimestamp(timestamp) {
   const timestampEl = document.getElementById('insightsTimestamp');
@@ -824,6 +893,9 @@ async function initialize() {
 
   // Load time range settings
   await loadTimeRangeSettings();
+
+  // Load grade visibility setting
+  await loadGradeVisibilitySetting();
 
   // Load auto-refresh setting
   await loadAutoRefreshSetting();

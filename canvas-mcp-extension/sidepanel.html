@@ -346,6 +346,52 @@
       color: #00539B;
     }
 
+    .assignment-badges {
+      display: flex;
+      gap: 6px;
+      flex-wrap: wrap;
+      margin-top: 8px;
+    }
+
+    .assignment-badge {
+      font-size: 10px;
+      padding: 3px 8px;
+      border-radius: 12px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.3px;
+    }
+
+    .assignment-badge.submitted {
+      background: #DCFCE7;
+      color: #059669;
+    }
+
+    .assignment-badge.late {
+      background: #FEE2E2;
+      color: #DC2626;
+    }
+
+    .assignment-badge.completed {
+      background: #DBEAFE;
+      color: #0284C7;
+    }
+
+    .assignment-badge.missing {
+      background: #FEF3C7;
+      color: #D97706;
+    }
+
+    .assignment-grade {
+      font-size: 11px;
+      font-weight: 600;
+      color: #059669;
+      padding: 3px 8px;
+      background: #F0FDF4;
+      border-radius: 12px;
+      border: 1px solid #BBF7D0;
+    }
+
     .empty-state {
       text-align: center;
       padding: 40px 20px;
@@ -1031,6 +1077,16 @@
             Save Time Range
           </button>
           <div class="status-message" id="timeRangeStatus"></div>
+        </div>
+
+        <div class="canvas-url" style="margin-top: 16px;">
+          <label class="canvas-url-label">Display Options</label>
+          <div style="display: flex; flex-direction: column; gap: 12px; padding: 8px 0;">
+            <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
+              <input type="checkbox" id="showGradesToggle" style="cursor: pointer;">
+              <span style="font-size: 13px; color: #374151;">Show assignment grades</span>
+            </label>
+          </div>
         </div>
 
         <div class="canvas-url" style="margin-top: 16px;">

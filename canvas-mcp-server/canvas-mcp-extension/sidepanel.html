@@ -59,10 +59,13 @@
       align-items: center;
       justify-content: center;
       transition: all 0.15s ease;
+      font-size: 18px;
+      color: #6B7280;
     }
 
     .btn-icon:hover {
       background: #F3F4F6;
+      color: #374151;
     }
 
     .title {
@@ -622,10 +625,14 @@
       align-items: center;
       justify-content: center;
       transition: all 0.15s ease;
+      font-size: 24px;
+      color: #6B7280;
+      line-height: 1;
     }
 
     .modal-close:hover {
       background: #F3F4F6;
+      color: #374151;
     }
 
     .modal-body {
@@ -660,12 +667,8 @@
       <h1 class="title">CanvasFlow</h1>
     </div>
     <div class="header-right">
-      <button class="btn-icon" id="headerRefreshBtn" title="Refresh data">
-        <i data-feather="refresh-cw"></i>
-      </button>
-      <button class="btn-icon" id="settingsBtn" title="Settings">
-        <i data-feather="settings"></i>
-      </button>
+      <button class="btn-icon" id="headerRefreshBtn" title="Refresh data">↻</button>
+      <button class="btn-icon" id="settingsBtn" title="Settings">⚙</button>
     </div>
   </div>
 
@@ -768,9 +771,7 @@
     <div class="modal-content">
       <div class="modal-header">
         <h2 class="modal-title">Settings</h2>
-        <button class="modal-close" id="closeSettingsModal">
-          <i data-feather="x"></i>
-        </button>
+        <button class="modal-close" id="closeSettingsModal">×</button>
       </div>
       <div class="modal-body">
         <div class="canvas-url">
@@ -823,13 +824,6 @@
     </div>
   </div>
 
-  <script src="https://unpkg.com/feather-icons"></script>
   <script src="sidepanel.js"></script>
-  <script>
-    // Initialize Feather icons
-    if (typeof feather !== 'undefined') {
-      feather.replace();
-    }
-  </script>
 </body>
 </html>

@@ -15,7 +15,7 @@ body {
 
 /* Header */
 .header {
-  background: linear-gradient(to right, #dc2626, #339898);
+  background: linear-gradient(to right, #dc2626, #0577B1);
   border-bottom: 1px solid #E5E7EB;
   padding: 32px 40px;
   position: sticky;
@@ -31,7 +31,7 @@ body {
   left: 0;
   right: 0;
   bottom: 0;
-  background: linear-gradient(to right, rgba(220, 38, 38, 0.3), rgba(51, 152, 152, 0.3));
+  background: linear-gradient(to right, rgba(220, 38, 38, 0.3), rgba(5, 119, 177, 0.3));
 }
 
 .header-content {

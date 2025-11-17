@@ -291,12 +291,14 @@ function renderAssignments() {
 
     return `
       <a href="${escapeHtml(assignmentUrl)}" target="_blank" class="${cardClass}">
-        <div class="assignment-title">${escapeHtml(assignment.name || 'Untitled Assignment')}</div>
-        <div class="assignment-meta">
-          <span>${escapeHtml(assignment.courseName || 'Unknown Course')}</span>
-          ${assignment.pointsPossible ? `<span>${assignment.pointsPossible} pts</span>` : ''}
+        <div class="assignment-info">
+          <div class="assignment-title">${escapeHtml(assignment.name || 'Untitled Assignment')}</div>
+          <div class="assignment-meta">
+            <span>${escapeHtml(assignment.courseName || 'Unknown Course')}</span>
+            ${assignment.pointsPossible ? `<span>${assignment.pointsPossible} pts</span>` : ''}
+          </div>
+          <div class="${dueDateClass}">Due: ${dueDateText}</div>
         </div>
-        <div class="${dueDateClass}">Due: ${dueDateText}</div>
         ${badges || gradeDisplay ? `<div class="assignment-badges">${badges}${gradeDisplay}</div>` : ''}
       </a>
     `;
@@ -464,7 +466,7 @@ settingsBtn.addEventListener('click', async () => {
   settingsModal.classList.add('show');
 
   // Load current settings
-  const result = await chrome.storage.local.get(['claudeApiKey', 'assignmentWeeksBefore', 'assignmentWeeksAfter', 'showGrades']);
+  const result = await chrome.storage.local.get(['claudeApiKey', 'assignmentWeeksBefore', 'assignmentWeeksAfter']);
   if (result.claudeApiKey) {
     document.getElementById('claudeApiKey').value = result.claudeApiKey;
   }
@@ -472,9 +474,6 @@ settingsBtn.addEventListener('click', async () => {
   // Load time range settings
   document.getElementById('assignmentWeeksBefore').value = result.assignmentWeeksBefore || 2;
   document.getElementById('assignmentWeeksAfter').value = result.assignmentWeeksAfter || 2;
-
-  // Load grade visibility setting
-  document.getElementById('showGradesToggle').checked = result.showGrades || false;
 });
 
 closeSettingsModal.addEventListener('click', () => {
@@ -716,17 +715,30 @@ async function saveAutoRefreshSetting(enabled) {
   }
 }
 
-// Show grades toggle event listener
-document.getElementById('showGradesToggle').addEventListener('change', async (e) => {
-  const checked = e.target.checked;
+// Toggle grades button event listener
+document.getElementById('toggleGradesBtn').addEventListener('click', async () => {
+  showGrades = !showGrades;
+
   try {
-    await chrome.storage.local.set({ showGrades: checked });
-    showGrades = checked;
+    await chrome.storage.local.set({ showGrades });
+    updateGradesIcon();
     renderAssignments(); // Re-render to show/hide grades
   } catch (error) {
     console.error('Error saving show grades setting:', error);
   }
 });
+
+// Update grades icon based on state
+function updateGradesIcon() {
+  const icon = document.getElementById('gradesEyeIcon');
+  if (icon) {
+    icon.setAttribute('data-lucide', showGrades ? 'eye' : 'eye-off');
+    // Re-initialize lucide icons
+    if (window.lucide) {
+      window.lucide.createIcons();
+    }
+  }
+}
 
 // Auto-refresh toggle event listener
 document.getElementById('autoRefreshToggle').addEventListener('change', (e) => {
@@ -814,6 +826,7 @@ async function loadGradeVisibilitySetting() {
     const result = await chrome.storage.local.get(['showGrades']);
     showGrades = result.showGrades || false;
     console.log('Loaded grade visibility setting:', showGrades);
+    updateGradesIcon(); // Update icon on load
   } catch (error) {
     console.error('Error loading grade visibility setting:', error);
   }

@@ -292,7 +292,9 @@
       cursor: pointer;
       text-decoration: none;
       color: inherit;
-      display: block;
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
     }
 
     .assignment-card:hover {
@@ -308,6 +310,11 @@
     .assignment-card.completed {
       border-left-color: #059669;
       opacity: 0.7;
+    }
+
+    .assignment-info {
+      flex: 1;
+      min-width: 0;
     }
 
     .assignment-title {
@@ -348,9 +355,10 @@
 
     .assignment-badges {
       display: flex;
+      flex-direction: column;
       gap: 6px;
-      flex-wrap: wrap;
-      margin-top: 8px;
+      align-items: flex-end;
+      flex-shrink: 0;
     }
 
     .assignment-badge {
@@ -951,6 +959,9 @@
           <i id="assignmentsSectionIcon" data-lucide="clock" style="width: 18px; height: 18px;"></i>
           <span id="assignmentsSectionText">Due Today</span>
         </span>
+        <button id="toggleGradesBtn" class="btn-icon" title="Toggle grade visibility" style="padding: 6px; background: transparent; border: 1px solid #E5E7EB; border-radius: 6px;">
+          <i id="gradesEyeIcon" data-lucide="eye-off" style="width: 16px; height: 16px; color: #6B7280;"></i>
+        </button>
       </div>
       <div id="assignmentsList">
         <div class="loading">
@@ -1077,16 +1088,6 @@
             Save Time Range
           </button>
           <div class="status-message" id="timeRangeStatus"></div>
-        </div>
-
-        <div class="canvas-url" style="margin-top: 16px;">
-          <label class="canvas-url-label">Display Options</label>
-          <div style="display: flex; flex-direction: column; gap: 12px; padding: 8px 0;">
-            <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
-              <input type="checkbox" id="showGradesToggle" style="cursor: pointer;">
-              <span style="font-size: 13px; color: #374151;">Show assignment grades</span>
-            </label>
-          </div>
         </div>
 
         <div class="canvas-url" style="margin-top: 16px;">

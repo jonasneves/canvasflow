@@ -201,8 +201,7 @@ function renderAssignments() {
 
     let statusText = '';
     if (isCompleted) statusText = '✓ Submitted';
-    else if (isDueToday) statusText = '⏰ Due today';
-    // Overdue status is indicated by red color, no label needed
+    // Due today and overdue status indicated by color, no label needed
 
     const assignmentUrl = assignment.url || '#';
 

@@ -360,7 +360,7 @@ function formatDueDate(dueDate) {
   const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
 
   if (diffDays < 0) {
-    return `Overdue by ${Math.abs(diffDays)} day${Math.abs(diffDays) !== 1 ? 's' : ''}`;
+    return `Due ${date.toLocaleDateString()}`;
   } else if (diffDays === 0) {
     return `Due today at ${date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`;
   } else if (diffDays === 1) {

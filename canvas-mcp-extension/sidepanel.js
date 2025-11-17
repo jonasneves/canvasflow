@@ -982,6 +982,16 @@ function escapeHtml(text) {
 // Generate Insights Button
 document.getElementById('generateInsightsBtn').addEventListener('click', generateAIInsights);
 
+// Setup instructions toggle
+const setupToggle = document.getElementById('setupToggle');
+const setupContent = document.getElementById('setupContent');
+const setupChevron = setupToggle.querySelector('.chevron');
+
+setupToggle.addEventListener('click', () => {
+  const isOpen = setupContent.classList.toggle('open');
+  setupChevron.classList.toggle('open', isOpen);
+});
+
 initialize();
 
 // Periodic updates

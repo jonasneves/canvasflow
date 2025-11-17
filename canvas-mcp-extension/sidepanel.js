@@ -733,12 +733,14 @@ document.getElementById('toggleGradesBtn').addEventListener('click', async () =>
 // Update grades icon based on state
 function updateGradesIcon() {
   const icon = document.getElementById('gradesEyeIcon');
-  if (icon) {
-    icon.setAttribute('data-lucide', showGrades ? 'eye' : 'eye-off');
-    // Re-initialize lucide icons
-    if (window.lucide) {
-      window.lucide.createIcons();
-    }
+  if (!icon) return;
+
+  const iconName = showGrades ? 'eye' : 'eye-off';
+  icon.setAttribute('data-lucide', iconName);
+
+  // Re-initialize this specific icon
+  if (typeof initializeLucide === 'function') {
+    initializeLucide();
   }
 }
 

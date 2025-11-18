@@ -399,6 +399,21 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     return true;
   }
 
+  if (request.type === 'OPEN_SIDEPANEL') {
+    // Open the sidepanel for the requesting tab
+    if (sender.tab && sender.tab.windowId) {
+      chrome.sidePanel.open({ windowId: sender.tab.windowId })
+        .then(() => sendResponse({ success: true }))
+        .catch(error => {
+          console.error('Failed to open sidepanel:', error);
+          sendResponse({ success: false, error: error.message });
+        });
+    } else {
+      sendResponse({ success: false, error: 'No valid window ID' });
+    }
+    return true;
+  }
+
 });
 
 async function handleMCPRequest(payload) {

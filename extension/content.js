@@ -469,6 +469,15 @@
             case 'FETCH_ASSIGNMENTS':
               canvasDataPayload = { assignments: { [courseId]: data } };
               break;
+            case 'FETCH_USER_SUBMISSIONS':
+              canvasDataPayload = { submissions: { [courseId]: data }, courseId: courseId };
+              break;
+            case 'FETCH_COURSE_MODULES':
+              canvasDataPayload = { modules: { [courseId]: data }, courseId: courseId };
+              break;
+            case 'FETCH_COURSE_ANALYTICS':
+              canvasDataPayload = { analytics: { [courseId]: data }, courseId: courseId };
+              break;
             case 'FETCH_ALL_DATA':
               canvasDataPayload = data; // Already structured correctly
               break;

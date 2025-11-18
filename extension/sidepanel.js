@@ -653,7 +653,9 @@ async function autoDetectCanvasUrl(showMessages = true) {
   try {
     const tabs = await chrome.tabs.query({});
     const canvasPatterns = [
-      /^https?:\/\/canvas\.[^\/]+/,
+      // Match canvas.*.edu (e.g., canvas.university.edu)
+      /^https?:\/\/canvas\.[^\/]*\.edu/i,
+      // Match *.edu/canvas (e.g., university.edu/canvas)
       /^https?:\/\/[^\/]*\.edu\/.*canvas/i,
     ];
 
@@ -664,7 +666,8 @@ async function autoDetectCanvasUrl(showMessages = true) {
         try {
           const url = new URL(tab.url);
           const baseUrl = `${url.protocol}//${url.host}`;
-          if (!detectedUrls.includes(baseUrl)) {
+          // Exclude canvas.instructure.com (demo instance)
+          if (!detectedUrls.includes(baseUrl) && !baseUrl.includes('canvas.instructure.com')) {
             detectedUrls.push(baseUrl);
           }
         } catch (e) {

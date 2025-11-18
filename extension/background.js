@@ -210,8 +210,13 @@ async function getConfiguredCanvasUrl() {
 function isCanvasUrl(url) {
   if (!url) return false;
 
+  // Exclude canvas.instructure.com (demo instance)
+  if (url.includes('canvas.instructure.com')) return false;
+
   const canvasPatterns = [
-    /^https?:\/\/canvas\.[^\/]+/,
+    // Match canvas.*.edu (e.g., canvas.university.edu)
+    /^https?:\/\/canvas\.[^\/]*\.edu/i,
+    // Match *.edu/canvas (e.g., university.edu/canvas)
     /^https?:\/\/[^\/]*\.edu\/.*canvas/i,
   ];
 

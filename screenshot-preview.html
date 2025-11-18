@@ -1,0 +1,513 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CanvasFlow Screenshots Review</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: #f5f5f5;
+      padding: 20px;
+    }
+
+    .container {
+      max-width: 1600px;
+      margin: 0 auto;
+      background: white;
+      padding: 40px;
+      border-radius: 12px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+
+    h1 {
+      color: #00539B;
+      margin-bottom: 10px;
+    }
+
+    .subtitle {
+      color: #666;
+      margin-bottom: 30px;
+      font-size: 14px;
+    }
+
+    .comparison {
+      margin-bottom: 60px;
+      border-bottom: 2px solid #eee;
+      padding-bottom: 40px;
+    }
+
+    .comparison:last-child {
+      border-bottom: none;
+    }
+
+    .screenshot-header {
+      margin-bottom: 20px;
+    }
+
+    .screenshot-header h2 {
+      color: #333;
+      font-size: 20px;
+      margin-bottom: 8px;
+    }
+
+    .screenshot-header .description {
+      color: #666;
+      font-size: 14px;
+      margin-bottom: 8px;
+    }
+
+    .screenshot-header .meta {
+      display: flex;
+      gap: 20px;
+      font-size: 13px;
+      color: #999;
+    }
+
+    .images {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 30px;
+      margin-top: 20px;
+    }
+
+    .image-box {
+      border: 1px solid #ddd;
+      border-radius: 8px;
+      overflow: hidden;
+      background: white;
+    }
+
+    .image-box .label {
+      background: #f8f8f8;
+      padding: 12px 16px;
+      font-weight: 600;
+      font-size: 13px;
+      color: #555;
+      border-bottom: 1px solid #ddd;
+    }
+
+    .image-box .label .badge {
+      display: inline-block;
+      padding: 2px 8px;
+      border-radius: 4px;
+      font-size: 11px;
+      margin-left: 8px;
+      font-weight: 500;
+    }
+
+    .image-box .label .good {
+      background: #d4edda;
+      color: #155724;
+    }
+
+    .image-box .label .bad {
+      background: #f8d7da;
+      color: #721c24;
+    }
+
+    .image-box .label .dims {
+      float: right;
+      font-weight: normal;
+      color: #777;
+    }
+
+    .image-box img {
+      width: 100%;
+      display: block;
+      border: 1px solid #eee;
+    }
+
+    .image-box .info {
+      padding: 12px 16px;
+      font-size: 12px;
+      color: #666;
+      background: #fafafa;
+      border-top: 1px solid #eee;
+    }
+
+    .status-badge {
+      display: inline-block;
+      padding: 4px 12px;
+      border-radius: 12px;
+      font-size: 12px;
+      font-weight: 600;
+      margin-left: 10px;
+    }
+
+    .status-badge.included {
+      background: #d4edda;
+      color: #155724;
+    }
+
+    .status-badge.excluded {
+      background: #fff3cd;
+      color: #856404;
+    }
+
+    .status-badge.maybe {
+      background: #d1ecf1;
+      color: #0c5460;
+    }
+
+    .notes {
+      background: #fff3cd;
+      border-left: 4px solid #ffc107;
+      padding: 16px;
+      margin-top: 20px;
+      border-radius: 4px;
+      font-size: 14px;
+    }
+
+    .notes h3 {
+      margin-bottom: 8px;
+      font-size: 14px;
+      color: #856404;
+    }
+
+    .crop-warning {
+      background: #f8d7da;
+      border-left: 4px solid #dc3545;
+      padding: 12px;
+      margin-top: 10px;
+      border-radius: 4px;
+      font-size: 13px;
+      color: #721c24;
+    }
+
+    .single-image {
+      grid-column: 1 / -1;
+    }
+
+    .controls {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      background: white;
+      padding: 20px;
+      border-radius: 8px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+      max-width: 300px;
+    }
+
+    .controls h3 {
+      font-size: 14px;
+      margin-bottom: 12px;
+      color: #333;
+    }
+
+    .controls label {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 8px;
+      font-size: 13px;
+      cursor: pointer;
+    }
+
+    .controls input[type="checkbox"] {
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>📸 CanvasFlow Screenshots Review</h1>
+    <p class="subtitle">Review original vs. resized screenshots. Chrome Web Store requires 1280x800 pixels.</p>
+
+    <!-- Screenshot 1: Dashboard -->
+    <div class="comparison">
+      <div class="screenshot-header">
+        <h2>
+          #1 - Dashboard View
+          <span class="status-badge included">✓ INCLUDED</span>
+        </h2>
+        <div class="description">Assignment tracking with summary cards (0 overdue, 0 due today, 7 upcoming)</div>
+        <div class="meta">
+          <span>📄 File: Screenshot 8.02.08 PM.png</span>
+          <span>🎯 Priority: High (core feature)</span>
+        </div>
+      </div>
+      <div class="images">
+        <div class="image-box">
+          <div class="label">
+            Original
+            <span class="badge bad">❌ Wrong Size</span>
+            <span class="dims">1180 x 1722</span>
+          </div>
+          <img src="screenshots/Screenshot 2025-11-17 at 8.02.08 PM.png" alt="Original Dashboard">
+          <div class="info">Aspect ratio: 0.69 (too tall)</div>
+        </div>
+        <div class="image-box">
+          <div class="label">
+            Resized (Current)
+            <span class="badge good">✅ Chrome Web Store Ready</span>
+            <span class="dims">1280 x 800</span>
+          </div>
+          <img src="screenshots/screenshot-1-dashboard.png" alt="Resized Dashboard">
+          <div class="info">Aspect ratio: 1.6 (perfect) • 174 KB</div>
+        </div>
+      </div>
+      <div class="crop-warning">
+        ⚠️ <strong>Cropping Issue:</strong> Top summary cards might be cut off. Consider showing full sidepanel.
+      </div>
+    </div>
+
+    <!-- Screenshot 2: AI Insights -->
+    <div class="comparison">
+      <div class="screenshot-header">
+        <h2>
+          #2 - AI Insights Panel
+          <span class="status-badge included">✓ INCLUDED</span>
+        </h2>
+        <div class="description">Workload overview with study tips and strategic recommendations</div>
+        <div class="meta">
+          <span>📄 File: Screenshot 8.02.20 PM.png</span>
+          <span>🎯 Priority: Critical (unique AI feature)</span>
+        </div>
+      </div>
+      <div class="images">
+        <div class="image-box">
+          <div class="label">
+            Original
+            <span class="badge bad">❌ Wrong Size</span>
+            <span class="dims">1168 x 1718</span>
+          </div>
+          <img src="screenshots/Screenshot 2025-11-17 at 8.02.20 PM.png" alt="Original AI Insights">
+          <div class="info">Aspect ratio: 0.68 (too tall)</div>
+        </div>
+        <div class="image-box">
+          <div class="label">
+            Resized (Current)
+            <span class="badge good">✅ Chrome Web Store Ready</span>
+            <span class="dims">1280 x 800</span>
+          </div>
+          <img src="screenshots/screenshot-2-ai-insights.png" alt="Resized AI Insights">
+          <div class="info">Aspect ratio: 1.6 (perfect) • 413 KB</div>
+        </div>
+      </div>
+      <div class="crop-warning">
+        ⚠️ <strong>Cropping Issue:</strong> Bottom content (Priority Tasks) might be cut. Shows workload overview well.
+      </div>
+    </div>
+
+    <!-- Screenshot 3: Weekly Schedule -->
+    <div class="comparison">
+      <div class="screenshot-header">
+        <h2>
+          #3 - Weekly Schedule
+          <span class="status-badge included">✓ INCLUDED</span>
+        </h2>
+        <div class="description">AI-generated study plan with time-blocked sessions</div>
+        <div class="meta">
+          <span>📄 File: Screenshot 8.01.40 PM.png</span>
+          <span>🎯 Priority: High (AI feature)</span>
+        </div>
+      </div>
+      <div class="images">
+        <div class="image-box">
+          <div class="label">
+            Original
+            <span class="badge bad">❌ Wrong Size</span>
+            <span class="dims">2052 x 1718</span>
+          </div>
+          <img src="screenshots/Screenshot 2025-11-17 at 8.01.40 PM.png" alt="Original Weekly Schedule">
+          <div class="info">Aspect ratio: 1.19 (too tall)</div>
+        </div>
+        <div class="image-box">
+          <div class="label">
+            Resized (Current)
+            <span class="badge good">✅ Chrome Web Store Ready</span>
+            <span class="dims">1280 x 800</span>
+          </div>
+          <img src="screenshots/screenshot-3-weekly-schedule.png" alt="Resized Weekly Schedule">
+          <div class="info">Aspect ratio: 1.6 (perfect) • 192 KB</div>
+        </div>
+      </div>
+      <div class="crop-warning">
+        ⚠️ <strong>Cropping Issue:</strong> Tuesday section cut off at bottom. Only shows partial weekly view.
+      </div>
+    </div>
+
+    <!-- Screenshot 4: In-Context (Split View) -->
+    <div class="comparison">
+      <div class="screenshot-header">
+        <h2>
+          #4 - In-Context View (Split Screen)
+          <span class="status-badge included">✓ INCLUDED</span>
+        </h2>
+        <div class="description">CanvasFlow side panel working alongside Canvas dashboard</div>
+        <div class="meta">
+          <span>📄 File: Screenshot 8.10.03 PM.png</span>
+          <span>🎯 Priority: Medium (context)</span>
+        </div>
+      </div>
+      <div class="images">
+        <div class="image-box">
+          <div class="label">
+            Original
+            <span class="badge bad">❌ Wrong Size</span>
+            <span class="dims">3024 x 1714</span>
+          </div>
+          <img src="screenshots/Screenshot 2025-11-17 at 8.10.03 PM.png" alt="Original In-Context">
+          <div class="info">Aspect ratio: 1.76 (too wide)</div>
+        </div>
+        <div class="image-box">
+          <div class="label">
+            Resized (Current)
+            <span class="badge good">✅ Chrome Web Store Ready</span>
+            <span class="dims">1280 x 800</span>
+          </div>
+          <img src="screenshots/screenshot-4-in-context.png" alt="Resized In-Context">
+          <div class="info">Aspect ratio: 1.6 (perfect) • 250 KB</div>
+        </div>
+      </div>
+      <div class="notes">
+        <h3>💡 Note:</h3>
+        Shows real-world usage context. Canvas dashboard visible on left, CanvasFlow panel on right.
+      </div>
+    </div>
+
+    <!-- Screenshot 5: MCP Server Tab -->
+    <div class="comparison">
+      <div class="screenshot-header">
+        <h2>
+          #5 - MCP Server Tab (In Extension)
+          <span class="status-badge included">✓ INCLUDED</span>
+        </h2>
+        <div class="description">MCP Server connection tab showing Claude Desktop integration setup</div>
+        <div class="meta">
+          <span>📄 File: Screenshot 8.02.49 PM.png</span>
+          <span>🎯 Priority: Medium (advanced feature)</span>
+        </div>
+      </div>
+      <div class="images">
+        <div class="image-box">
+          <div class="label">
+            Original
+            <span class="badge bad">❌ Wrong Size</span>
+            <span class="dims">1170 x 1716</span>
+          </div>
+          <img src="screenshots/Screenshot 2025-11-17 at 8.02.49 PM.png" alt="Original MCP Server">
+          <div class="info">Aspect ratio: 0.68 (too tall)</div>
+        </div>
+        <div class="image-box">
+          <div class="label">
+            Resized (Current)
+            <span class="badge good">✅ Chrome Web Store Ready</span>
+            <span class="dims">1280 x 800</span>
+          </div>
+          <img src="screenshots/screenshot-5-mcp-server.png" alt="Resized MCP Server">
+          <div class="info">Aspect ratio: 1.6 (perfect) • 175 KB</div>
+        </div>
+      </div>
+      <div class="notes">
+        <h3>💡 Note:</h3>
+        Shows MCP setup instructions within the extension itself. Clear and informative.
+      </div>
+    </div>
+
+    <!-- Screenshot 6: Claude Desktop (Full App) -->
+    <div class="comparison">
+      <div class="screenshot-header">
+        <h2>
+          #6 - Claude Desktop App (MCP in Action)
+          <span class="status-badge maybe">? CONSIDER INCLUDING</span>
+        </h2>
+        <div class="description">Actual Claude Desktop showing MCP integration working - asking about assignments</div>
+        <div class="meta">
+          <span>📄 File: Screenshot 8.33.48 PM.png</span>
+          <span>🎯 Priority: High (shows innovation!)</span>
+        </div>
+      </div>
+      <div class="images">
+        <div class="image-box single-image">
+          <div class="label">
+            Original
+            <span class="badge bad">❌ Wrong Size</span>
+            <span class="dims">1766 x 1780</span>
+          </div>
+          <img src="screenshots/Screenshot 2025-11-17 at 8.33.48 PM.png" alt="Claude Desktop">
+          <div class="info">Aspect ratio: 0.99 (nearly square) • Shows actual MCP conversation</div>
+        </div>
+      </div>
+      <div class="notes">
+        <h3>💡 User's Point:</h3>
+        <strong>This shows the MCP integration actually working!</strong> User asks "what assignment should i focus on next?" and gets intelligent answer. This is a key innovation. Could replace screenshot #5 (the setup tab) OR be added as 6th screenshot.
+      </div>
+    </div>
+
+    <!-- Screenshot 7: Alternative Split View -->
+    <div class="comparison">
+      <div class="screenshot-header">
+        <h2>
+          #7 - Alternative Split View
+          <span class="status-badge excluded">❌ EXCLUDED (Redundant)</span>
+        </h2>
+        <div class="description">Another view of schedule + sidepanel (similar to #4)</div>
+        <div class="meta">
+          <span>📄 File: Screenshot 8.01.58 PM.png</span>
+          <span>🎯 Priority: Low (duplicate)</span>
+        </div>
+      </div>
+      <div class="images">
+        <div class="image-box single-image">
+          <div class="label">
+            Original
+            <span class="badge bad">❌ Wrong Size</span>
+            <span class="dims">3024 x 1716</span>
+          </div>
+          <img src="screenshots/Screenshot 2025-11-17 at 8.01.58 PM.png" alt="Alternative Split">
+          <div class="info">Aspect ratio: 1.76 (too wide) • Similar to screenshot #4</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Screenshot 8: Partial AI Insights -->
+    <div class="comparison">
+      <div class="screenshot-header">
+        <h2>
+          #8 - Partial AI Insights View
+          <span class="status-badge excluded">❌ EXCLUDED (Partial)</span>
+        </h2>
+        <div class="description">Shows bottom portion of AI Insights (Priority Tasks section)</div>
+        <div class="meta">
+          <span>📄 File: Screenshot 8.02.36 PM.png</span>
+          <span>🎯 Priority: Low (incomplete view)</span>
+        </div>
+      </div>
+      <div class="images">
+        <div class="image-box single-image">
+          <div class="label">
+            Original
+            <span class="badge bad">❌ Wrong Size</span>
+            <span class="dims">1170 x 1712</span>
+          </div>
+          <img src="screenshots/Screenshot 2025-11-17 at 8.02.36 PM.png" alt="Partial AI Insights">
+          <div class="info">Aspect ratio: 0.68 (too tall) • Covered by screenshot #2</div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="controls">
+    <h3>🎨 Recommendations</h3>
+    <p style="font-size: 12px; color: #666; margin-bottom: 12px;">
+      <strong>User's concern:</strong> Crops are odd, context is lost, and Claude Desktop screenshot shows key MCP innovation.
+    </p>
+    <p style="font-size: 12px; color: #666; margin-bottom: 12px;">
+      <strong>Options:</strong><br>
+      1. Better cropping strategy (keep more context)<br>
+      2. Include Claude Desktop (#6) instead of MCP tab (#5)<br>
+      3. Find better crop positions for vertical screenshots
+    </p>
+  </div>
+</body>
+</html>

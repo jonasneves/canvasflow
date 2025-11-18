@@ -1,0 +1,468 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CanvasFlow Screenshots - Compare Crops</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: #1a1a1a;
+      color: #fff;
+      padding: 20px;
+    }
+
+    .header {
+      max-width: 1600px;
+      margin: 0 auto 30px;
+      background: linear-gradient(135deg, #dc143c 0%, #00539B 100%);
+      padding: 30px;
+      border-radius: 12px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+    }
+
+    .header h1 {
+      font-size: 32px;
+      margin-bottom: 10px;
+    }
+
+    .header p {
+      opacity: 0.9;
+      font-size: 14px;
+    }
+
+    .grid {
+      max-width: 1600px;
+      margin: 0 auto;
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(600px, 1fr));
+      gap: 20px;
+    }
+
+    .screenshot-card {
+      background: #2a2a2a;
+      border-radius: 12px;
+      overflow: hidden;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+      transition: transform 0.2s;
+    }
+
+    .screenshot-card:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 8px 20px rgba(0,0,0,0.7);
+    }
+
+    .card-header {
+      background: #333;
+      padding: 16px 20px;
+      border-bottom: 2px solid #444;
+    }
+
+    .card-header h2 {
+      font-size: 18px;
+      margin-bottom: 6px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .card-header .status {
+      display: inline-block;
+      padding: 3px 10px;
+      border-radius: 12px;
+      font-size: 11px;
+      font-weight: 600;
+    }
+
+    .status.included { background: #28a745; color: white; }
+    .status.consider { background: #ffc107; color: #000; }
+    .status.excluded { background: #dc3545; color: white; }
+
+    .card-header .desc {
+      font-size: 13px;
+      color: #bbb;
+      margin-bottom: 8px;
+    }
+
+    .card-header .meta {
+      font-size: 11px;
+      color: #888;
+    }
+
+    .versions {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 0;
+    }
+
+    .version {
+      position: relative;
+      background: #1a1a1a;
+    }
+
+    .version-label {
+      position: absolute;
+      top: 10px;
+      left: 10px;
+      background: rgba(0,0,0,0.8);
+      color: white;
+      padding: 6px 12px;
+      border-radius: 6px;
+      font-size: 12px;
+      font-weight: 600;
+      z-index: 10;
+      backdrop-filter: blur(10px);
+    }
+
+    .version-label .badge {
+      display: inline-block;
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-size: 10px;
+      margin-left: 6px;
+    }
+
+    .badge.good { background: #28a745; }
+    .badge.warning { background: #ffc107; color: #000; }
+
+    .version img {
+      width: 100%;
+      display: block;
+      cursor: zoom-in;
+    }
+
+    .version:hover img {
+      opacity: 0.95;
+    }
+
+    .version-info {
+      padding: 10px 12px;
+      font-size: 11px;
+      color: #999;
+      background: #222;
+      border-top: 1px solid #333;
+    }
+
+    .full-view {
+      grid-column: 1 / -1;
+    }
+
+    .full-view .versions {
+      grid-template-columns: 1fr;
+    }
+
+    .notes {
+      padding: 16px 20px;
+      background: #2d2d2d;
+      border-top: 2px solid #444;
+      font-size: 13px;
+      line-height: 1.6;
+    }
+
+    .notes strong {
+      color: #ffc107;
+    }
+
+    .notes.good {
+      border-top-color: #28a745;
+      background: #1a2f1a;
+    }
+
+    .notes.warning {
+      border-top-color: #ffc107;
+      background: #2f2a1a;
+    }
+
+    .notes.critical {
+      border-top-color: #dc3545;
+      background: #2f1a1a;
+    }
+
+    .controls {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      background: #2a2a2a;
+      padding: 20px;
+      border-radius: 12px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.7);
+      max-width: 350px;
+      border: 1px solid #444;
+    }
+
+    .controls h3 {
+      font-size: 14px;
+      margin-bottom: 12px;
+      color: #ffc107;
+    }
+
+    .controls p {
+      font-size: 12px;
+      line-height: 1.6;
+      margin-bottom: 12px;
+      color: #ccc;
+    }
+
+    .controls ul {
+      list-style: none;
+      font-size: 12px;
+      line-height: 1.8;
+      color: #aaa;
+    }
+
+    .controls ul li:before {
+      content: "→ ";
+      color: #ffc107;
+      margin-right: 4px;
+    }
+
+    .lightbox {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0,0,0,0.95);
+      z-index: 1000;
+      padding: 40px;
+      cursor: zoom-out;
+    }
+
+    .lightbox.active {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .lightbox img {
+      max-width: 100%;
+      max-height: 100%;
+      border-radius: 8px;
+      box-shadow: 0 8px 40px rgba(0,0,0,0.8);
+    }
+
+    @media (max-width: 1200px) {
+      .grid {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <h1>📸 CanvasFlow Screenshots - Crop Comparison</h1>
+    <p>Comparing Center Crop (v1) vs. Smart Crop (v2) strategies. Click images to zoom.</p>
+  </div>
+
+  <div class="grid">
+    <!-- Screenshot 1: Dashboard -->
+    <div class="screenshot-card">
+      <div class="card-header">
+        <h2>
+          #1 Dashboard View
+          <span class="status included">✓ MUST INCLUDE</span>
+        </h2>
+        <div class="desc">Assignment tracking with summary cards</div>
+        <div class="meta">Core feature • Shows 0 overdue, 0 today, 7 upcoming</div>
+      </div>
+      <div class="versions">
+        <div class="version">
+          <div class="version-label">v1 - Center Crop <span class="badge warning">⚠</span></div>
+          <img src="screenshots/screenshot-1-dashboard.png" alt="Dashboard v1" onclick="showLightbox(this)">
+          <div class="version-info">174 KB • Crops top/bottom equally</div>
+        </div>
+        <div class="version">
+          <div class="version-label">v2 - Top Crop <span class="badge good">✓</span></div>
+          <img src="screenshots/screenshot-1-dashboard-v2.png" alt="Dashboard v2" onclick="showLightbox(this)">
+          <div class="version-info">207 KB • Keeps summary cards visible</div>
+        </div>
+      </div>
+      <div class="notes good">
+        <strong>✓ Better:</strong> v2 keeps the important summary cards (0/0/7) at the top visible. This is what users see first!
+      </div>
+    </div>
+
+    <!-- Screenshot 2: AI Insights -->
+    <div class="screenshot-card">
+      <div class="card-header">
+        <h2>
+          #2 AI Insights
+          <span class="status included">✓ MUST INCLUDE</span>
+        </h2>
+        <div class="desc">Workload analysis with study tips</div>
+        <div class="meta">Unique AI feature • Shows 16h workload, High intensity</div>
+      </div>
+      <div class="versions">
+        <div class="version">
+          <div class="version-label">v1 - Center Crop <span class="badge warning">⚠</span></div>
+          <img src="screenshots/screenshot-2-ai-insights.png" alt="AI Insights v1" onclick="showLightbox(this)">
+          <div class="version-info">413 KB • Middle section</div>
+        </div>
+        <div class="version">
+          <div class="version-label">v2 - Top Crop <span class="badge good">✓</span></div>
+          <img src="screenshots/screenshot-2-ai-insights-v2.png" alt="AI Insights v2" onclick="showLightbox(this)">
+          <div class="version-info">235 KB • Focuses on workload overview</div>
+        </div>
+      </div>
+      <div class="notes good">
+        <strong>✓ Better:</strong> v2 shows the complete "Workload Overview" section which is the most important AI insight.
+      </div>
+    </div>
+
+    <!-- Screenshot 3: Weekly Schedule -->
+    <div class="screenshot-card">
+      <div class="card-header">
+        <h2>
+          #3 Weekly Schedule
+          <span class="status included">✓ MUST INCLUDE</span>
+        </h2>
+        <div class="desc">AI-generated study plan</div>
+        <div class="meta">AI feature • Shows Monday & Tuesday breakdown</div>
+      </div>
+      <div class="versions">
+        <div class="version">
+          <div class="version-label">v1 - Center Crop <span class="badge warning">⚠</span></div>
+          <img src="screenshots/screenshot-3-weekly-schedule.png" alt="Schedule v1" onclick="showLightbox(this)">
+          <div class="version-info">192 KB • Partial Monday view</div>
+        </div>
+        <div class="version">
+          <div class="version-label">v2 - Top Crop <span class="badge good">✓</span></div>
+          <img src="screenshots/screenshot-3-weekly-schedule-v2.png" alt="Schedule v2" onclick="showLightbox(this)">
+          <div class="version-info">223 KB • Shows Monday + Tuesday header</div>
+        </div>
+      </div>
+      <div class="notes good">
+        <strong>✓ Better:</strong> v2 shows Monday's full schedule (3 sessions) and Tuesday header, giving better context of the weekly plan.
+      </div>
+    </div>
+
+    <!-- Screenshot 4: In-Context -->
+    <div class="screenshot-card">
+      <div class="card-header">
+        <h2>
+          #4 In-Context View
+          <span class="status included">✓ INCLUDE</span>
+        </h2>
+        <div class="desc">CanvasFlow working alongside Canvas</div>
+        <div class="meta">Shows real-world usage • Split view</div>
+      </div>
+      <div class="versions">
+        <div class="version">
+          <div class="version-label">v1 - Center Crop <span class="badge good">✓</span></div>
+          <img src="screenshots/screenshot-4-in-context.png" alt="In-Context v1" onclick="showLightbox(this)">
+          <div class="version-info">250 KB • Both panels visible</div>
+        </div>
+        <div class="version">
+          <div class="version-label">v2 - Center Crop <span class="badge good">✓</span></div>
+          <img src="screenshots/screenshot-4-in-context-v2.png" alt="In-Context v2" onclick="showLightbox(this)">
+          <div class="version-info">250 KB • Same (already good)</div>
+        </div>
+      </div>
+      <div class="notes good">
+        <strong>≈ Same:</strong> Both versions are essentially identical. Center crop works perfectly for wide split-screen view.
+      </div>
+    </div>
+
+    <!-- Screenshot 5: MCP Server Tab -->
+    <div class="screenshot-card">
+      <div class="card-header">
+        <h2>
+          #5 MCP Server Tab
+          <span class="status consider">? CONSIDER</span>
+        </h2>
+        <div class="desc">MCP setup instructions (within extension)</div>
+        <div class="meta">Shows how to connect to Claude Desktop</div>
+      </div>
+      <div class="versions">
+        <div class="version">
+          <div class="version-label">v1 - Center Crop <span class="badge warning">⚠</span></div>
+          <img src="screenshots/screenshot-5-mcp-server.png" alt="MCP Tab v1" onclick="showLightbox(this)">
+          <div class="version-info">175 KB • Middle section</div>
+        </div>
+        <div class="version">
+          <div class="version-label">v2 - Top Crop <span class="badge good">✓</span></div>
+          <img src="screenshots/screenshot-5-mcp-server-v2.png" alt="MCP Tab v2" onclick="showLightbox(this)">
+          <div class="version-info">278 KB • Shows full instructions</div>
+        </div>
+      </div>
+      <div class="notes warning">
+        <strong>⚠ Decision:</strong> This shows setup instructions, but screenshot #6 shows MCP actually working. Consider replacing this with #6.
+      </div>
+    </div>
+
+    <!-- Screenshot 6: Claude Desktop (THE KEY ONE!) -->
+    <div class="screenshot-card full-view">
+      <div class="card-header">
+        <h2>
+          #6 Claude Desktop - MCP in Action
+          <span class="status consider">⭐ KEY INNOVATION!</span>
+        </h2>
+        <div class="desc">Actual MCP integration working - User asks "what assignment should i focus on next?"</div>
+        <div class="meta">Shows the REAL value • Natural conversation with Canvas data</div>
+      </div>
+      <div class="versions">
+        <div class="version">
+          <div class="version-label">v2 - Center Crop <span class="badge good">✓ NEW</span></div>
+          <img src="screenshots/screenshot-6-claude-desktop-v2.png" alt="Claude Desktop" onclick="showLightbox(this)">
+          <div class="version-info">411 KB • Shows question + intelligent answer about priorities</div>
+        </div>
+      </div>
+      <div class="notes critical">
+        <strong>🎯 USER'S POINT:</strong> This screenshot shows your MCP innovation actually working! It demonstrates the value proposition much better than showing setup instructions. User asks a question and gets intelligent, personalized advice based on their Canvas data.<br><br>
+        <strong>Recommendation:</strong> Include this as screenshot #5 instead of the MCP setup tab.
+      </div>
+    </div>
+  </div>
+
+  <div class="controls">
+    <h3>🎨 Recommendations</h3>
+    <p><strong>Problems with v1 (center crop):</strong></p>
+    <ul>
+      <li>Cuts off summary cards (#1)</li>
+      <li>Loses workload context (#2)</li>
+      <li>Random middle sections shown</li>
+    </ul>
+    <p><strong>Improvements in v2 (smart crop):</strong></p>
+    <ul>
+      <li>Top crop for vertical screenshots</li>
+      <li>Keeps important UI elements</li>
+      <li>Better context and flow</li>
+    </ul>
+    <p><strong>Final recommendation:</strong></p>
+    <ul>
+      <li>Use v2 for screenshots #1-3</li>
+      <li>Use v1 or v2 for #4 (same)</li>
+      <li>Replace #5 with #6 (Claude Desktop)</li>
+    </ul>
+  </div>
+
+  <div class="lightbox" onclick="hideLightbox()">
+    <img src="" alt="Zoomed">
+  </div>
+
+  <script>
+    function showLightbox(img) {
+      const lightbox = document.querySelector('.lightbox');
+      const lightboxImg = lightbox.querySelector('img');
+      lightboxImg.src = img.src;
+      lightbox.classList.add('active');
+    }
+
+    function hideLightbox() {
+      document.querySelector('.lightbox').classList.remove('active');
+    }
+
+    // ESC key to close
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') hideLightbox();
+    });
+  </script>
+</body>
+</html>

@@ -27,6 +27,7 @@ let canvasData = {
   submissions: {},
   modules: {},
   analytics: {},
+  userProfile: null,
   lastUpdate: null
 };
 
@@ -109,6 +110,11 @@ function handleRequest(req, res) {
         if (data.analytics) {
           Object.assign(canvasData.analytics, data.analytics);
           log(`Received analytics for course ${Object.keys(data.analytics).join(', ')}`);
+        }
+
+        if (data.userProfile) {
+          canvasData.userProfile = data.userProfile;
+          log(`Received user profile for ${data.userProfile.name}`);
         }
 
         canvasData.lastUpdate = new Date().toISOString();
@@ -315,6 +321,15 @@ async function handleMCPRequest(request) {
                 },
                 required: ["course_id"]
               }
+            },
+            {
+              name: "get_user_profile",
+              description: "Get the current user's profile information including name, email, avatar, bio, pronouns, and timezone",
+              inputSchema: {
+                type: "object",
+                properties: {},
+                required: []
+              }
             }
           ]
         };
@@ -490,6 +505,27 @@ async function handleMCPRequest(request) {
                 text: JSON.stringify({
                   courseId: courseId,
                   note: "Analytics data not available for this course. Analytics may not be enabled on this Canvas instance."
+                }, null, 2)
+              }]
+            };
+          }
+
+        } else if (toolName === 'get_user_profile') {
+          const userProfile = canvasData.userProfile || null;
+
+          if (userProfile) {
+            result = {
+              content: [{
+                type: "text",
+                text: JSON.stringify(userProfile, null, 2)
+              }]
+            };
+          } else {
+            result = {
+              content: [{
+                type: "text",
+                text: JSON.stringify({
+                  note: "User profile not available. Make sure the Chrome extension has fetched the user profile."
                 }, null, 2)
               }]
             };

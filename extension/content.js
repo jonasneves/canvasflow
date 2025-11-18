@@ -310,6 +310,31 @@
     }
   }
 
+  async function fetchUserProfile() {
+    try {
+      const url = `${API_BASE}/users/self/profile`;
+      const profile = await fetchJson(url);
+
+      return {
+        id: String(profile.id),
+        name: profile.name,
+        shortName: profile.short_name,
+        sortableName: profile.sortable_name,
+        primaryEmail: profile.primary_email,
+        loginId: profile.login_id,
+        avatarUrl: profile.avatar_url,
+        bio: profile.bio,
+        pronouns: profile.pronouns,
+        pronunciation: profile.pronunciation,
+        timeZone: profile.time_zone,
+        locale: profile.locale,
+        k5User: profile.k5_user
+      };
+    } catch (error) {
+      return null;
+    }
+  }
+
   // Add CanvasFlow button to Canvas navigation
   function injectCanvasFlowButton() {
     // Wait for Canvas navigation to load
@@ -428,6 +453,9 @@
           }
           promise = fetchCourseAnalytics(courseId);
           break;
+        case 'FETCH_USER_PROFILE':
+          promise = fetchUserProfile();
+          break;
         case 'FETCH_ALL_DATA':
           promise = (async () => {
             const courses = await fetchCourses();
@@ -477,6 +505,9 @@
               break;
             case 'FETCH_COURSE_ANALYTICS':
               canvasDataPayload = { analytics: { [courseId]: data }, courseId: courseId };
+              break;
+            case 'FETCH_USER_PROFILE':
+              canvasDataPayload = { userProfile: data };
               break;
             case 'FETCH_ALL_DATA':
               canvasDataPayload = data; // Already structured correctly

@@ -897,6 +897,87 @@ checkMCPServerHealth().then(connected => {
   }
 });
 
+// Listen for Canvas URL changes and auto-refresh data
+chrome.storage.onChanged.addListener((changes, namespace) => {
+  if (namespace === 'local' && changes.canvasUrl) {
+    const oldUrl = changes.canvasUrl.oldValue;
+    const newUrl = changes.canvasUrl.newValue;
+
+    if (oldUrl !== newUrl && newUrl) {
+      console.log(`Canvas URL changed from ${oldUrl} to ${newUrl} - refreshing data...`);
+
+      // Clear existing data since we're switching Canvas instances
+      canvasData = {
+        courses: [],
+        assignments: {},
+        allAssignments: [],
+        calendarEvents: [],
+        upcomingEvents: [],
+        submissions: {},
+        modules: {},
+        analytics: {},
+        userProfile: null,
+        lastUpdate: null
+      };
+
+      // Trigger automatic data refresh
+      getCanvasTab()
+        .then(async (tab) => {
+          try {
+            await chrome.scripting.executeScript({
+              target: { tabId: tab.id },
+              files: ['content.js']
+            });
+            await new Promise(resolve => setTimeout(resolve, 500));
+
+            // Fetch all data types in parallel
+            const [
+              coursesResponse,
+              allAssignmentsResponse,
+              calendarEventsResponse,
+              upcomingEventsResponse,
+              userProfileResponse
+            ] = await Promise.all([
+              sendMessageToContent(tab.id, { type: 'FETCH_COURSES' }),
+              sendMessageToContent(tab.id, { type: 'FETCH_ALL_ASSIGNMENTS' }),
+              sendMessageToContent(tab.id, { type: 'FETCH_CALENDAR_EVENTS' }),
+              sendMessageToContent(tab.id, { type: 'FETCH_UPCOMING_EVENTS' }),
+              sendMessageToContent(tab.id, { type: 'FETCH_USER_PROFILE' })
+            ]);
+
+            // Update in-memory cache
+            if (coursesResponse?.success && coursesResponse.data.length > 0) {
+              canvasData.courses = coursesResponse.data;
+            }
+            if (allAssignmentsResponse?.success && allAssignmentsResponse.data.length > 0) {
+              canvasData.allAssignments = allAssignmentsResponse.data;
+            }
+            if (calendarEventsResponse?.success && calendarEventsResponse.data.length > 0) {
+              canvasData.calendarEvents = calendarEventsResponse.data;
+            }
+            if (upcomingEventsResponse?.success && upcomingEventsResponse.data.length > 0) {
+              canvasData.upcomingEvents = upcomingEventsResponse.data;
+            }
+            if (userProfileResponse?.success && userProfileResponse.data) {
+              canvasData.userProfile = userProfileResponse.data;
+            }
+            canvasData.lastUpdate = new Date().toISOString();
+
+            // Send to MCP server
+            sendDataToMCPServer();
+
+            console.log(`Data refreshed successfully from new Canvas instance: ${newUrl}`);
+          } catch (error) {
+            console.error(`Failed to refresh data after Canvas URL change: ${error.message}`);
+          }
+        })
+        .catch(error => {
+          console.error(`Failed to get Canvas tab for auto-refresh: ${error.message}`);
+        });
+    }
+  }
+});
+
 // Handle extension icon click to open side panel
 chrome.action.onClicked.addListener((tab) => {
   chrome.sidePanel.open({ windowId: tab.windowId });

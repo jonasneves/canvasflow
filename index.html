@@ -128,38 +128,82 @@
 
         .install-steps {
             margin-top: 1.5rem;
+            display: grid;
+            gap: 1.5rem;
         }
 
         .install-option {
-            background: #f0fdf4;
-            border: 2px solid #bbf7d0;
+            background: #f9fafb;
+            border: 1px solid #e5e7eb;
+            border-left: 4px solid #00539B;
             border-radius: 8px;
             padding: 1.5rem;
-            margin-bottom: 1rem;
+            transition: all 0.2s ease;
+        }
+
+        .install-option:hover {
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+            border-left-color: #0077CC;
         }
 
         .install-option h3 {
-            color: #166534;
+            color: #111827;
             margin-bottom: 0.75rem;
             font-size: 1.125rem;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .step-badge {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 28px;
+            height: 28px;
+            background: linear-gradient(135deg, #00539B 0%, #0077CC 100%);
+            color: white;
+            border-radius: 6px;
+            font-size: 0.875rem;
+            font-weight: 700;
+            flex-shrink: 0;
         }
 
         .install-option ol {
             margin-left: 1.25rem;
             color: #374151;
+            line-height: 1.7;
         }
 
         .install-option ol li {
             margin-bottom: 0.5rem;
         }
 
+        .install-option p {
+            color: #6b7280;
+            font-size: 0.95rem;
+            line-height: 1.6;
+        }
+
         .install-option code {
             background: white;
             padding: 0.25rem 0.5rem;
             border-radius: 4px;
-            font-family: 'Courier New', monospace;
-            font-size: 0.9rem;
-            color: #dc2626;
+            font-family: ui-monospace, 'SF Mono', Monaco, 'Courier New', monospace;
+            font-size: 0.875rem;
+            color: #00539B;
+            border: 1px solid #e5e7eb;
+        }
+
+        .install-option a {
+            color: #00539B;
+            text-decoration: underline;
+            font-weight: 500;
+        }
+
+        .install-option a:hover {
+            color: #0077CC;
         }
 
         .footer {
@@ -371,8 +415,8 @@
                     <p>Side panel works alongside Canvas for instant access to insights</p>
                 </div>
 
-                <!-- Small size for Claude Desktop conversation -->
-                <div class="screenshot-item small">
+                <!-- Medium size for Claude Desktop conversation -->
+                <div class="screenshot-item medium">
                     <h3>Claude Desktop Integration</h3>
                     <img src="screenshot-6-claude-desktop-v3.png" alt="Claude Desktop showing Canvas assignment query">
                     <p>Query your Canvas data directly through Claude Desktop conversations</p>
@@ -385,9 +429,9 @@
 
             <div class="install-steps">
                 <div class="install-option">
-                    <h3>Step 1: Install Chrome Extension</h3>
+                    <h3><span class="step-badge">1</span> Install Chrome Extension</h3>
                     <ol>
-                        <li>Download or clone the <a href="https://github.com/jonasneves/canvasflow" style="color: #00539B; text-decoration: underline;">repository</a></li>
+                        <li>Download or clone the <a href="https://github.com/jonasneves/canvasflow">repository</a></li>
                         <li>Open Chrome and navigate to <code>chrome://extensions/</code></li>
                         <li>Enable "Developer mode" in the top-right corner</li>
                         <li>Click "Load unpacked" and select the <code>extension/</code> directory</li>
@@ -395,23 +439,23 @@
                 </div>
 
                 <div class="install-option">
-                    <h3>Step 2: Configure Canvas & Claude API</h3>
+                    <h3><span class="step-badge">2</span> Configure Canvas & Claude API</h3>
                     <ol>
                         <li>Click the CanvasFlow icon while on any Canvas LMS page</li>
                         <li>Open Settings (gear icon) and use "Auto-Detect" to configure Canvas URL</li>
-                        <li>Get your Claude API key from <a href="https://console.anthropic.com/" style="color: #00539B; text-decoration: underline;">console.anthropic.com</a></li>
+                        <li>Get your Claude API key from <a href="https://console.anthropic.com/">console.anthropic.com</a></li>
                         <li>Enter the API key in Settings for AI-powered features</li>
                     </ol>
                 </div>
 
                 <div class="install-option">
-                    <h3>Step 3: Optional - MCP Server for Claude Desktop</h3>
-                    <p style="margin-bottom: 0.75rem; color: #6b7280; font-size: 0.95rem;">Connect Claude Desktop to your Canvas data for natural conversation queries.</p>
-                    <ol style="margin: 0.5rem 0 0 1.25rem; color: #374151;">
-                        <li style="margin-bottom: 0.5rem;">Download <a href="https://github.com/jonasneves/canvasflow/releases/download/nightly/canvasflow-native-host.dxt" style="color: #00539B; text-decoration: underline;">canvasflow-native-host.dxt</a></li>
-                        <li style="margin-bottom: 0.5rem;">Open Claude Desktop → Extensions</li>
-                        <li style="margin-bottom: 0.5rem;">Drag the .dxt file into the extensions area</li>
-                        <li style="margin-bottom: 0.5rem;">Download <a href="https://github.com/jonasneves/canvasflow/releases/download/nightly/canvasflow-chrome-extension.zip" style="color: #00539B; text-decoration: underline;">canvasflow-chrome-extension.zip</a> and run the installer to configure extension ID</li>
+                    <h3><span class="step-badge">3</span> Optional: MCP Server for Claude Desktop</h3>
+                    <p>Connect Claude Desktop to your Canvas data for natural conversation queries.</p>
+                    <ol>
+                        <li>Download <a href="https://github.com/jonasneves/canvasflow/releases/download/nightly/canvasflow-native-host.dxt">canvasflow-native-host.dxt</a></li>
+                        <li>Open Claude Desktop → Extensions</li>
+                        <li>Drag the .dxt file into the extensions area</li>
+                        <li>Download <a href="https://github.com/jonasneves/canvasflow/releases/download/nightly/canvasflow-chrome-extension.zip">canvasflow-chrome-extension.zip</a> and run the installer to configure extension ID</li>
                         <li>Restart Chrome and Claude Desktop, then ask: <em>"What are my Canvas courses?"</em></li>
                     </ol>
                 </div>

@@ -132,6 +132,9 @@ let canvasData = {
   allAssignments: [],
   calendarEvents: [],
   upcomingEvents: [],
+  submissions: {},
+  modules: {},
+  analytics: {},
   lastUpdate: null
 };
 
@@ -151,7 +154,10 @@ async function sendDataToMCPServer() {
         assignments: canvasData.assignments,
         allAssignments: canvasData.allAssignments || [],
         calendarEvents: canvasData.calendarEvents || [],
-        upcomingEvents: canvasData.upcomingEvents || []
+        upcomingEvents: canvasData.upcomingEvents || [],
+        submissions: canvasData.submissions || {},
+        modules: canvasData.modules || {},
+        analytics: canvasData.analytics || {}
       })
     });
 
@@ -299,6 +305,39 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
         canvasData.assignments[request.data.courseId] = request.data.assignments;
       } else if (typeof request.data.assignments === 'object') {
         Object.assign(canvasData.assignments, request.data.assignments);
+      }
+    }
+    if (request.data.allAssignments) {
+      canvasData.allAssignments = request.data.allAssignments;
+      canvasData.lastUpdate = new Date().toISOString();
+    }
+    if (request.data.calendarEvents) {
+      canvasData.calendarEvents = request.data.calendarEvents;
+      canvasData.lastUpdate = new Date().toISOString();
+    }
+    if (request.data.upcomingEvents) {
+      canvasData.upcomingEvents = request.data.upcomingEvents;
+      canvasData.lastUpdate = new Date().toISOString();
+    }
+    if (request.data.submissions) {
+      if (request.data.courseId) {
+        canvasData.submissions[request.data.courseId] = request.data.submissions;
+      } else if (typeof request.data.submissions === 'object') {
+        Object.assign(canvasData.submissions, request.data.submissions);
+      }
+    }
+    if (request.data.modules) {
+      if (request.data.courseId) {
+        canvasData.modules[request.data.courseId] = request.data.modules;
+      } else if (typeof request.data.modules === 'object') {
+        Object.assign(canvasData.modules, request.data.modules);
+      }
+    }
+    if (request.data.analytics) {
+      if (request.data.courseId) {
+        canvasData.analytics[request.data.courseId] = request.data.analytics;
+      } else if (typeof request.data.analytics === 'object') {
+        Object.assign(canvasData.analytics, request.data.analytics);
       }
     }
 

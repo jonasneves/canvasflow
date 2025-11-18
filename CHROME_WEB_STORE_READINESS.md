@@ -338,13 +338,21 @@ Your data stays with you. Assignment data is stored locally in your browser. AI 
 - Adaptive token budgets for cost-effective AI usage
 - CSP-compliant security
 
+**Support the Developer** (Optional section for store listing):
+CanvasFlow is and will always be free. If you find it helpful, consider supporting development:
+- ⭐ Leave a review on the Chrome Web Store
+- ☕ Buy me a coffee: https://buymeacoffee.com/jonasneves
+- 💝 Ko-fi: https://ko-fi.com/jonasneves
+- 💻 Contribute on GitHub: https://github.com/jonasneves/canvasflow
+
 **Category**: Productivity
 
 **Language**: English
 
 ### Support & Contact
-- Issues: [GitHub repository URL]
-- Email: [support email]
+- GitHub Issues: https://github.com/jonasneves/canvasflow/issues
+- GitHub Discussions: https://github.com/jonasneves/canvasflow/discussions
+- Privacy Policy: https://github.com/jonasneves/canvasflow/blob/main/PRIVACY.md
 
 ## Estimated Timeline to Publication
 

@@ -310,6 +310,70 @@
     }
   }
 
+  // Add CanvasFlow button to Canvas navigation
+  function injectCanvasFlowButton() {
+    // Wait for Canvas navigation to load
+    const nav = document.querySelector('#menu.ic-app-header__menu-list');
+
+    if (!nav || document.getElementById('canvasflow-nav-button')) {
+      return; // Already injected or nav not ready
+    }
+
+    // Create the menu item matching Canvas's structure
+    const menuItem = document.createElement('li');
+    menuItem.id = 'canvasflow-nav-button';
+    menuItem.className = 'menu-item ic-app-header__menu-list-item';
+
+    menuItem.innerHTML = `
+      <a id="global_nav_canvasflow_link" role="button" href="#" class="ic-app-header__menu-list-link">
+        <div class="menu-item-icon-container" aria-hidden="true">
+          <img src="${chrome.runtime.getURL('icon-48.png')}"
+               style="width: 26px; height: 26px; border-radius: 4px;"
+               alt="CanvasFlow">
+        </div>
+        <div class="menu-item__text">
+          CanvasFlow
+        </div>
+      </a>
+    `;
+
+    // Insert after Dashboard item
+    const dashboardItem = document.querySelector('#global_nav_dashboard_link')?.parentElement;
+    if (dashboardItem && dashboardItem.nextSibling) {
+      dashboardItem.parentNode.insertBefore(menuItem, dashboardItem.nextSibling);
+    } else {
+      nav.appendChild(menuItem);
+    }
+
+    // Add click handler to open sidepanel
+    menuItem.querySelector('a').addEventListener('click', async (e) => {
+      e.preventDefault();
+
+      // Open the sidepanel
+      try {
+        await chrome.runtime.sendMessage({ type: 'OPEN_SIDEPANEL' });
+      } catch (error) {
+        console.error('CanvasFlow: Could not open sidepanel', error);
+      }
+    });
+  }
+
+  // Run when DOM is ready
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', injectCanvasFlowButton);
+  } else {
+    injectCanvasFlowButton();
+  }
+
+  // Also watch for Canvas's dynamic navigation updates
+  const navObserver = new MutationObserver(() => {
+    if (document.querySelector('#menu') && !document.getElementById('canvasflow-nav-button')) {
+      injectCanvasFlowButton();
+    }
+  });
+
+  navObserver.observe(document.body, { childList: true, subtree: true });
+
   if (typeof chrome !== 'undefined' && chrome.runtime && chrome.runtime.onMessage) {
     chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
       const { type, courseId, assignmentId, startDate, endDate } = message;

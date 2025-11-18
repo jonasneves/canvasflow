@@ -588,9 +588,16 @@ document.querySelectorAll('.summary-card').forEach(card => {
 });
 
 // Listen for storage changes to update Canvas URL
-chrome.storage.onChanged.addListener((changes, namespace) => {
+chrome.storage.onChanged.addListener(async (changes, namespace) => {
   if (namespace === 'local' && changes.canvasUrl) {
     updateCanvasUrl();
+
+    // Wait for background script to finish refreshing data, then reload assignments
+    // Background script auto-refreshes when URL changes
+    setTimeout(async () => {
+      await loadAssignments();
+      updateStatus();
+    }, 3000);
   }
 });
 

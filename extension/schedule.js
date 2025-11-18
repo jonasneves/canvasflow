@@ -135,11 +135,34 @@ function loadSettings() {
 
   // Listen for time range setting changes
   chrome.storage.onChanged.addListener((changes, namespace) => {
-    if (namespace === 'local' && (changes.assignmentWeeksBefore || changes.assignmentWeeksAfter)) {
-      // Reload time range settings and re-render
-      loadTimeRangeSettings().then(() => {
-        renderDashboard();
-      });
+    if (namespace === 'local') {
+      if (changes.assignmentWeeksBefore || changes.assignmentWeeksAfter) {
+        // Reload time range settings and re-render
+        loadTimeRangeSettings().then(() => {
+          renderDashboard();
+        });
+      }
+
+      if (changes.canvasUrl) {
+        // Canvas URL changed - refresh data and re-render
+        const oldUrl = changes.canvasUrl.oldValue;
+        const newUrl = changes.canvasUrl.newValue;
+
+        if (oldUrl !== newUrl && newUrl) {
+          console.log('Canvas URL changed - refreshing dashboard data');
+
+          // Show loading state
+          const container = document.querySelector('.schedule-dashboard');
+          if (container) {
+            container.innerHTML = '<div class="loading-spinner"><div class="spinner"></div><div>Loading data from new Canvas instance...</div></div>';
+          }
+
+          // Wait for background script to refresh, then reload
+          setTimeout(() => {
+            loadAllData();
+          }, 2000);
+        }
+      }
     }
   });
 }

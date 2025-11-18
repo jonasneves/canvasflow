@@ -26,7 +26,7 @@ The `CANVAS_DATA` message handler in `background.js` was only storing **courses*
 
 ---
 
-## Testing All 9 MCP Tools
+## Testing All 10 MCP Tools
 
 ### Prerequisites
 1. Reload the Chrome extension after deploying these changes
@@ -165,20 +165,42 @@ The `CANVAS_DATA` message handler in `background.js` was only storing **courses*
 
 ---
 
+### Tool #10: `get_user_profile` 🆕
+**Purpose:** Get the current user's profile for personalization
+
+**Test Steps:**
+1. Call: `get_user_profile`
+2. Expected result: User profile data with name, email, avatar, timezone, etc.
+
+**What to verify:**
+- Returns user's name, shortName, primaryEmail
+- Includes avatarUrl for displaying profile picture
+- Contains timeZone for personalized scheduling
+- Optional fields like bio, pronouns, pronunciation may be present
+
+**Use Cases:**
+- Personalizing the dashboard with "Welcome, [name]!"
+- Displaying the user's avatar
+- Formatting dates/times in the user's timezone
+- Showing pronouns if configured
+
+---
+
 ## Quick Test Script
 
 If you want to test everything at once, you can run this sequence from Claude Desktop:
 
 ```
-1. list_courses
-2. list_all_assignments
-3. list_calendar_events (⭐ This should now work!)
-4. list_upcoming_events
-5. get_course_assignments (use a course_id from step 1)
-6. get_assignment_details (use course_id and assignment_id from step 5)
-7. get_user_submissions (use a course_id from step 1)
-8. list_course_modules (use a course_id from step 1)
-9. get_course_analytics (use a course_id from step 1)
+1. get_user_profile (🆕 Get personalization info!)
+2. list_courses
+3. list_all_assignments
+4. list_calendar_events (⭐ This should now work!)
+5. list_upcoming_events
+6. get_course_assignments (use a course_id from step 2)
+7. get_assignment_details (use course_id and assignment_id from step 6)
+8. get_user_submissions (use a course_id from step 2)
+9. list_course_modules (use a course_id from step 2)
+10. get_course_analytics (use a course_id from step 2)
 ```
 
 ---
@@ -226,20 +248,23 @@ If you want to test everything at once, you can run this sequence from Claude De
 
 ---
 
-## Summary of All 9 MCP Tools
+## Summary of All 10 MCP Tools
 
-| # | Tool Name | Parameters | Purpose | Fixed? |
+| # | Tool Name | Parameters | Purpose | Status |
 |---|-----------|------------|---------|--------|
-| 1 | `list_courses` | None | Get all courses | ✅ Yes |
-| 2 | `get_course_assignments` | course_id | Get assignments for course | ✅ Yes |
-| 3 | `list_all_assignments` | None | Get all assignments across courses | ✅ Yes |
-| 4 | `get_assignment_details` | course_id, assignment_id | Get detailed assignment info | ✅ Yes |
+| 1 | `list_courses` | None | Get all courses | ✅ Working |
+| 2 | `get_course_assignments` | course_id | Get assignments for course | ✅ Working |
+| 3 | `list_all_assignments` | None | Get all assignments across courses | ✅ Working |
+| 4 | `get_assignment_details` | course_id, assignment_id | Get detailed assignment info | ✅ Working |
 | 5 | `list_calendar_events` | start_date*, end_date* | Get calendar events | ⭐ **FIXED!** |
-| 6 | `get_user_submissions` | course_id | Get user submissions | ✅ Yes |
-| 7 | `list_course_modules` | course_id | Get course modules | ✅ Yes |
-| 8 | `list_upcoming_events` | None | Get upcoming events | ✅ Yes |
-| 9 | `get_course_analytics` | course_id | Get course analytics | ✅ Yes |
+| 6 | `get_user_submissions` | course_id | Get user submissions | ✅ Working |
+| 7 | `list_course_modules` | course_id | Get course modules | ✅ Working |
+| 8 | `list_upcoming_events` | None | Get upcoming events | ✅ Working |
+| 9 | `get_course_analytics` | course_id | Get course analytics | ✅ Working |
+| 10 | `get_user_profile` | None | Get user profile for personalization | 🆕 **NEW!** |
 
 \* Optional parameters
 
-All tools should now work correctly! The main issue was that calendar events (and other data types) were being fetched but not stored in the background script, so they never made it to the MCP server.
+All tools should now work correctly! The main issues fixed:
+1. **Calendar events** (and other data types) were being fetched but not stored in the background script
+2. **User profile** has been added to enable personalized experiences in the dashboard

@@ -627,7 +627,12 @@ document.getElementById('saveCanvasUrl').addEventListener('click', async () => {
 
   try {
     await chrome.storage.local.set({ canvasUrl: url });
-    showStatusMessage('canvasUrlStatus', '✓ Saved', 'success');
+    showStatusMessage('canvasUrlStatus', '✓ Saved - Refreshing data...', 'success');
+
+    // Wait a moment to allow background script to refresh
+    setTimeout(() => {
+      showStatusMessage('canvasUrlStatus', '✓ Data refresh initiated', 'success');
+    }, 1000);
   } catch (error) {
     showStatusMessage('canvasUrlStatus', '✗ Save failed', 'error');
   }

@@ -13,8 +13,6 @@
     "sidePanel"
   ],
   "host_permissions": [
-    "*://*.instructure.com/*",
-    "*://*.canvaslms.com/*",
     "*://*.edu/*",
     "https://api.anthropic.com/*"
   ],
@@ -23,8 +21,6 @@
   },
   "content_scripts": [{
     "matches": [
-      "*://*.instructure.com/*",
-      "*://*.canvaslms.com/*",
       "*://*.edu/*"
     ],
     "js": ["content.js"],
@@ -45,8 +41,6 @@
     {
       "resources": ["icon-48.png"],
       "matches": [
-        "*://*.instructure.com/*",
-        "*://*.canvaslms.com/*",
         "*://*.edu/*"
       ]
     }

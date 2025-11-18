@@ -275,6 +275,17 @@ This represents a new paradigm for MCP server implementation and browser-based A
 - Communication: HTTP (localhost:8765) + STDIO
 - Data Format: JSON-RPC 2.0
 
+**Development Tools:**
+
+This project was developed with assistance from [Claude Code](https://claude.ai/code), an AI-powered development environment that helped with:
+- Architecture design and planning of the browser-based MCP server
+- Implementation of complex features (AI insights, scheduling, MCP protocol)
+- Testing and quality assurance
+- Comprehensive documentation and guides
+- Chrome Web Store preparation and automation
+
+Claude Code's capabilities enabled rapid development of innovative features and helped maintain high code quality throughout the project.
+
 **Open Source:**
 - Repository: https://github.com/jonasneves/canvasflow
 - License: MIT

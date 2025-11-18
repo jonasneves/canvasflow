@@ -98,6 +98,10 @@ CanvasFlow processes your Canvas data locally in your browser and only sends ass
 
 Contributions are welcome! Please feel free to submit issues or pull requests.
 
+## Built With
+
+This project was built with assistance from [Claude Code](https://claude.ai/code) - an AI-powered development environment that helped with architecture design, implementation, testing, and documentation.
+
 ## License
 
 MIT License - See LICENSE file for details

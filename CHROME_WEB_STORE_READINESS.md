@@ -337,6 +337,7 @@ Your data stays with you. Assignment data is stored locally in your browser. AI 
 - Uses Claude's latest structured output capabilities
 - Adaptive token budgets for cost-effective AI usage
 - CSP-compliant security
+- Built with Claude Code (https://claude.ai/code)
 
 **Support the Developer** (Optional section for store listing):
 CanvasFlow is and will always be free. If you find it helpful, consider supporting development:

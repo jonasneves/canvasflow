@@ -1376,9 +1376,9 @@ async function checkAndShowConfigBanner() {
   // Show banner if Canvas URL is not configured and banner hasn't been dismissed
   if (!result.canvasUrl && !result.configBannerDismissed && configBanner) {
     configBanner.style.display = 'block';
-    // Initialize Lucide icons in the banner
-    if (window.lucide) {
-      window.lucide.createIcons();
+    // Initialize Lucide icons only within the banner element (scoped to avoid re-processing all icons)
+    if (typeof initializeLucide === 'function') {
+      initializeLucide(configBanner);
     }
   }
 }

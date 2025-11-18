@@ -2,32 +2,46 @@
 
 This directory contains screenshots for the Chrome Web Store listing.
 
-## Required Dimensions
+## ✅ Ready for Upload!
 
-All screenshots must be **1280 x 800 pixels** (or 640 x 400 pixels, but higher resolution is recommended).
+All screenshots have been resized to the required **1280 x 800 pixels** dimensions.
 
-## Files
+## Files (Upload in This Order)
 
-Place your captured screenshots here:
+1. **screenshot-1-dashboard.png** - Assignment Dashboard view with summary cards
+2. **screenshot-2-ai-insights.png** - AI Insights panel with workload analysis
+3. **screenshot-3-weekly-schedule.png** - Weekly schedule view with AI-generated plan
+4. **screenshot-4-in-context.png** - Extension working alongside Canvas
+5. **screenshot-5-mcp-server.png** - Claude Desktop integration
 
-- `screenshot-1-dashboard.png` - Assignment Dashboard view
-- `screenshot-2-ai-insights.png` - AI Insights panel
-- `screenshot-3-weekly-schedule.png` - Weekly schedule view
-- `screenshot-4-settings.png` - Settings configuration
-- `screenshot-5-context.png` - Extension in context with Canvas
+## Screenshot Descriptions (Copy to Chrome Web Store)
 
-## How to Capture
+Use these descriptions when uploading to the Chrome Web Store:
 
-See `SCREENSHOT_GUIDE.md` for detailed instructions on capturing each screenshot.
+### Screenshot 1
+```
+Track all your Canvas assignments at a glance. View overdue, due today, and upcoming assignments with smart summary cards and organized lists.
+```
 
-## Quick Start
+### Screenshot 2
+```
+Get AI-powered workload analysis and strategic study tips. CanvasFlow analyzes your assignments and provides personalized recommendations to help you succeed.
+```
 
-1. Load extension in Chrome (`chrome://extensions/`, Developer mode, Load unpacked)
-2. Set browser viewport to 1280x800 (Chrome DevTools → Responsive mode)
-3. Follow the guide in `SCREENSHOT_GUIDE.md`
-4. Save screenshots in this directory
-5. Verify dimensions and file sizes
-6. Upload to Chrome Web Store Developer Dashboard
+### Screenshot 3
+```
+Generate AI-powered weekly study schedules that break down your assignments into manageable time blocks with specific tasks and recommendations.
+```
+
+### Screenshot 4
+```
+CanvasFlow works seamlessly alongside your Canvas dashboard, providing a powerful side panel that enhances your learning management experience.
+```
+
+### Screenshot 5
+```
+Connect to Claude Desktop to have natural conversations about your assignments, courses, and deadlines. Ask questions and get intelligent answers about your Canvas data.
+```
 
 ## Verification
 

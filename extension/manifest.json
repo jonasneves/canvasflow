@@ -10,7 +10,6 @@
     "tabs",
     "alarms",
     "scripting",
-    "nativeMessaging",
     "sidePanel"
   ],
   "host_permissions": [

@@ -19,27 +19,27 @@ CanvasFlow is a Chrome extension that enhances your Canvas LMS experience with A
 ## Screenshots
 
 ### Dashboard View
-<img src="screenshots/screenshot-1-dashboard-v2.png" width="600" alt="Dashboard">
+<img src="screenshots/screenshot-1-dashboard-v2.png" width="500" alt="Dashboard">
 
 *Track assignments across all courses with smart filtering and status cards*
 
 ### AI-Powered Insights
-<img src="screenshots/screenshot-2-ai-insights-v2.png" width="600" alt="AI Insights">
+<img src="screenshots/screenshot-2-ai-insights-v2.png" width="500" alt="AI Insights">
 
 *Get strategic recommendations powered by Claude AI with Extended Thinking*
 
 ### Weekly Schedule
-<img src="screenshots/screenshot-3-weekly-schedule-v2.png" width="600" alt="Weekly Schedule">
+<img src="screenshots/screenshot-3-weekly-schedule-v2.png" width="500" alt="Weekly Schedule">
 
 *AI-generated time-blocked study plans optimized for your deadlines*
 
 ### Seamless Canvas Integration
-<img src="screenshots/screenshot-4-in-context-v3.png" width="600" alt="In Context">
+<img src="screenshots/screenshot-4-in-context-v3.png" width="800" alt="In Context">
 
 *Side panel works alongside Canvas for instant access to insights*
 
 ### Claude Desktop Integration
-<img src="screenshots/screenshot-6-claude-desktop-v3.png" width="600" alt="Claude Desktop">
+<img src="screenshots/screenshot-6-claude-desktop-v3.png" width="800" alt="Claude Desktop">
 
 *Query your Canvas data directly through Claude Desktop conversations*
 

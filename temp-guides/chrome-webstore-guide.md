@@ -84,18 +84,19 @@ CanvasFlow is the ultimate productivity companion for Canvas LMS students. Stay 
 - Strategic study tips tailored to your schedule
 - Critical deadline alerts
 
-### 📅 AI-Generated Weekly Schedules
-- Automatic study plan generation
+### 📅 Weekly Schedule Generation
+- AI-generated 7-day study plans
 - Time-blocked task assignments
 - Workload intensity tracking
 - Session recommendations with estimated durations
 - Strategic scheduling to optimize your study time
 
-### 💬 Claude Desktop Integration (Optional)
+### 💬 Browser-Based MCP Server (Optional)
+- Industry-first embedded MCP server runs in your browser
+- Connect Claude Desktop to your Canvas data - no separate server installation needed
 - Natural language conversations about your assignments
 - Ask questions like "What should I focus on next?"
 - Get intelligent answers about courses and deadlines
-- Create custom study schedules through conversation
 - Requires Claude Desktop app (free to install)
 
 ### ⚙️ Flexible Configuration

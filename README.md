@@ -104,21 +104,4 @@ MIT License - See LICENSE file for details
 
 ## Support
 
-### Getting Help
-
-For issues, questions, or feature requests:
-- 🐛 [Report bugs or request features](https://github.com/jonasneves/canvasflow/issues)
-- 💬 [Join discussions](https://github.com/jonasneves/canvasflow/discussions)
-- 📖 [Read the documentation](https://github.com/jonasneves/canvasflow)
-
-### Support the Developer
-
-CanvasFlow is completely free and open source. If you find it helpful, consider supporting development:
-
-- ⭐ **Star this repository** to help others discover CanvasFlow
-- ☕ **[Buy me a coffee](https://buymeacoffee.com/jonasneves)** if you'd like to support development
-- 💝 **[Support on Ko-fi](https://ko-fi.com/jonasneves)** for one-time or recurring support
-- 💻 **[Contribute code](https://github.com/jonasneves/canvasflow/blob/main/CONTRIBUTING.md)** to help improve CanvasFlow
-- 📝 **Leave a review** on the Chrome Web Store (once published)
-
-Your support helps maintain and improve CanvasFlow for all students. Thank you!
+For issues, questions, or feature requests, please visit the GitHub repository.

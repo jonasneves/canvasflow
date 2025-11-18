@@ -129,9 +129,10 @@ Required permissions and their purpose:
 - `tabs`: Create new tabs for schedule view
 - `alarms`: Schedule auto-refresh
 - `scripting`: Inject content scripts dynamically
-- `nativeMessaging`: Optional MCP server integration
 - `sidePanel`: Display sidepanel interface
 - `<all_urls>`: Access Canvas sites (various domains)
+
+Note: MCP server integration uses HTTP to localhost (no special permissions required)
 
 ## Publishing
 

@@ -257,9 +257,17 @@ async function detectAndSaveCanvasUrl(url) {
 
 // Helper function to get active Canvas tab
 async function getCanvasTab() {
-  return new Promise(async (resolve) => {
+  return new Promise(async (resolve, reject) => {
     // Get configured Canvas URL
-    const configuredUrl = await getConfiguredCanvasUrl();
+    const result = await chrome.storage.local.get(['canvasUrl']);
+    const configuredUrl = result.canvasUrl;
+
+    // If no URL is configured yet, don't create a tab with default value
+    if (!configuredUrl) {
+      reject(new Error('No Canvas URL configured'));
+      return;
+    }
+
     const configuredDomain = new URL(configuredUrl).hostname;
 
     // Build query patterns - include configured domain and common Canvas domains

@@ -42,7 +42,7 @@ async function updateCanvasUrl() {
     if (canvasUrlInput) {
       canvasUrlInput.value = canvasUrl;
       if (!canvasUrl) {
-        canvasUrlInput.placeholder = 'https://canvas.instructure.com';
+        canvasUrlInput.placeholder = 'https://canvas.university.edu';
       }
     }
   } catch (error) {
@@ -629,6 +629,12 @@ document.getElementById('saveCanvasUrl').addEventListener('click', async () => {
     await chrome.storage.local.set({ canvasUrl: url });
     showStatusMessage('canvasUrlStatus', '✓ Saved - Refreshing data...', 'success');
 
+    // Hide the configuration banner if it's visible
+    const configBanner = document.getElementById('configBanner');
+    if (configBanner) {
+      configBanner.style.display = 'none';
+    }
+
     // Wait a moment to allow background script to refresh
     setTimeout(() => {
       showStatusMessage('canvasUrlStatus', '✓ Data refresh initiated', 'success');
@@ -647,7 +653,9 @@ async function autoDetectCanvasUrl(showMessages = true) {
   try {
     const tabs = await chrome.tabs.query({});
     const canvasPatterns = [
-      /^https?:\/\/canvas\.[^\/]+/,
+      // Match canvas.*.edu (e.g., canvas.university.edu)
+      /^https?:\/\/canvas\.[^\/]*\.edu/i,
+      // Match *.edu/canvas (e.g., university.edu/canvas)
       /^https?:\/\/[^\/]*\.edu\/.*canvas/i,
     ];
 
@@ -678,6 +686,12 @@ async function autoDetectCanvasUrl(showMessages = true) {
       canvasUrlInput.value = detectedUrls[0];
     }
     await chrome.storage.local.set({ canvasUrl: detectedUrls[0] });
+
+    // Hide the configuration banner if it's visible
+    const configBanner = document.getElementById('configBanner');
+    if (configBanner) {
+      configBanner.style.display = 'none';
+    }
 
     if (showMessages) {
       showStatusMessage('canvasUrlStatus', `✓ Detected: ${detectedUrls[0]}`, 'success');
@@ -937,6 +951,9 @@ async function loadSavedInsights() {
 async function initialize() {
   await updateCanvasUrl();
   updateStatus();
+
+  // Check and show configuration banner if needed
+  await checkAndShowConfigBanner();
 
   // Auto-detect Canvas URL if not already configured
   const result = await chrome.storage.local.get(['canvasUrl']);
@@ -1333,6 +1350,40 @@ setupToggle.addEventListener('click', () => {
   const isOpen = setupContent.classList.toggle('open');
   setupChevron.classList.toggle('open', isOpen);
 });
+
+// Configuration banner handlers
+document.getElementById('openConfigSettings').addEventListener('click', () => {
+  // Open settings modal
+  const settingsModal = document.getElementById('settingsModal');
+  if (settingsModal) {
+    settingsModal.classList.add('show');
+  }
+});
+
+document.getElementById('closeConfigBanner').addEventListener('click', async () => {
+  // Hide the banner and remember the dismissal
+  const configBanner = document.getElementById('configBanner');
+  if (configBanner) {
+    configBanner.style.display = 'none';
+  }
+  // Store dismissal state
+  await chrome.storage.local.set({ configBannerDismissed: true });
+});
+
+// Function to check and show configuration banner
+async function checkAndShowConfigBanner() {
+  const result = await chrome.storage.local.get(['canvasUrl', 'configBannerDismissed']);
+  const configBanner = document.getElementById('configBanner');
+
+  // Show banner if Canvas URL is not configured and banner hasn't been dismissed
+  if (!result.canvasUrl && !result.configBannerDismissed && configBanner) {
+    configBanner.style.display = 'block';
+    // Initialize Lucide icons only within the banner element (scoped to avoid re-processing all icons)
+    if (typeof initializeLucide === 'function') {
+      initializeLucide(configBanner);
+    }
+  }
+}
 
 initialize();
 

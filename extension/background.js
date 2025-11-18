@@ -200,9 +200,9 @@ async function checkMCPServerHealth() {
 async function getConfiguredCanvasUrl() {
   try {
     const result = await chrome.storage.local.get(['canvasUrl']);
-    return result.canvasUrl || 'https://canvas.instructure.com'; // Default fallback
+    return result.canvasUrl || 'https://canvas.university.edu'; // Default fallback
   } catch (error) {
-    return 'https://canvas.instructure.com';
+    return 'https://canvas.university.edu';
   }
 }
 
@@ -211,7 +211,9 @@ function isCanvasUrl(url) {
   if (!url) return false;
 
   const canvasPatterns = [
-    /^https?:\/\/canvas\.[^\/]+/,
+    // Match canvas.*.edu (e.g., canvas.university.edu)
+    /^https?:\/\/canvas\.[^\/]*\.edu/i,
+    // Match *.edu/canvas (e.g., university.edu/canvas)
     /^https?:\/\/[^\/]*\.edu\/.*canvas/i,
   ];
 

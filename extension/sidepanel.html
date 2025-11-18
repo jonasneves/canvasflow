@@ -194,6 +194,115 @@
       display: block;
     }
 
+    /* Configuration Banner */
+    .config-banner {
+      background: #FAFAFA;
+      border-bottom: 1px solid #E5E7EB;
+      padding: 16px 20px;
+      flex-shrink: 0;
+      animation: slideDown 0.3s ease-out;
+      border-left: 4px solid #00539B;
+    }
+
+    .config-banner-content {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      max-width: 100%;
+    }
+
+    .config-banner-icon {
+      width: 36px;
+      height: 36px;
+      background: linear-gradient(135deg, #00539B 0%, #0577B1 100%);
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+
+    .config-banner-icon i {
+      width: 18px;
+      height: 18px;
+      color: white;
+      stroke: white;
+    }
+
+    .config-banner-text {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .config-banner-title {
+      font-size: 14px;
+      font-weight: 600;
+      color: #111827;
+      margin-bottom: 2px;
+    }
+
+    .config-banner-message {
+      font-size: 12px;
+      color: #6B7280;
+    }
+
+    .config-banner-btn {
+      background: #00539B;
+      color: white;
+      border: none;
+      padding: 8px 16px;
+      border-radius: 6px;
+      font-size: 13px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.15s ease;
+      white-space: nowrap;
+      flex-shrink: 0;
+    }
+
+    .config-banner-btn:hover {
+      background: #012169;
+      transform: translateY(-1px);
+      box-shadow: 0 4px 12px rgba(0, 83, 155, 0.3);
+    }
+
+    .config-banner-close {
+      width: 28px;
+      height: 28px;
+      border: none;
+      background: transparent;
+      border-radius: 6px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.15s ease;
+      color: #6B7280;
+      flex-shrink: 0;
+    }
+
+    .config-banner-close:hover {
+      background: #E5E7EB;
+      color: #374151;
+    }
+
+    .config-banner-close i {
+      width: 18px;
+      height: 18px;
+      stroke: currentColor;
+    }
+
+    @keyframes slideDown {
+      from {
+        opacity: 0;
+        transform: translateY(-10px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
     /* Canvas Data Tab */
     /* Summary Cards */
     .summary-cards {
@@ -977,6 +1086,25 @@
     <button class="tab-button" data-tab="settings">MCP Server</button>
   </div>
 
+  <!-- Canvas URL Configuration Banner -->
+  <div class="config-banner" id="configBanner" style="display: none;">
+    <div class="config-banner-content">
+      <div class="config-banner-icon">
+        <i data-lucide="info"></i>
+      </div>
+      <div class="config-banner-text">
+        <div class="config-banner-title">Canvas URL Not Configured</div>
+        <div class="config-banner-message">Configure your Canvas instance URL to start using CanvasFlow</div>
+      </div>
+      <button class="config-banner-btn" id="openConfigSettings">
+        Configure Now
+      </button>
+      <button class="config-banner-close" id="closeConfigBanner" title="Dismiss">
+        <i data-lucide="x"></i>
+      </button>
+    </div>
+  </div>
+
   <!-- Canvas Data Tab -->
   <div class="tab-content active" id="canvas-data">
     <!-- Summary Cards -->
@@ -1158,7 +1286,7 @@
         <!-- Canvas URL Card -->
         <div class="settings-card">
           <div class="settings-card-title">Canvas Instance</div>
-          <input type="text" class="canvas-url-input" id="canvasUrlInput" placeholder="https://canvas.instructure.com">
+          <input type="text" class="canvas-url-input" id="canvasUrlInput" placeholder="https://canvas.university.edu">
           <div class="canvas-url-buttons">
             <button class="secondary small" id="saveCanvasUrl">Save</button>
             <button class="ghost small" id="autoDetectUrl">Auto-Detect</button>

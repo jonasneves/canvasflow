@@ -138,10 +138,17 @@ jobs:
 
           cat release-notes.md
 
-      - name: Upload extension package
+      - name: Upload extension package (for Chrome Web Store)
         uses: actions/upload-artifact@v4
         with:
           name: canvasflow-extension-v${{ steps.version.outputs.version }}
+          path: extension/
+          retention-days: 90
+
+      - name: Upload extension ZIP (for releases)
+        uses: actions/upload-artifact@v4
+        with:
+          name: canvasflow-extension-v${{ steps.version.outputs.version }}-zip
           path: canvasflow-extension-v${{ steps.version.outputs.version }}.zip
           retention-days: 90
 
@@ -172,15 +179,18 @@ jobs:
           echo "**Version:** ${{ steps.version.outputs.version }}" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "### Packages Created:" >> $GITHUB_STEP_SUMMARY
-          echo "- ✅ Chrome Extension: \`canvasflow-extension-v${{ steps.version.outputs.version }}.zip\`" >> $GITHUB_STEP_SUMMARY
+          echo "- ✅ Chrome Extension: \`canvasflow-extension-v${{ steps.version.outputs.version }}\` (artifact)" >> $GITHUB_STEP_SUMMARY
+          echo "- ✅ Chrome Extension ZIP: \`canvasflow-extension-v${{ steps.version.outputs.version }}.zip\` (for releases)" >> $GITHUB_STEP_SUMMARY
           echo "- ✅ Native Host: \`canvasflow-native-host-v${{ steps.version.outputs.version }}.zip\`" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "### File Sizes:" >> $GITHUB_STEP_SUMMARY
-          ls -lh canvasflow-extension-v${{ steps.version.outputs.version }}.zip | awk '{print "- Extension: " $5}' >> $GITHUB_STEP_SUMMARY
+          ls -lh canvasflow-extension-v${{ steps.version.outputs.version }}.zip | awk '{print "- Extension ZIP: " $5}' >> $GITHUB_STEP_SUMMARY
           ls -lh canvasflow-native-host-v${{ steps.version.outputs.version }}.zip | awk '{print "- Native Host: " $5}' >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
-          echo "### Next Steps:" >> $GITHUB_STEP_SUMMARY
-          echo "1. Download the extension ZIP from artifacts" >> $GITHUB_STEP_SUMMARY
-          echo "2. Upload to Chrome Web Store Developer Dashboard" >> $GITHUB_STEP_SUMMARY
-          echo "3. Fill in store listing with promotional assets" >> $GITHUB_STEP_SUMMARY
-          echo "4. Submit for review" >> $GITHUB_STEP_SUMMARY
+          echo "### 📥 For Chrome Web Store Submission:" >> $GITHUB_STEP_SUMMARY
+          echo "1. Download the \`canvasflow-extension-v${{ steps.version.outputs.version }}\` artifact" >> $GITHUB_STEP_SUMMARY
+          echo "2. Extract the downloaded zip to get the extension folder" >> $GITHUB_STEP_SUMMARY
+          echo "3. Re-zip the extension folder contents (manifest.json must be at root)" >> $GITHUB_STEP_SUMMARY
+          echo "4. Upload to Chrome Web Store Developer Dashboard" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Alternative:** Use the GitHub Release zip file directly (available after release is created)" >> $GITHUB_STEP_SUMMARY

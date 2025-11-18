@@ -13,7 +13,7 @@ CanvasFlow is a Chrome extension that enhances your Canvas LMS experience with A
 - **AI-Powered Insights**: Claude AI with Extended Thinking analyzes your workload and provides strategic recommendations
 - **Structured Outputs**: Consistent, reliable AI responses using Claude's latest structured output capabilities
 - **Weekly Schedule Generation**: AI-generated 7-day study plans optimized for your deadlines and workload
-- **Browser-Based MCP Server**: Connect Claude Desktop to Canvas data directly through the extension
+- **Browser-Based MCP Server**: Industry-first embedded MCP server lets you talk to your Canvas data through Claude Desktop - no separate server installation needed
 - **Smart Filtering**: Filter assignments by time range, course, and completion status
 
 ## Project Structure

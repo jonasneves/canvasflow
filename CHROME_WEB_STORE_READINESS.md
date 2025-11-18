@@ -282,6 +282,13 @@ No Canvas API Required
 - View assignments, due dates, and submission status instantly
 - Compatible with any Canvas instance (Instructure, university-hosted, etc.)
 
+Browser-Based MCP Server (Industry First)
+- First Chrome extension with embedded MCP (Model Context Protocol) server
+- Talk naturally to your Canvas data through Claude Desktop
+- Ask questions like "What's due this week?" or "Help me prioritize my homework"
+- MCP server runs inside the browser - no separate installation required
+- Direct access to live Canvas data from your browsing session
+
 Advanced AI Features
 - Powered by Claude AI with Extended Thinking for deeper analysis
 - Structured Outputs ensure consistent, reliable AI responses
@@ -308,10 +315,12 @@ Weekly Schedule Generation
 - Strategic recommendations for the week ahead
 - Even task distribution based on assignment complexity
 
-Browser-Based MCP Server (Optional)
-- Connect Claude Desktop to your Canvas data
-- No separate server installation required
-- Real-time Canvas data access from Claude Desktop
+Talk to Your Canvas Data (Browser-Based MCP Server)
+- Industry-first: MCP server embedded directly in the Chrome extension
+- Have natural conversations with Claude Desktop about your coursework
+- Ask "What assignments are due this week?" or "Help me plan my study schedule"
+- No separate MCP server installation - it's built into the extension
+- Real-time access to your Canvas data as you browse
 - Secure local communication via native messaging
 
 **Setup**:

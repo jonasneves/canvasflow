@@ -647,8 +647,6 @@ async function autoDetectCanvasUrl(showMessages = true) {
   try {
     const tabs = await chrome.tabs.query({});
     const canvasPatterns = [
-      /^https?:\/\/[^\/]*instructure\.com/,
-      /^https?:\/\/[^\/]*canvaslms\.com/,
       /^https?:\/\/canvas\.[^\/]+/,
       /^https?:\/\/[^\/]*\.edu\/.*canvas/i,
     ];

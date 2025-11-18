@@ -211,8 +211,6 @@ function isCanvasUrl(url) {
   if (!url) return false;
 
   const canvasPatterns = [
-    /^https?:\/\/[^\/]*instructure\.com/,
-    /^https?:\/\/[^\/]*canvaslms\.com/,
     /^https?:\/\/canvas\.[^\/]+/,
     /^https?:\/\/[^\/]*\.edu\/.*canvas/i,
   ];

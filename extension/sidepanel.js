@@ -1183,6 +1183,7 @@ function prepareAssignmentsForAI() {
       const weekFromNow = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000);
       return dueDate >= now && dueDate <= weekFromNow && !a.submission?.submitted;
     }).map(a => ({
+      id: a.id,
       name: a.name,
       course: a.courseName,
       dueDate: a.dueDate,
@@ -1193,6 +1194,7 @@ function prepareAssignmentsForAI() {
       const dueDate = new Date(a.dueDate);
       return dueDate < now && !a.submission?.submitted;
     }).map(a => ({
+      id: a.id,
       name: a.name,
       course: a.courseName,
       dueDate: a.dueDate,

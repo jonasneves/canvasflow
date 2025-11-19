@@ -41,6 +41,10 @@ window.AISchemas.SIDEPANEL_INSIGHTS_SCHEMA = {
         items: {
           type: "object",
           properties: {
+            assignment_id: {
+              type: "string",
+              description: "Canvas assignment ID to map this insight to the actual assignment"
+            },
             task: {
               type: "string",
               description: "Assignment name and action (max 150 chars)"
@@ -48,6 +52,12 @@ window.AISchemas.SIDEPANEL_INSIGHTS_SCHEMA = {
             reason: {
               type: "string",
               description: "Why prioritized (max 200 chars)"
+            },
+            ui_tags: {
+              type: "array",
+              items: { type: "string" },
+              description: "Max 2 short action tags. First tag: assignment type (Reading, Essay, Quiz, Exam, Project, Lab, Discussion). Second tag: key insight (Est: 30m, High Impact, Group Work, 50 pts, Multiple Choice). Keep under 15 chars each.",
+              maxItems: 2
             },
             urgency_score: {
               type: "integer",
@@ -58,7 +68,7 @@ window.AISchemas.SIDEPANEL_INSIGHTS_SCHEMA = {
               description: "Estimated hours (0.5 to 8)"
             }
           },
-          required: ["task", "reason", "urgency_score", "estimated_hours"],
+          required: ["assignment_id", "task", "reason", "ui_tags", "urgency_score", "estimated_hours"],
           additionalProperties: false
         }
       },

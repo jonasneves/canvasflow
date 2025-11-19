@@ -407,6 +407,14 @@
       gap: 12px;
       margin-bottom: 10px;
       transition: opacity 0.2s ease;
+      border-radius: 8px;
+      padding: 2px;
+      margin-left: -2px;
+      margin-right: -2px;
+    }
+
+    .assignment-card-wrapper:hover {
+      background: rgba(0, 83, 155, 0.02);
     }
 
     .checkbox-circle {
@@ -422,6 +430,17 @@
       justify-content: center;
       transition: all 0.2s ease;
       margin-top: 14px;
+      opacity: 0;
+    }
+
+    .assignment-card-wrapper:hover .checkbox-circle {
+      opacity: 1;
+    }
+
+    .checkbox-circle.checked {
+      opacity: 1;
+      background: #00539B;
+      border-color: #00539B;
     }
 
     .checkbox-circle:hover {
@@ -429,9 +448,8 @@
       background: rgba(0, 83, 155, 0.05);
     }
 
-    .checkbox-circle.checked {
+    .checkbox-circle.checked:hover {
       background: #00539B;
-      border-color: #00539B;
     }
 
     .assignment-card {

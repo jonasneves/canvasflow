@@ -4,6 +4,7 @@ let currentFilter = 'all';
 let autoRefreshInterval = null;
 let assignmentTimeRange = { weeksBefore: 2, weeksAfter: 2 }; // Default 2 weeks before and after
 let showGrades = false; // Default to hidden
+let localCompletedIds = []; // Track locally completed assignments
 
 // Tab switching
 const tabButtons = document.querySelectorAll('.tab-button');
@@ -322,19 +323,34 @@ function renderAssignments() {
       </div>
     ` : '';
 
+    // Check if locally completed
+    const isLocallyCompleted = localCompletedIds.includes(assignment.id);
+    const cardStyle = isLocallyCompleted ? 'opacity: 0.6;' : '';
+    const infoStyle = isLocallyCompleted ? 'text-decoration: line-through;' : '';
+
     return `
-      <a href="${escapeHtml(assignmentUrl)}" target="_blank" class="${cardClass}">
-        <div class="assignment-info">
-          <div class="assignment-title">${escapeHtml(assignment.name || 'Untitled Assignment')}</div>
-          <div class="assignment-meta">
-            <span>${escapeHtml(assignment.courseName || 'Unknown Course')}</span>
-            ${assignment.pointsPossible ? `<span>${assignment.pointsPossible} pts</span>` : ''}
-          </div>
-          ${aiChipsHtml}
-          <div class="${dueDateClass}">Due: ${dueDateText}</div>
+      <div class="assignment-card-wrapper" data-assignment-id="${assignment.id}" style="${cardStyle}">
+        <div class="checkbox-circle ${isLocallyCompleted ? 'checked' : ''}"
+             data-action="toggle-done"
+             role="checkbox"
+             aria-checked="${isLocallyCompleted}"
+             tabindex="0"
+             title="${isLocallyCompleted ? 'Mark as not done' : 'Mark as done'}">
+          ${isLocallyCompleted ? '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>' : ''}
         </div>
-        ${badges || gradeDisplay ? `<div class="assignment-badges">${badges}${gradeDisplay}</div>` : ''}
-      </a>
+        <a href="${escapeHtml(assignmentUrl)}" target="_blank" class="${cardClass}">
+          <div class="assignment-info" style="${infoStyle}">
+            <div class="assignment-title">${escapeHtml(assignment.name || 'Untitled Assignment')}</div>
+            <div class="assignment-meta">
+              <span>${escapeHtml(assignment.courseName || 'Unknown Course')}</span>
+              ${assignment.pointsPossible ? `<span>${assignment.pointsPossible} pts</span>` : ''}
+            </div>
+            ${aiChipsHtml}
+            <div class="${dueDateClass}">Due: ${dueDateText}</div>
+          </div>
+          ${badges || gradeDisplay ? `<div class="assignment-badges">${badges}${gradeDisplay}</div>` : ''}
+        </a>
+      </div>
     `;
   }).join('');
 }
@@ -979,6 +995,87 @@ async function loadSavedInsights() {
   }
 }
 
+// Local task completion functions
+async function loadLocalCompletionState() {
+  const result = await chrome.storage.sync.get(['localCompletedIds']);
+  localCompletedIds = result.localCompletedIds || [];
+}
+
+async function toggleAssignmentDone(assignmentId, event) {
+  if (event) {
+    event.preventDefault();
+    event.stopPropagation();
+  }
+
+  const wrapper = document.querySelector(`[data-assignment-id="${assignmentId}"]`);
+  if (!wrapper) return;
+
+  const isDone = localCompletedIds.includes(assignmentId);
+
+  // Optimistic UI update
+  if (!isDone) {
+    localCompletedIds.push(assignmentId);
+    wrapper.style.opacity = '0.6';
+    const info = wrapper.querySelector('.assignment-info');
+    if (info) info.style.textDecoration = 'line-through';
+    const checkbox = wrapper.querySelector('.checkbox-circle');
+    if (checkbox) {
+      checkbox.classList.add('checked');
+      checkbox.setAttribute('aria-checked', 'true');
+      checkbox.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>';
+    }
+    showToast('Marked as done', 'Undo', () => toggleAssignmentDone(assignmentId, null));
+  } else {
+    localCompletedIds = localCompletedIds.filter(id => id !== assignmentId);
+    wrapper.style.opacity = '1';
+    const info = wrapper.querySelector('.assignment-info');
+    if (info) info.style.textDecoration = 'none';
+    const checkbox = wrapper.querySelector('.checkbox-circle');
+    if (checkbox) {
+      checkbox.classList.remove('checked');
+      checkbox.setAttribute('aria-checked', 'false');
+      checkbox.innerHTML = '';
+    }
+    showToast('Marked as not done');
+  }
+
+  // Save to storage
+  await chrome.storage.sync.set({ localCompletedIds });
+}
+
+function showToast(message, actionText = null, actionCallback = null) {
+  // Remove existing toast if any
+  const existingToast = document.querySelector('.toast-notification');
+  if (existingToast) existingToast.remove();
+
+  const toast = document.createElement('div');
+  toast.className = 'toast-notification';
+  toast.setAttribute('role', 'status');
+  toast.setAttribute('aria-live', 'polite');
+
+  toast.innerHTML = `
+    <span class="toast-message">${escapeHtml(message)}</span>
+    ${actionText ? `<button class="toast-action">${escapeHtml(actionText)}</button>` : ''}
+  `;
+
+  document.body.appendChild(toast);
+
+  if (actionText && actionCallback) {
+    const actionBtn = toast.querySelector('.toast-action');
+    if (actionBtn) {
+      actionBtn.addEventListener('click', () => {
+        actionCallback();
+        toast.remove();
+      });
+    }
+  }
+
+  // Auto-remove after 4 seconds
+  setTimeout(() => {
+    if (toast.parentElement) toast.remove();
+  }, 4000);
+}
+
 // Initial load
 async function initialize() {
   await updateCanvasUrl();
@@ -1015,6 +1112,26 @@ async function initialize() {
   // Load AI metadata (tags) from storage
   const metadataResult = await chrome.storage.local.get(['ai_metadata']);
   window.currentAIMetadata = metadataResult.ai_metadata || {};
+
+  // Load local completion state
+  await loadLocalCompletionState();
+
+  // Set up event delegation for checkboxes
+  const assignmentsList = document.getElementById('assignmentsList');
+  if (assignmentsList) {
+    assignmentsList.addEventListener('click', (e) => {
+      const checkbox = e.target.closest('[data-action="toggle-done"]');
+      if (checkbox) {
+        e.preventDefault();
+        e.stopPropagation();
+        const wrapper = checkbox.closest('[data-assignment-id]');
+        if (wrapper) {
+          const assignmentId = wrapper.getAttribute('data-assignment-id');
+          toggleAssignmentDone(assignmentId, e);
+        }
+      }
+    });
+  }
 
   // Load saved insights
   await loadSavedInsights();

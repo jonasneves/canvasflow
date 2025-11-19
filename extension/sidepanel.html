@@ -401,9 +401,41 @@
       justify-content: space-between;
     }
 
+    .assignment-card-wrapper {
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+      margin-bottom: 10px;
+      transition: opacity 0.2s ease;
+    }
+
+    .checkbox-circle {
+      width: 20px;
+      height: 20px;
+      min-width: 20px;
+      border: 2px solid #9CA3AF;
+      border-radius: 50%;
+      background: white;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.2s ease;
+      margin-top: 14px;
+    }
+
+    .checkbox-circle:hover {
+      border-color: #00539B;
+      background: rgba(0, 83, 155, 0.05);
+    }
+
+    .checkbox-circle.checked {
+      background: #00539B;
+      border-color: #00539B;
+    }
+
     .assignment-card {
       padding: 14px;
-      margin-bottom: 10px;
       background: white;
       border: 1px solid #E5E7EB;
       border-left: 4px solid #00539B;
@@ -415,6 +447,7 @@
       display: flex;
       align-items: flex-start;
       gap: 12px;
+      flex: 1;
     }
 
     .assignment-card:hover {
@@ -1078,6 +1111,56 @@
       font-size: 11px;
       color: #111827;
       border: 1px solid #E5E7EB;
+    }
+
+    /* Toast notification */
+    .toast-notification {
+      position: fixed;
+      bottom: 24px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: #323232;
+      color: white;
+      padding: 12px 20px;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      box-shadow: 0 6px 16px rgba(0, 0, 0, 0.3);
+      z-index: 10000;
+      animation: toastSlideUp 0.3s ease-out;
+      font-size: 14px;
+    }
+
+    @keyframes toastSlideUp {
+      from {
+        opacity: 0;
+        transform: translateX(-50%) translateY(20px);
+      }
+      to {
+        opacity: 1;
+        transform: translateX(-50%) translateY(0);
+      }
+    }
+
+    .toast-message {
+      flex: 1;
+    }
+
+    .toast-action {
+      background: transparent;
+      border: none;
+      color: #60A5FA;
+      font-weight: 600;
+      cursor: pointer;
+      padding: 0;
+      font-size: 14px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .toast-action:hover {
+      color: #93C5FD;
     }
   </style>
 </head>

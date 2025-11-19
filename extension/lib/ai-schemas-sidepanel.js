@@ -36,8 +36,7 @@ window.AISchemas.SIDEPANEL_INSIGHTS_SCHEMA = {
     properties: {
       priority_tasks: {
         type: "array",
-        description: "Top priority assignments (1-8 items)",
-        minItems: 1,
+        description: "Top priority assignments (provide 1-8 items)",
         items: {
           type: "object",
           properties: {
@@ -56,8 +55,7 @@ window.AISchemas.SIDEPANEL_INSIGHTS_SCHEMA = {
             ui_tags: {
               type: "array",
               items: { type: "string" },
-              description: "Max 2 short action tags. First tag: assignment type (Reading, Essay, Quiz, Exam, Project, Lab, Discussion). Second tag: key insight (Est: 30m, High Impact, Group Work, 50 pts, Multiple Choice). Keep under 15 chars each.",
-              maxItems: 2
+              description: "Provide exactly 2 short action tags. First tag: assignment type (Reading, Essay, Quiz, Exam, Project, Lab, Discussion). Second tag: key insight (Est: 30m, High Impact, Group Work, 50 pts, Multiple Choice). Keep each tag under 15 chars."
             },
             urgency_score: {
               type: "integer",
@@ -91,7 +89,6 @@ window.AISchemas.SIDEPANEL_INSIGHTS_SCHEMA = {
           recommendations: {
             type: "array",
             description: "Recommendations (provide 2-5 items, max 150 chars each)",
-            minItems: 1,
             items: {
               type: "string"
             }
@@ -103,7 +100,6 @@ window.AISchemas.SIDEPANEL_INSIGHTS_SCHEMA = {
       study_tips: {
         type: "array",
         description: "Study tips (provide 3-5 items, max 150 chars each)",
-        minItems: 1,
         items: {
           type: "string"
         }

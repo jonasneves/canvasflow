@@ -401,19 +401,17 @@
       justify-content: space-between;
     }
 
-    #assignmentsList {
-      padding-left: 32px;
-    }
-
     .assignment-card-wrapper {
       position: relative;
       margin-bottom: 10px;
       transition: opacity 0.2s ease;
+      padding-left: 32px;
+      margin-left: -32px;
     }
 
     .checkbox-circle {
       position: absolute;
-      left: -32px;
+      left: 6px;
       top: 16px;
       width: 20px;
       height: 20px;
@@ -426,13 +424,7 @@
       justify-content: center;
       transition: all 0.2s ease;
       opacity: 0;
-      pointer-events: none;
       z-index: 1;
-    }
-
-    .assignment-card-wrapper:hover .checkbox-circle,
-    .checkbox-circle.checked {
-      pointer-events: auto;
     }
 
     .assignment-card-wrapper:hover .checkbox-circle {

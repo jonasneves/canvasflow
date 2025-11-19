@@ -402,25 +402,17 @@
     }
 
     .assignment-card-wrapper {
-      display: flex;
-      align-items: flex-start;
-      gap: 12px;
+      position: relative;
       margin-bottom: 10px;
       transition: opacity 0.2s ease;
-      border-radius: 8px;
-      padding: 2px;
-      margin-left: -2px;
-      margin-right: -2px;
-    }
-
-    .assignment-card-wrapper:hover {
-      background: rgba(0, 83, 155, 0.02);
     }
 
     .checkbox-circle {
+      position: absolute;
+      left: -28px;
+      top: 16px;
       width: 20px;
       height: 20px;
-      min-width: 20px;
       border: 2px solid #9CA3AF;
       border-radius: 50%;
       background: white;
@@ -429,8 +421,14 @@
       align-items: center;
       justify-content: center;
       transition: all 0.2s ease;
-      margin-top: 14px;
       opacity: 0;
+      pointer-events: none;
+      z-index: 1;
+    }
+
+    .assignment-card-wrapper:hover .checkbox-circle,
+    .checkbox-circle.checked {
+      pointer-events: auto;
     }
 
     .assignment-card-wrapper:hover .checkbox-circle {
@@ -465,7 +463,6 @@
       display: flex;
       align-items: flex-start;
       gap: 12px;
-      flex: 1;
     }
 
     .assignment-card:hover {

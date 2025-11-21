@@ -71,15 +71,15 @@ jobs:
         uses: softprops/action-gh-release@v1
         with:
           tag_name: ${{ startsWith(github.ref, 'refs/tags/') && github.ref_name || 'nightly' }}
-          name: ${{ startsWith(github.ref, 'refs/tags/') && format('CanvasFlow Native Host {0}', github.ref_name) || 'CanvasFlow Native Host (Nightly)' }}
+          name: ${{ startsWith(github.ref, 'refs/tags/') && format('Yoink Native Host {0}', github.ref_name) || 'Yoink Native Host (Nightly)' }}
           prerelease: ${{ !startsWith(github.ref, 'refs/tags/') }}
           files: |
             dist/canvasflow-chrome-extension.zip
             dist/canvasflow-native-host.dxt
           body: |
-            ## CanvasFlow Native Host ${{ steps.version.outputs.version }}
+            ## Yoink Native Host ${{ steps.version.outputs.version }}
 
-            Connect Claude Desktop to your Canvas data through the CanvasFlow Chrome extension.
+            Connect Claude Desktop to your Canvas data through the Yoink Chrome extension.
 
             ### Installation Options
 
@@ -110,7 +110,7 @@ jobs:
 
             ### After Installation
 
-            1. Get your CanvasFlow extension ID from `chrome://extensions/`
+            1. Get your Yoink extension ID from `chrome://extensions/`
             2. Configure it when prompted (or manually in the manifest)
             3. Restart Chrome and Claude Desktop
             4. In Claude Desktop, ask: "What are my Canvas courses?"
@@ -118,7 +118,7 @@ jobs:
             ### Requirements
 
             - Node.js 14 or higher
-            - CanvasFlow Chrome extension installed
+            - Yoink Chrome extension installed
 
             ### What's Included
 

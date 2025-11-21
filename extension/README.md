@@ -1,6 +1,6 @@
-# CanvasFlow Extension
+# Yoink Extension
 
-Chrome extension component of CanvasFlow - provides the user interface and Canvas LMS integration.
+Chrome extension component of Yoink - provides the user interface and Canvas LMS integration.
 
 ## Architecture
 

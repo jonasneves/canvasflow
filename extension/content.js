@@ -335,7 +335,7 @@
     }
   }
 
-  // Add CanvasFlow button to Canvas navigation
+  // Add Yoink button to Canvas navigation
   function injectCanvasFlowButton() {
     // Wait for Canvas navigation to load
     const nav = document.querySelector('#menu.ic-app-header__menu-list');
@@ -354,10 +354,10 @@
         <div class="menu-item-icon-container" aria-hidden="true">
           <img src="${chrome.runtime.getURL('icon-48.png')}"
                style="width: 26px; height: 26px; border-radius: 4px;"
-               alt="CanvasFlow">
+               alt="Yoink">
         </div>
         <div class="menu-item__text">
-          CanvasFlow
+          Yoink
         </div>
       </a>
     `;
@@ -378,7 +378,7 @@
       try {
         await chrome.runtime.sendMessage({ type: 'OPEN_SIDEPANEL' });
       } catch (error) {
-        console.error('CanvasFlow: Could not open sidepanel', error);
+        console.error('Yoink: Could not open sidepanel', error);
       }
     });
   }

@@ -1,6 +1,6 @@
-# CanvasFlow Automation Scripts
+# Yoink Automation Scripts
 
-This directory contains automation scripts for building, packaging, and releasing the CanvasFlow extension to the Chrome Web Store.
+This directory contains automation scripts for building, packaging, and releasing the Yoink extension to the Chrome Web Store.
 
 ## 📋 Available Scripts
 
@@ -61,7 +61,7 @@ node scripts/generate-screenshots.js
 2. AI Insights Panel (with generated insights)
 3. Weekly Schedule (full-page view)
 4. Settings Configuration (modal view)
-5. In-Context View (Canvas + CanvasFlow together)
+5. In-Context View (Canvas + Yoink together)
 
 ### 🎨 Promotional Tile Generator
 
@@ -85,7 +85,7 @@ firefox scripts/promo-tile-generator.html
 - One-click PNG download
 
 **Tips:**
-- Use CanvasFlow brand colors (#00539B, #DC2626)
+- Use Yoink brand colors (#00539B, #DC2626)
 - Keep text minimal and readable
 - Consider adding mockups in external editor
 - Verify file size (under 1MB for small, 2MB for marquee)

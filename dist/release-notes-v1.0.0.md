@@ -1,4 +1,4 @@
-# CanvasFlow v1.0.0
+# Yoink v1.0.0
 
 ## Chrome Extension
 

@@ -148,8 +148,53 @@ let canvasData = {
   lastUpdate: null
 };
 
+// Storage key for cached Canvas data
+const CANVAS_DATA_CACHE_KEY = 'cachedCanvasData';
+
 // Track MCP server connection status
 let mcpServerConnected = false;
+
+// Save Canvas data to persistent storage
+async function saveCanvasDataToStorage() {
+  try {
+    await chrome.storage.local.set({
+      [CANVAS_DATA_CACHE_KEY]: {
+        ...canvasData,
+        cacheTimestamp: new Date().toISOString()
+      }
+    });
+  } catch (error) {
+    console.error('Failed to save Canvas data to storage:', error);
+  }
+}
+
+// Load Canvas data from persistent storage
+async function loadCanvasDataFromStorage() {
+  try {
+    const result = await chrome.storage.local.get([CANVAS_DATA_CACHE_KEY]);
+    if (result[CANVAS_DATA_CACHE_KEY]) {
+      const cached = result[CANVAS_DATA_CACHE_KEY];
+      // Restore all data from cache
+      canvasData = {
+        courses: cached.courses || [],
+        assignments: cached.assignments || {},
+        allAssignments: cached.allAssignments || [],
+        calendarEvents: cached.calendarEvents || [],
+        upcomingEvents: cached.upcomingEvents || [],
+        submissions: cached.submissions || {},
+        modules: cached.modules || {},
+        analytics: cached.analytics || {},
+        userProfile: cached.userProfile || null,
+        lastUpdate: cached.lastUpdate || null
+      };
+      console.log('Canvas data restored from cache, last updated:', canvasData.lastUpdate);
+      return true;
+    }
+  } catch (error) {
+    console.error('Failed to load Canvas data from storage:', error);
+  }
+  return false;
+}
 
 // Send Canvas data to MCP server via HTTP
 async function sendDataToMCPServer() {
@@ -367,6 +412,9 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     // Send updated data to MCP server
     sendDataToMCPServer();
 
+    // Save to persistent storage
+    saveCanvasDataToStorage();
+
     sendResponse({ status: 'stored' });
   }
   
@@ -455,6 +503,9 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
 
           // Send to MCP server
           sendDataToMCPServer();
+
+          // Save to persistent storage
+          saveCanvasDataToStorage();
 
           sendResponse({ success: true, data: data });
         } catch (error) {
@@ -897,12 +948,14 @@ chrome.tabs.onActivated.addListener(async (activeInfo) => {
   }
 });
 
-// Check MCP server connection on startup
-checkMCPServerHealth().then(connected => {
-  if (connected && canvasData.courses.length > 0) {
-    // Send any existing Canvas data
-    sendDataToMCPServer();
-  }
+// Load cached Canvas data on startup, then check MCP server
+loadCanvasDataFromStorage().then(hasCache => {
+  checkMCPServerHealth().then(connected => {
+    if (connected && canvasData.courses.length > 0) {
+      // Send any existing Canvas data
+      sendDataToMCPServer();
+    }
+  });
 });
 
 // Listen for Canvas URL changes and auto-refresh data
@@ -973,6 +1026,9 @@ chrome.storage.onChanged.addListener((changes, namespace) => {
 
             // Send to MCP server
             sendDataToMCPServer();
+
+            // Save to persistent storage
+            saveCanvasDataToStorage();
 
             console.log(`Data refreshed successfully from new Canvas instance: ${newUrl}`);
           } catch (error) {

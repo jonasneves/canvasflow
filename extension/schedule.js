@@ -18,14 +18,13 @@ document.addEventListener('DOMContentLoaded', async () => {
 });
 
 async function initializeDashboard() {
+  // Stale-while-revalidate: Load cached data first for instant display
   await loadCanvasData();
-
-  // Auto-refresh if no data is loaded
-  if (canvasData.allAssignments.length === 0) {
-    await refreshCanvasData();
-  }
-
   renderDashboard();
+
+  // Then trigger background refresh to get fresh data (don't await)
+  refreshCanvasData();
+
   await updateInsightsButtonText();
   await loadSavedInsights();
 }

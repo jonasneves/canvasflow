@@ -1151,8 +1151,11 @@ async function initialize() {
     }
   }
 
-  // Trigger initial refresh on extension open
-  await refreshCanvasData();
+  // Stale-while-revalidate: Load cached data first for instant display
+  await loadAssignments();
+
+  // Then trigger background refresh to get fresh data
+  refreshCanvasData();
 }
 
 // AI Insights functionality

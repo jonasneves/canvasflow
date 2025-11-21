@@ -10,7 +10,8 @@
     "tabs",
     "alarms",
     "scripting",
-    "sidePanel"
+    "sidePanel",
+    "notifications"
   ],
   "host_permissions": [
     "*://*.edu/*",

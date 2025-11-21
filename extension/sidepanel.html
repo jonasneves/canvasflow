@@ -293,6 +293,45 @@
             </label>
           </div>
         </div>
+
+        <!-- Notifications Card -->
+        <div class="settings-card">
+          <div class="settings-card-title">Notifications</div>
+          <p style="font-size: 12px; color: #6B7280; margin: 0 0 12px 0;">
+            Get reminders about upcoming deadlines
+          </p>
+          <div style="display: flex; flex-direction: column; gap: 12px;">
+            <div style="display: flex; align-items: center; gap: 12px;">
+              <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; flex: 1;">
+                <input type="checkbox" id="notificationsEnabled" style="cursor: pointer;">
+                <span style="font-size: 13px; color: #374151;">Enable deadline notifications</span>
+              </label>
+              <button id="testNotification" style="padding: 6px 12px; background: #F3F4F6; color: #374151; border: 1px solid #E5E7EB; border-radius: 6px; font-size: 12px; cursor: pointer; font-weight: 500;">
+                Test Notification
+              </button>
+            </div>
+            <div id="notificationSettings" style="display: none; padding-left: 32px; border-left: 2px solid #E5E7EB;">
+              <div style="margin-bottom: 12px;">
+                <label style="font-size: 12px; color: #374151; display: block; margin-bottom: 6px;">Notification Frequency</label>
+                <select id="notificationFrequency" style="width: 100%; padding: 8px 12px; border: 1px solid #D1D5DB; border-radius: 6px; font-size: 13px; background: white; cursor: pointer;">
+                  <option value="minimal">Minimal - Only overdue</option>
+                  <option value="balanced" selected>Balanced - Daily summary</option>
+                  <option value="aggressive">Aggressive - All deadlines</option>
+                </select>
+              </div>
+              <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+                <div>
+                  <label style="font-size: 12px; color: #374151; display: block; margin-bottom: 6px;">Quiet Hours Start</label>
+                  <input type="time" id="quietHoursStart" value="22:00" style="width: 100%; padding: 8px 12px; border: 1px solid #D1D5DB; border-radius: 6px; font-size: 13px;">
+                </div>
+                <div>
+                  <label style="font-size: 12px; color: #374151; display: block; margin-bottom: 6px;">Quiet Hours End</label>
+                  <input type="time" id="quietHoursEnd" value="08:00" style="width: 100%; padding: 8px 12px; border: 1px solid #D1D5DB; border-radius: 6px; font-size: 13px;">
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   </div>

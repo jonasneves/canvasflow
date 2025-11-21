@@ -974,6 +974,77 @@ function updateGradesIcon() {
   }
 }
 
+// Notification settings
+document.getElementById('notificationsEnabled').addEventListener('change', async (e) => {
+  const enabled = e.target.checked;
+  const settingsDiv = document.getElementById('notificationSettings');
+
+  if (enabled) {
+    settingsDiv.style.display = 'block';
+  } else {
+    settingsDiv.style.display = 'none';
+  }
+
+  // Save to storage
+  await chrome.storage.local.set({ notificationsEnabled: enabled });
+
+  // Notify background script to setup/cancel alarms
+  chrome.runtime.sendMessage({ type: 'UPDATE_NOTIFICATION_SETTINGS', enabled });
+});
+
+// Test notification button
+document.getElementById('testNotification').addEventListener('click', async () => {
+  // Request notification permission first
+  const permission = await Notification.requestPermission();
+
+  if (permission === 'granted') {
+    chrome.runtime.sendMessage({ type: 'TEST_NOTIFICATION' });
+    showToast('Test notification sent! Check your system notifications.');
+  } else {
+    showToast('Notification permission denied. Please enable notifications in your browser settings.');
+  }
+});
+
+document.getElementById('notificationFrequency').addEventListener('change', async (e) => {
+  await chrome.storage.local.set({ notificationFrequency: e.target.value });
+  chrome.runtime.sendMessage({ type: 'UPDATE_NOTIFICATION_SETTINGS' });
+});
+
+document.getElementById('quietHoursStart').addEventListener('change', async (e) => {
+  await chrome.storage.local.set({ quietHoursStart: e.target.value });
+});
+
+document.getElementById('quietHoursEnd').addEventListener('change', async (e) => {
+  await chrome.storage.local.set({ quietHoursEnd: e.target.value });
+});
+
+// Load notification settings
+async function loadNotificationSettings() {
+  try {
+    const result = await chrome.storage.local.get([
+      'notificationsEnabled',
+      'notificationFrequency',
+      'quietHoursStart',
+      'quietHoursEnd'
+    ]);
+
+    const enabled = result.notificationsEnabled || false;
+    const frequency = result.notificationFrequency || 'balanced';
+    const quietStart = result.quietHoursStart || '22:00';
+    const quietEnd = result.quietHoursEnd || '08:00';
+
+    document.getElementById('notificationsEnabled').checked = enabled;
+    document.getElementById('notificationFrequency').value = frequency;
+    document.getElementById('quietHoursStart').value = quietStart;
+    document.getElementById('quietHoursEnd').value = quietEnd;
+
+    if (enabled) {
+      document.getElementById('notificationSettings').style.display = 'block';
+    }
+  } catch (error) {
+  }
+}
+
 // Auto-refresh toggle event listener
 document.getElementById('autoRefreshToggle').addEventListener('change', (e) => {
   saveAutoRefreshSetting(e.target.checked);
@@ -1319,6 +1390,9 @@ async function initialize() {
 
   // Load auto-refresh setting
   await loadAutoRefreshSetting();
+
+  // Load notification settings
+  await loadNotificationSettings();
 
   // Load focus mode state
   const focusModeResult = await chrome.storage.local.get(['focusModeEnabled']);

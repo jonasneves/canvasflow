@@ -533,6 +533,33 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     return true;
   }
 
+  if (request.type === 'UPDATE_NOTIFICATION_SETTINGS') {
+    setupNotificationAlarms();
+    sendResponse({ success: true });
+    return true;
+  }
+
+  if (request.type === 'TEST_NOTIFICATION') {
+    // Send a test notification
+    chrome.notifications.create({
+      type: 'basic',
+      iconUrl: 'icon-48.png',
+      title: 'CanvasFlow Test Notification',
+      message: 'Notifications are working! You will receive deadline reminders based on your settings.',
+      priority: 1,
+      requireInteraction: false
+    }, (notificationId) => {
+      if (chrome.runtime.lastError) {
+        console.error('Notification error:', chrome.runtime.lastError);
+        sendResponse({ success: false, error: chrome.runtime.lastError.message });
+      } else {
+        console.log('Test notification created:', notificationId);
+        sendResponse({ success: true, notificationId });
+      }
+    });
+    return true;
+  }
+
 });
 
 async function handleMCPRequest(payload) {
@@ -1046,3 +1073,292 @@ chrome.storage.onChanged.addListener((changes, namespace) => {
 chrome.action.onClicked.addListener((tab) => {
   chrome.sidePanel.open({ windowId: tab.windowId });
 });
+
+// ============================================
+// NOTIFICATION SYSTEM
+// ============================================
+
+// Setup notification alarms based on user settings
+async function setupNotificationAlarms() {
+  try {
+    const result = await chrome.storage.local.get(['notificationsEnabled']);
+    const enabled = result.notificationsEnabled || false;
+
+    // Clear existing alarms
+    chrome.alarms.clear('checkDeadlines');
+    chrome.alarms.clear('dailySummary');
+
+    if (!enabled) {
+      return;
+    }
+
+    // Check deadlines every hour
+    chrome.alarms.create('checkDeadlines', { periodInMinutes: 60 });
+
+    // Daily summary at 8 AM
+    const now = new Date();
+    const next8AM = new Date();
+    next8AM.setHours(8, 0, 0, 0);
+    if (next8AM <= now) {
+      next8AM.setDate(next8AM.getDate() + 1);
+    }
+    const delayInMinutes = Math.floor((next8AM - now) / 60000);
+    chrome.alarms.create('dailySummary', { delayInMinutes, periodInMinutes: 24 * 60 });
+  } catch (error) {
+    console.error('Failed to setup notification alarms:', error);
+  }
+}
+
+// Check if current time is within quiet hours
+async function isQuietHours() {
+  try {
+    const result = await chrome.storage.local.get(['quietHoursStart', 'quietHoursEnd']);
+    const quietStart = result.quietHoursStart || '22:00';
+    const quietEnd = result.quietHoursEnd || '08:00';
+
+    const now = new Date();
+    const currentMinutes = now.getHours() * 60 + now.getMinutes();
+
+    const [startHour, startMin] = quietStart.split(':').map(Number);
+    const [endHour, endMin] = quietEnd.split(':').map(Number);
+    const startMinutes = startHour * 60 + startMin;
+    const endMinutes = endHour * 60 + endMin;
+
+    // Handle case where quiet hours span midnight
+    if (startMinutes > endMinutes) {
+      return currentMinutes >= startMinutes || currentMinutes < endMinutes;
+    } else {
+      return currentMinutes >= startMinutes && currentMinutes < endMinutes;
+    }
+  } catch (error) {
+    return false;
+  }
+}
+
+// Get notification frequency setting
+async function getNotificationFrequency() {
+  try {
+    const result = await chrome.storage.local.get(['notificationFrequency']);
+    return result.notificationFrequency || 'balanced';
+  } catch (error) {
+    return 'balanced';
+  }
+}
+
+// Check assignments and send notifications
+async function checkAssignmentsAndNotify() {
+  // Check if notifications are enabled
+  const result = await chrome.storage.local.get(['notificationsEnabled']);
+  if (!result.notificationsEnabled) {
+    return;
+  }
+
+  // Check quiet hours
+  if (await isQuietHours()) {
+    return;
+  }
+
+  const frequency = await getNotificationFrequency();
+  const assignments = canvasData.allAssignments || [];
+  const now = new Date();
+
+  // Filter to unsubmitted assignments
+  const unsubmitted = assignments.filter(a => !a.submission?.submitted && a.dueDate);
+
+  // Categorize assignments
+  const overdue = unsubmitted.filter(a => new Date(a.dueDate) < now);
+  const dueToday = unsubmitted.filter(a => {
+    const dueDate = new Date(a.dueDate);
+    return dueDate.toDateString() === now.toDateString() && dueDate >= now;
+  });
+  const dueTomorrow = unsubmitted.filter(a => {
+    const tomorrow = new Date(now);
+    tomorrow.setDate(tomorrow.getDate() + 1);
+    const dueDate = new Date(a.dueDate);
+    return dueDate.toDateString() === tomorrow.toDateString();
+  });
+  const dueSoon = unsubmitted.filter(a => {
+    const dueDate = new Date(a.dueDate);
+    const hoursUntilDue = (dueDate - now) / (1000 * 60 * 60);
+    return hoursUntilDue > 0 && hoursUntilDue <= 3;
+  });
+
+  // Send notifications based on frequency
+  if (frequency === 'minimal') {
+    // Only overdue
+    if (overdue.length > 0) {
+      showNotification('overdue', overdue);
+    }
+  } else if (frequency === 'balanced') {
+    // Overdue and urgent (due soon)
+    if (overdue.length > 0) {
+      showNotification('overdue', overdue);
+    } else if (dueSoon.length > 0) {
+      showNotification('dueSoon', dueSoon);
+    } else if (dueToday.length > 0 && now.getHours() >= 8 && now.getHours() < 20) {
+      // Only remind about today's assignments during waking hours
+      showNotification('dueToday', dueToday);
+    }
+  } else if (frequency === 'aggressive') {
+    // All notifications
+    if (overdue.length > 0) {
+      showNotification('overdue', overdue);
+    }
+    if (dueSoon.length > 0) {
+      showNotification('dueSoon', dueSoon);
+    }
+    if (dueToday.length > 0) {
+      showNotification('dueToday', dueToday);
+    }
+    if (dueTomorrow.length > 0 && now.getHours() >= 18) {
+      // Tomorrow's assignments only in evening
+      showNotification('dueTomorrow', dueTomorrow);
+    }
+  }
+}
+
+// Show daily summary notification
+async function showDailySummary() {
+  // Check if notifications are enabled
+  const result = await chrome.storage.local.get(['notificationsEnabled']);
+  if (!result.notificationsEnabled) {
+    return;
+  }
+
+  const assignments = canvasData.allAssignments || [];
+  const now = new Date();
+  const tomorrow = new Date(now);
+  tomorrow.setDate(tomorrow.getDate() + 1);
+
+  // Filter to unsubmitted assignments
+  const unsubmitted = assignments.filter(a => !a.submission?.submitted && a.dueDate);
+
+  const dueToday = unsubmitted.filter(a => {
+    const dueDate = new Date(a.dueDate);
+    return dueDate.toDateString() === now.toDateString();
+  });
+
+  const dueTomorrow = unsubmitted.filter(a => {
+    const dueDate = new Date(a.dueDate);
+    return dueDate.toDateString() === tomorrow.toDateString();
+  });
+
+  const overdue = unsubmitted.filter(a => new Date(a.dueDate) < now);
+
+  // Build summary message
+  const parts = [];
+  if (overdue.length > 0) {
+    parts.push(`${overdue.length} overdue`);
+  }
+  if (dueToday.length > 0) {
+    parts.push(`${dueToday.length} due today`);
+  }
+  if (dueTomorrow.length > 0) {
+    parts.push(`${dueTomorrow.length} due tomorrow`);
+  }
+
+  if (parts.length === 0) {
+    chrome.notifications.create({
+      type: 'basic',
+      iconUrl: 'icon-48.png',
+      title: 'CanvasFlow Daily Summary',
+      message: 'No urgent assignments. Great job staying on top of your work!',
+      priority: 1
+    });
+  } else {
+    chrome.notifications.create({
+      type: 'basic',
+      iconUrl: 'icon-48.png',
+      title: 'CanvasFlow Daily Summary',
+      message: `You have: ${parts.join(', ')}`,
+      priority: 2
+    });
+  }
+}
+
+// Show notification based on type
+function showNotification(type, assignments) {
+  let title, message, priority;
+
+  switch (type) {
+    case 'overdue':
+      if (assignments.length === 1) {
+        title = 'Assignment Overdue';
+        message = `${assignments[0].name} is overdue`;
+      } else {
+        title = `${assignments.length} Assignments Overdue`;
+        message = assignments.slice(0, 3).map(a => a.name).join(', ');
+        if (assignments.length > 3) {
+          message += ` and ${assignments.length - 3} more`;
+        }
+      }
+      priority = 2;
+      break;
+
+    case 'dueSoon':
+      if (assignments.length === 1) {
+        const dueDate = new Date(assignments[0].dueDate);
+        const hours = Math.ceil((dueDate - new Date()) / (1000 * 60 * 60));
+        title = 'Assignment Due Soon';
+        message = `${assignments[0].name} is due in ${hours} hour${hours !== 1 ? 's' : ''}`;
+      } else {
+        title = 'Assignments Due Soon';
+        message = `${assignments.length} assignments due in the next 3 hours`;
+      }
+      priority = 2;
+      break;
+
+    case 'dueToday':
+      if (assignments.length === 1) {
+        title = 'Assignment Due Today';
+        message = assignments[0].name;
+      } else {
+        title = `${assignments.length} Assignments Due Today`;
+        message = assignments.slice(0, 2).map(a => a.name).join(', ');
+        if (assignments.length > 2) {
+          message += ` and ${assignments.length - 2} more`;
+        }
+      }
+      priority = 1;
+      break;
+
+    case 'dueTomorrow':
+      title = `${assignments.length} Assignment${assignments.length !== 1 ? 's' : ''} Due Tomorrow`;
+      message = assignments.slice(0, 2).map(a => a.name).join(', ');
+      if (assignments.length > 2) {
+        message += ` and ${assignments.length - 2} more`;
+      }
+      priority = 1;
+      break;
+
+    default:
+      return;
+  }
+
+  chrome.notifications.create({
+    type: 'basic',
+    iconUrl: 'icon-128.png',
+    title,
+    message,
+    priority
+  });
+}
+
+// Listen for alarm events
+chrome.alarms.onAlarm.addListener((alarm) => {
+  if (alarm.name === 'keepAlive') {
+    // Keep alive ping
+    return;
+  }
+
+  if (alarm.name === 'checkDeadlines') {
+    checkAssignmentsAndNotify();
+  }
+
+  if (alarm.name === 'dailySummary') {
+    showDailySummary();
+  }
+});
+
+// Setup notification alarms on startup
+setupNotificationAlarms();

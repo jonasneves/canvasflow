@@ -1208,6 +1208,10 @@
       font-weight: 600;
       margin-bottom: 4px;
       letter-spacing: -0.01em;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
     }
 
     .focus-mode-subtitle {

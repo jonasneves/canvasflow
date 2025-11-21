@@ -31,7 +31,6 @@ window.ClaudeClient.callClaude = async function(apiKey, assignmentsData, schema,
       'Content-Type': 'application/json',
       'x-api-key': apiKey,
       'anthropic-version': '2023-06-01',
-      'anthropic-beta': 'structured-outputs-2025-11-13',
       'anthropic-dangerous-direct-browser-access': 'true'
     },
     body: JSON.stringify({
@@ -43,9 +42,17 @@ window.ClaudeClient.callClaude = async function(apiKey, assignmentsData, schema,
       },
       messages: [{
         role: 'user',
-        content: prompt
+        content: prompt + '\n\nYou must respond with valid JSON only. Do not include any markdown formatting, explanations, or text outside the JSON structure.'
       }],
-      output_format: schema
+      tools: [{
+        name: schema.json_schema.name,
+        description: `Generate ${promptType === 'dashboard' ? 'a 7-day study schedule' : 'study insights'} in structured format`,
+        input_schema: schema.json_schema.schema
+      }],
+      tool_choice: {
+        type: "tool",
+        name: schema.json_schema.name
+      }
     })
   });
 
@@ -56,16 +63,16 @@ window.ClaudeClient.callClaude = async function(apiKey, assignmentsData, schema,
 
   const data = await response.json();
 
-  // With Extended Thinking enabled, we need to find the text block (not thinking block)
-  // Response structure: { content: [{ type: "thinking", thinking: "..." }, { type: "text", text: "{...}" }] }
-  const textBlock = data.content.find(block => block.type === 'text');
+  // With tool-based structured outputs, find the tool_use block
+  // Response structure: { content: [{ type: "thinking", thinking: "..." }, { type: "tool_use", input: {...} }] }
+  const toolUseBlock = data.content.find(block => block.type === 'tool_use');
 
-  if (!textBlock || !textBlock.text) {
-    throw new Error('No text content found in API response');
+  if (!toolUseBlock || !toolUseBlock.input) {
+    throw new Error('No tool use content found in API response');
   }
 
-  // Structured outputs guarantee valid JSON - no regex extraction needed!
-  return JSON.parse(textBlock.text);
+  // Tool input is already a structured object, return it directly
+  return toolUseBlock.input;
 };
 
 /**

@@ -1169,6 +1169,31 @@
     .toast-action:hover {
       color: #93C5FD;
     }
+
+    /* Loading Animation Override - ensure it applies after other styles */
+    .btn-primary.loading span,
+    .btn-generate.loading span {
+      background: linear-gradient(90deg,
+        rgba(255, 255, 255, 0.4) 0%,
+        rgba(255, 255, 255, 0.5) 20%,
+        rgba(255, 255, 255, 1) 50%,
+        rgba(255, 255, 255, 0.5) 80%,
+        rgba(255, 255, 255, 0.4) 100%) !important;
+      background-size: 200% 100% !important;
+      background-clip: text !important;
+      -webkit-background-clip: text !important;
+      -webkit-text-fill-color: transparent !important;
+      animation: textWave 2.5s ease-in-out infinite !important;
+    }
+
+    @keyframes textWave {
+      0% {
+        background-position: 200% 0;
+      }
+      100% {
+        background-position: -200% 0;
+      }
+    }
   </style>
 </head>
 <body>

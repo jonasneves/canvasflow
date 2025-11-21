@@ -1,7 +1,7 @@
 /**
- * Shared Claude API Client (Browser Version)
+ * Shared AI Client (Browser Version)
  *
- * Provides shared utilities for calling Claude's API with structured outputs.
+ * Provides shared utilities for calling GitHub Models API with structured outputs.
  * This consolidates duplicate code between sidepanel.js and dashboard.js.
  */
 
@@ -9,63 +9,128 @@
 window.ClaudeClient = window.ClaudeClient || {};
 
 /**
- * Call Claude API with structured outputs
- * @param {string} apiKey - Anthropic API key
+ * Call GitHub Models API with structured outputs (direct call with specific model)
+ * @param {string} apiKey - GitHub token
  * @param {Object} assignmentsData - Prepared assignment data
  * @param {Object} schema - JSON schema for structured output
  * @param {string} promptType - Type of prompt ('sidepanel' or 'dashboard')
+ * @param {string} modelId - Model ID to use (defaults to gpt-4o)
  * @returns {Promise<Object>} Parsed JSON response
  */
-window.ClaudeClient.callClaude = async function(apiKey, assignmentsData, schema, promptType = 'sidepanel') {
+window.ClaudeClient.callClaude = async function(apiKey, assignmentsData, schema, promptType = 'sidepanel', modelId = 'gpt-4o') {
   const prompt = buildPrompt(assignmentsData, promptType);
 
   // Adaptive max_tokens: sidepanel needs less, dashboard needs more
   const maxTokens = promptType === 'dashboard' ? 3000 : 1500;
 
-  const response = await fetch('https://api.anthropic.com/v1/messages', {
+  // Build the JSON schema instruction
+  const schemaInstruction = buildSchemaInstruction(schema, promptType);
+
+  const response = await fetch(window.AIRouter.API_URL, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
-      'x-api-key': apiKey,
-      'anthropic-version': '2023-06-01',
-      'anthropic-dangerous-direct-browser-access': 'true'
+      'Authorization': `Bearer ${apiKey}`
     },
     body: JSON.stringify({
-      model: 'claude-sonnet-4-5',
+      model: modelId,
       max_tokens: maxTokens,
       messages: [{
+        role: 'system',
+        content: `You are a helpful academic advisor that analyzes student assignments and creates actionable study plans. Always respond with valid JSON only, no markdown formatting or explanations outside the JSON structure.`
+      }, {
         role: 'user',
-        content: prompt + '\n\nYou must respond with valid JSON only. Do not include any markdown formatting, explanations, or text outside the JSON structure.'
+        content: prompt + '\n\n' + schemaInstruction
       }],
-      tools: [{
-        name: schema.json_schema.name,
-        description: `Generate ${promptType === 'dashboard' ? 'a 7-day study schedule' : 'study insights'} in structured format`,
-        input_schema: schema.json_schema.schema
-      }],
-      tool_choice: {
-        type: "tool",
-        name: schema.json_schema.name
-      }
+      temperature: 0.7
     })
   });
 
   if (!response.ok) {
-    const error = await response.json();
-    throw new Error(error.error?.message || `API error: ${response.status}`);
+    let errorMessage = `API error: ${response.status}`;
+    try {
+      const errorData = await response.json();
+      errorMessage = errorData.error?.message || errorMessage;
+    } catch (e) {
+      // Couldn't parse error response
+    }
+    const error = new Error(errorMessage);
+    error.status = response.status;
+    throw error;
   }
 
   const data = await response.json();
 
-  // With tool-based structured outputs, find the tool_use block
-  // Response structure: { content: [{ type: "tool_use", input: {...} }] }
-  const toolUseBlock = data.content.find(block => block.type === 'tool_use');
+  // Extract content from OpenAI-style response
+  const content = data.choices?.[0]?.message?.content;
 
-  if (!toolUseBlock || !toolUseBlock.input) {
-    throw new Error('No tool use content found in API response');
+  if (!content) {
+    throw new Error('No content found in API response');
   }
 
-  // Tool input is already a structured object, return it directly
-  return toolUseBlock.input;
+  // Parse JSON from the response
+  try {
+    // Try to extract JSON from the response (handle potential markdown wrapping)
+    let jsonStr = content.trim();
+
+    // Remove markdown code blocks if present
+    if (jsonStr.startsWith('```json')) {
+      jsonStr = jsonStr.slice(7);
+    } else if (jsonStr.startsWith('```')) {
+      jsonStr = jsonStr.slice(3);
+    }
+    if (jsonStr.endsWith('```')) {
+      jsonStr = jsonStr.slice(0, -3);
+    }
+    jsonStr = jsonStr.trim();
+
+    return JSON.parse(jsonStr);
+  } catch (parseError) {
+    throw new Error(`Failed to parse JSON response: ${parseError.message}`);
+  }
+};
+
+/**
+ * Build schema instruction for the model
+ * @param {Object} schema - JSON schema object
+ * @param {string} promptType - Type of prompt
+ * @returns {string} Schema instruction text
+ */
+function buildSchemaInstruction(schema, promptType) {
+  const schemaObj = schema.json_schema.schema;
+
+  return `You must respond with valid JSON matching this exact schema:
+
+${JSON.stringify(schemaObj, null, 2)}
+
+Important:
+- Return ONLY the JSON object, no other text
+- Do not wrap in markdown code blocks
+- Ensure all required fields are present
+- Use the exact field names specified`;
+}
+
+/**
+ * Call GitHub Models API with AI Router (auto-fallback and model selection)
+ * @param {string} apiKey - GitHub token
+ * @param {Object} assignmentsData - Prepared assignment data
+ * @param {Object} schema - JSON schema for structured output
+ * @param {string} promptType - Type of prompt ('sidepanel' or 'dashboard')
+ * @returns {Promise<Object>} Result object with data, model info, and metadata
+ */
+window.ClaudeClient.callClaudeWithRouter = async function(apiKey, assignmentsData, schema, promptType = 'sidepanel') {
+  // Use the AI Router for model selection and fallback
+  const result = await window.AIRouter.executeWithFallback(async (modelId) => {
+    return await window.ClaudeClient.callClaude(apiKey, assignmentsData, schema, promptType, modelId);
+  });
+
+  if (!result.success) {
+    const error = new Error(result.error || 'AI Router: All models failed');
+    error.failures = result.failures;
+    throw error;
+  }
+
+  return result;
 };
 
 /**

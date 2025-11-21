@@ -672,6 +672,16 @@ settingsBtn.addEventListener('click', async () => {
   // Load time range settings
   document.getElementById('assignmentWeeksBefore').value = result.assignmentWeeksBefore || 0;
   document.getElementById('assignmentWeeksAfter').value = result.assignmentWeeksAfter || 2;
+
+  // Load AI router settings
+  const aiConfig = await window.AIRouter.getConfig();
+  document.getElementById('aiModeAuto').checked = aiConfig.selectionMode === 'auto';
+  document.getElementById('aiModeManual').checked = aiConfig.selectionMode === 'manual';
+  document.getElementById('aiModelSelect').value = aiConfig.selectedModelId;
+  document.getElementById('aiEnableFallback').checked = aiConfig.enableFallback;
+
+  // Update fallback toggle visibility based on mode
+  updateAIFallbackVisibility();
 });
 
 closeSettingsModal.addEventListener('click', () => {
@@ -1151,6 +1161,39 @@ document.getElementById('claudeApiKey').addEventListener('change', async (e) => 
   }
 });
 
+// AI Router settings
+function updateAIFallbackVisibility() {
+  const isAutoMode = document.getElementById('aiModeAuto').checked;
+  const fallbackToggle = document.getElementById('aiFallbackToggle');
+  if (fallbackToggle) {
+    fallbackToggle.style.display = isAutoMode ? 'flex' : 'none';
+  }
+}
+
+// Save AI router config when settings change
+async function saveAIRouterConfig() {
+  const config = {
+    selectionMode: document.getElementById('aiModeAuto').checked ? 'auto' : 'manual',
+    selectedModelId: document.getElementById('aiModelSelect').value,
+    enableFallback: document.getElementById('aiEnableFallback').checked
+  };
+  await window.AIRouter.saveConfig(config);
+}
+
+// AI selection mode change
+document.querySelectorAll('input[name="aiSelectionMode"]').forEach(radio => {
+  radio.addEventListener('change', async () => {
+    updateAIFallbackVisibility();
+    await saveAIRouterConfig();
+  });
+});
+
+// AI model select change
+document.getElementById('aiModelSelect').addEventListener('change', saveAIRouterConfig);
+
+// AI fallback toggle change
+document.getElementById('aiEnableFallback').addEventListener('change', saveAIRouterConfig);
+
 // Load time range settings
 async function loadTimeRangeSettings() {
   try {
@@ -1469,9 +1512,9 @@ async function generateAIInsights() {
     // Show settings prompt if no API key (no need to refresh data)
     const settingsPrompt = `
       <div class="insights-loaded" style="text-align: center; padding: 40px 20px;">
-        <h3 style="margin-bottom: 12px; color: #111827;">Claude API Key Required</h3>
+        <h3 style="margin-bottom: 12px; color: #111827;">GitHub Token Required</h3>
         <p style="margin-bottom: 24px; color: #6B7280; font-size: 14px; max-width: 400px; margin-left: auto; margin-right: auto;">
-          To generate AI-powered insights and study schedules, you need to configure your Claude API key.
+          To generate AI-powered insights and study schedules, you need to configure your GitHub token.
         </p>
         <button id="openSettingsBtn" style="
           background: #1e3a5f;
@@ -1487,7 +1530,7 @@ async function generateAIInsights() {
           Open Settings
         </button>
         <p style="margin-top: 16px; font-size: 12px; color: #9CA3AF;">
-          Don't have an API key? <a href="https://console.anthropic.com/" target="_blank" style="color: #1e3a5f; text-decoration: underline;">Get one from Anthropic</a>
+          Don't have a token? <a href="https://github.com/settings/tokens" target="_blank" style="color: #1e3a5f; text-decoration: underline;">Get one from GitHub</a>
         </p>
       </div>
     `;
@@ -1536,7 +1579,7 @@ async function generateAIInsights() {
   insightsContent.innerHTML = `
     <div class="insights-loading">
       <div class="spinner"></div>
-      <p>Analyzing your assignments with Claude AI...</p>
+      <p>Analyzing your assignments with AI...</p>
     </div>
   `;
 
@@ -1673,14 +1716,21 @@ function getTagsForAssignment(assignmentId) {
   return window.currentAIMetadata?.[assignmentId]?.tags || [];
 }
 
-// Phase 4: Use shared Claude client to reduce code duplication
+// Phase 4: Use shared Claude client with AI Router for model selection and fallback
 async function callClaudeWithStructuredOutput(apiKey, assignmentsData) {
-  return await window.ClaudeClient.callClaude(
+  const result = await window.ClaudeClient.callClaudeWithRouter(
     apiKey,
     assignmentsData,
     window.AISchemas.SIDEPANEL_INSIGHTS_SCHEMA,
     'sidepanel'
   );
+
+  // Store model info for display
+  window.lastAIModelUsed = result.model;
+  window.lastAIDuration = result.duration;
+  window.lastAIFailures = result.failures;
+
+  return result.data;
 }
 
 // Helper function to create Lucide icon SVG
@@ -1907,9 +1957,9 @@ async function generateAISchedule() {
     // Show settings prompt if no API key
     const settingsPrompt = `
       <div class="insights-loaded" style="text-align: center; padding: 40px 20px;">
-        <h3 style="margin-bottom: 12px; color: #111827;">Claude API Key Required</h3>
+        <h3 style="margin-bottom: 12px; color: #111827;">GitHub Token Required</h3>
         <p style="margin-bottom: 24px; color: #6B7280; font-size: 14px;">
-          To generate AI-powered schedules, configure your Claude API key in Settings.
+          To generate AI-powered schedules, configure your GitHub token in Settings.
         </p>
         <button class="btn-primary" id="openSettingsFromSchedule" style="padding: 10px 20px; font-size: 14px;">
           Open Settings
@@ -1945,20 +1995,27 @@ async function generateAISchedule() {
     scheduleContent.innerHTML = `
       <div class="insights-loading">
         <div class="spinner"></div>
-        <p>Creating your weekly schedule with Claude AI...</p>
+        <p>Creating your weekly schedule with AI...</p>
       </div>
     `;
 
     // Prepare assignments data
     const assignmentsForAI = prepareAssignmentsForAI();
 
-    // Call Claude API with DASHBOARD_SCHEDULE_SCHEMA
-    const schedule = await window.ClaudeClient.callClaude(
+    // Call Claude API with DASHBOARD_SCHEDULE_SCHEMA using AI Router
+    const routerResult = await window.ClaudeClient.callClaudeWithRouter(
       result.claudeApiKey,
       assignmentsForAI,
       window.AISchemas.DASHBOARD_SCHEDULE_SCHEMA,
       'dashboard'
     );
+
+    // Store model info for display
+    window.lastAIModelUsed = routerResult.model;
+    window.lastAIDuration = routerResult.duration;
+    window.lastAIFailures = routerResult.failures;
+
+    const schedule = routerResult.data;
 
     // Format schedule for display (reuse formatStructuredInsights from schedule.js)
     const formattedSchedule = formatScheduleForDisplay(schedule);

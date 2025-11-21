@@ -273,16 +273,56 @@
 
         <!-- API Key Card -->
         <div class="settings-card">
-          <div class="settings-card-title">Claude API Key (Optional)</div>
+          <div class="settings-card-title">GitHub Token (Optional)</div>
           <div style="position: relative; margin-bottom: 8px;">
-            <input type="password" class="canvas-url-input" id="claudeApiKey" placeholder="sk-ant-api03-..." style="padding-right: 40px; margin-bottom: 0;">
-            <button type="button" id="toggleApiKeyBtn" style="position: absolute; right: 10px; top: 8px; background: none; border: none; cursor: pointer; padding: 6px; color: #6B7280; display: flex; align-items: center; justify-content: center; width: 24px; height: 24px; border-radius: 4px;" title="Show/Hide API Key">
+            <input type="password" class="canvas-url-input" id="claudeApiKey" placeholder="ghp_..." style="padding-right: 40px; margin-bottom: 0;">
+            <button type="button" id="toggleApiKeyBtn" style="position: absolute; right: 10px; top: 8px; background: none; border: none; cursor: pointer; padding: 6px; color: #6B7280; display: flex; align-items: center; justify-content: center; width: 24px; height: 24px; border-radius: 4px;" title="Show/Hide Token">
               <i id="eyeIcon" data-lucide="eye" style="width: 16px; height: 16px;"></i>
               <i id="eyeOffIcon" data-lucide="eye-off" style="display: none; width: 16px; height: 16px;"></i>
             </button>
           </div>
           <p style="font-size: 11px; color: #6B7280; margin-top: 6px;">
-            Optional: For direct API access in AI Dashboard. Get your key from <a href="https://console.anthropic.com/" target="_blank" style="color: #1e3a5f;">console.anthropic.com</a>
+            Optional: For AI-powered insights. Get a token from <a href="https://github.com/settings/tokens" target="_blank" style="color: #1e3a5f;">GitHub Settings</a> with Models access
+          </p>
+        </div>
+
+        <!-- AI Model Selection Card -->
+        <div class="settings-card">
+          <div class="settings-card-title">AI Model</div>
+          <p style="font-size: 12px; color: #6B7280; margin: 0 0 12px 0;">
+            Choose which model to use for generating insights via GitHub Models
+          </p>
+          <div style="margin-bottom: 12px;">
+            <label style="font-size: 12px; color: #374151; display: block; margin-bottom: 6px;">Selection Mode</label>
+            <div style="display: flex; gap: 12px;">
+              <label style="display: flex; align-items: center; gap: 6px; cursor: pointer;">
+                <input type="radio" name="aiSelectionMode" value="auto" id="aiModeAuto" checked>
+                <span style="font-size: 13px; color: #374151;">Auto (with fallback)</span>
+              </label>
+              <label style="display: flex; align-items: center; gap: 6px; cursor: pointer;">
+                <input type="radio" name="aiSelectionMode" value="manual" id="aiModeManual">
+                <span style="font-size: 13px; color: #374151;">Manual</span>
+              </label>
+            </div>
+          </div>
+          <div style="margin-bottom: 12px;">
+            <label style="font-size: 12px; color: #374151; display: block; margin-bottom: 6px;">Model</label>
+            <select id="aiModelSelect" style="width: 100%; padding: 8px 12px; border: 1px solid #D1D5DB; border-radius: 6px; font-size: 13px; background: white; cursor: pointer;">
+              <option value="gpt-4o">GPT-4o (Recommended)</option>
+              <option value="gpt-4o-mini">GPT-4o Mini (Fast)</option>
+              <option value="Meta-Llama-3.1-405B-Instruct">Llama 3.1 405B</option>
+              <option value="Meta-Llama-3.1-70B-Instruct">Llama 3.1 70B</option>
+              <option value="Mistral-large-2407">Mistral Large</option>
+            </select>
+          </div>
+          <div id="aiFallbackToggle" style="display: flex; align-items: center; gap: 8px;">
+            <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; flex: 1;">
+              <input type="checkbox" id="aiEnableFallback" checked style="cursor: pointer;">
+              <span style="font-size: 13px; color: #374151;">Enable automatic fallback on errors</span>
+            </label>
+          </div>
+          <p style="font-size: 11px; color: #6B7280; margin-top: 8px;">
+            In auto mode, if a model fails, the system will try the next available model.
           </p>
         </div>
 
@@ -372,6 +412,7 @@
   <script src="lib/ai-schemas-sidepanel.js"></script>
   <script src="lib/ai-schemas-dashboard.js"></script>
   <script src="lib/ai-mappers.js"></script>
+  <script src="lib/ai-router.js"></script>
   <script src="lib/claude-client.js"></script>
   <script src="sidepanel.js"></script>
 </body>

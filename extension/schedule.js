@@ -254,9 +254,9 @@ async function generateAIInsights() {
     // Show settings prompt if no API key (no need to refresh data)
     const settingsPrompt = `
       <div class="insights-loaded" style="text-align: center; padding: 60px 20px;">
-        <h3 style="margin-bottom: 16px; color: #111827; font-size: 24px;">Claude API Key Required</h3>
+        <h3 style="margin-bottom: 16px; color: #111827; font-size: 24px;">GitHub Token Required</h3>
         <p style="margin-bottom: 32px; color: #6B7280; font-size: 16px; max-width: 500px; margin-left: auto; margin-right: auto; line-height: 1.6;">
-          To generate AI-powered weekly schedules and study insights, you need to configure your Claude API key.
+          To generate AI-powered weekly schedules and study insights, you need to configure your GitHub token.
         </p>
         <button id="openSettingsBtn" style="
           background: #1e3a5f;
@@ -272,7 +272,7 @@ async function generateAIInsights() {
           Open Settings
         </button>
         <p style="margin-top: 20px; font-size: 14px; color: #9CA3AF;">
-          Don't have an API key? <a href="https://console.anthropic.com/" target="_blank" style="color: #1e3a5f; text-decoration: underline;">Get one from Anthropic</a>
+          Don't have a token? <a href="https://github.com/settings/tokens" target="_blank" style="color: #1e3a5f; text-decoration: underline;">Get one from GitHub</a>
         </p>
       </div>
     `;
@@ -317,7 +317,7 @@ async function generateAIInsights() {
   insightsContent.innerHTML = `
     <div class="insights-loading">
       <div class="spinner"></div>
-      <p>Analyzing your assignments with Claude AI...</p>
+      <p>Analyzing your assignments with AI...</p>
     </div>
   `;
 
@@ -408,14 +408,21 @@ function prepareAssignmentsForAI() {
   };
 }
 
-// Phase 4: Use shared Claude client to reduce code duplication
+// Phase 4: Use shared Claude client with AI Router for model selection and fallback
 async function callClaudeWithStructuredOutput(apiKey, assignmentsData) {
-  return await window.ClaudeClient.callClaude(
+  const result = await window.ClaudeClient.callClaudeWithRouter(
     apiKey,
     assignmentsData,
     window.AISchemas.DASHBOARD_SCHEDULE_SCHEMA,
     'dashboard'
   );
+
+  // Store model info for display
+  window.lastAIModelUsed = result.model;
+  window.lastAIDuration = result.duration;
+  window.lastAIFailures = result.failures;
+
+  return result.data;
 }
 
 // Helper function to create Lucide icon SVG

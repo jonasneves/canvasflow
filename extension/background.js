@@ -539,6 +539,19 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     return true;
   }
 
+  if (request.type === 'TEST_NOTIFICATION') {
+    // Send a test notification
+    chrome.notifications.create({
+      type: 'basic',
+      iconUrl: 'icon-128.png',
+      title: 'CanvasFlow Test Notification',
+      message: 'Notifications are working! You will receive deadline reminders based on your settings.',
+      priority: 1
+    });
+    sendResponse({ success: true });
+    return true;
+  }
+
 });
 
 async function handleMCPRequest(payload) {

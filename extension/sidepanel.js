@@ -992,6 +992,11 @@ document.getElementById('notificationsEnabled').addEventListener('change', async
   chrome.runtime.sendMessage({ type: 'UPDATE_NOTIFICATION_SETTINGS', enabled });
 });
 
+// Test notification button
+document.getElementById('testNotification').addEventListener('click', () => {
+  chrome.runtime.sendMessage({ type: 'TEST_NOTIFICATION' });
+});
+
 document.getElementById('notificationFrequency').addEventListener('change', async (e) => {
   await chrome.storage.local.set({ notificationFrequency: e.target.value });
   chrome.runtime.sendMessage({ type: 'UPDATE_NOTIFICATION_SETTINGS' });

@@ -1,7 +1,7 @@
 /**
- * AI Schema Definitions for Claude Structured Outputs (Browser Version)
+ * AI Schema Definitions for Structured Outputs (Browser Version)
  *
- * This file defines JSON schemas for Claude's structured outputs API.
+ * This file defines JSON schemas for the AI structured outputs.
  * These schemas guarantee type-safe, valid responses from the AI.
  *
  * Browser-compatible version - uses global window object instead of ES6 modules.

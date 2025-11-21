@@ -10,7 +10,7 @@ This extension uses Chrome Manifest V3 and leverages modern AI capabilities:
 - **Content Script** (`content.js`): Direct DOM extraction from Canvas (no Canvas API required)
 - **Sidepanel** (`sidepanel.html/js`): Dashboard with assignment overview and AI insights tab
 - **Schedule View** (`schedule.html/js`): Full-page AI-generated weekly schedule
-- **Shared Libraries** (`lib/`): Claude API client with structured outputs, AI schemas, and utilities
+- **Shared Libraries** (`lib/`): GitHub Models API client with AI router, schemas, and utilities
 
 ### Key Technical Features
 
@@ -31,7 +31,8 @@ extension/
 ├── icon-48.png                Extension icon (48x48)
 ├── icon-128.png               Extension icon (128x128)
 ├── lib/
-│   ├── claude-client.js       Direct HTTP API client for Claude
+│   ├── claude-client.js       GitHub Models API client with router
+│   ├── ai-router.js           Model selection and auto-fallback
 │   ├── ai-schemas-sidepanel.js  JSON schema for insights
 │   ├── ai-schemas-dashboard.js  JSON schema for schedule
 │   ├── ai-mappers.js          Response mappers
@@ -47,7 +48,7 @@ extension/
 
 - Chrome browser (version 88+)
 - Text editor or IDE
-- Claude API key for AI features
+- GitHub token with Models access for AI features
 
 ### Local Development
 
@@ -73,24 +74,25 @@ Key test scenarios:
 
 ## API Integration
 
-### Claude API
+### GitHub Models API
 
-The extension leverages Claude's latest capabilities for reliable AI responses:
+The extension uses GitHub Models API for AI-powered insights with auto-fallback:
 
-- **Structured Outputs**: Tool-based approach ensures consistent response format
+- **Multiple Model Support**: Choose from various AI models
+  - GPT-4o (OpenAI) - Most capable
+  - GPT-4o Mini (OpenAI) - Fast and cost-effective
+  - Llama 3.1 405B/70B (Meta) - Open source
+  - Mistral Large (Mistral AI) - Powerful alternative
+
+- **AI Router with Auto-Fallback**: Resilient model selection
+  - Priority-based model ordering
+  - Automatic retry on rate limits (429) or server errors (500/503)
+  - Manual mode for specific model selection
+
+- **Structured Outputs**: JSON schema-based responses
   - Sidepanel schema: Priority rankings, urgency scores, actionable recommendations
   - Schedule schema: 7-day time-blocked plan with strategic advice
-  - No parsing errors - guaranteed valid JSON from the API
-
-- **Adaptive Token Budgets**: Different limits based on output complexity
-  - Sidepanel: 1500 max tokens (quick insights)
-  - Schedule: 3000 max tokens (detailed weekly plan)
-  - Optimized for cost and quality
-
-- **Direct HTTP API**: Browser-compatible implementation (SDK not available in extensions)
-  - Custom fetch-based client in `lib/claude-client.js`
-  - Uses forced tool calling to guarantee JSON structure
-  - Supports both prompt types with adaptive budgets
+  - Adaptive token budgets (1500 for sidepanel, 3000 for schedule)
 
 ### Canvas LMS
 
@@ -105,7 +107,7 @@ No direct Canvas API calls are made - all data comes from the DOM.
 
 User settings stored in `chrome.storage.local`:
 
-- `claudeApiKey`: Anthropic API key
+- `githubToken`: GitHub token with Models access
 - `assignmentWeeksBefore`: Weeks before current date (default: 1)
 - `assignmentWeeksAfter`: Weeks after current date (default: 1)
 - `autoRefresh`: Auto-refresh interval in minutes (default: off)

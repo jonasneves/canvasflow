@@ -15,7 +15,7 @@
   ],
   "host_permissions": [
     "*://*.edu/*",
-    "https://api.anthropic.com/*"
+    "https://models.github.ai/*"
   ],
   "background": {
     "service_worker": "background.js"

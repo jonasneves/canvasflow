@@ -839,6 +839,9 @@ function updateGradesIcon() {
   const iconName = showGrades ? 'eye' : 'eye-off';
   icon.setAttribute('data-lucide', iconName);
 
+  // Remove processed attribute so icon can be re-initialized
+  icon.removeAttribute('data-lucide-processed');
+
   // Re-initialize this specific icon
   if (typeof initializeLucide === 'function') {
     initializeLucide();

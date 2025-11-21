@@ -2,16 +2,17 @@
 let allAssignments = [];
 let currentFilter = 'all';
 let autoRefreshInterval = null;
-let assignmentTimeRange = { weeksBefore: 2, weeksAfter: 2 }; // Default 2 weeks before and after
+let assignmentTimeRange = { weeksBefore: 0, weeksAfter: 2 }; // Default: Show next 2 weeks
 let showGrades = false; // Default to hidden
 let localCompletedIds = []; // Track locally completed assignments
+let focusModeEnabled = false; // Focus Mode: Show only top 3 priorities
 
 // Tab switching
 const tabButtons = document.querySelectorAll('.tab-button');
 const tabContents = document.querySelectorAll('.tab-content');
 
 tabButtons.forEach(button => {
-  button.addEventListener('click', () => {
+  button.addEventListener('click', async () => {
     const targetTab = button.getAttribute('data-tab');
 
     // Update buttons
@@ -21,6 +22,11 @@ tabButtons.forEach(button => {
     // Update content
     tabContents.forEach(content => content.classList.remove('active'));
     document.getElementById(targetTab).classList.add('active');
+
+    // Auto-generate insights when AI Dashboard tab is opened
+    if (targetTab === 'ai-dashboard') {
+      await checkAndAutoGenerateInsights();
+    }
   });
 });
 
@@ -142,6 +148,120 @@ function calculateImpactScore(assignment) {
   return Math.min(100, Math.log10(rawScore + 1) * 30);
 }
 
+// Render Focus Mode: Show only top 3 priorities
+function renderFocusMode(now, todayStart, todayEnd, timeRangeStart, timeRangeEnd) {
+  const assignmentsList = document.getElementById('assignmentsList');
+
+  // Filter to unsubmitted assignments within time range
+  let focusAssignments = allAssignments.filter(a => {
+    if (a.submission?.submitted) return false;
+    if (!a.dueDate) return false;
+    const dueDate = new Date(a.dueDate);
+    return dueDate >= timeRangeStart && dueDate <= timeRangeEnd;
+  });
+
+  // Sort by Impact Score
+  focusAssignments.sort((a, b) => {
+    const aScore = calculateImpactScore(a);
+    const bScore = calculateImpactScore(b);
+    return bScore - aScore;
+  });
+
+  // Take top 3
+  focusAssignments = focusAssignments.slice(0, 3);
+
+  if (focusAssignments.length === 0) {
+    assignmentsList.innerHTML = `
+      <div class="empty-state">
+        <div class="empty-state-icon">
+          <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#059669" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+            <polyline points="22 4 12 14.01 9 11.01"></polyline>
+          </svg>
+        </div>
+        <div class="empty-state-text">No priority assignments</div>
+        <p style="font-size: 13px; color: #6B7280; margin-top: 8px;">You're all caught up</p>
+      </div>
+    `;
+    return;
+  }
+
+  // Render top 3 with consistent styling
+  assignmentsList.innerHTML = `
+    <div class="focus-mode-header">
+      <div class="focus-mode-title">
+        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/>
+        </svg>
+        <span>Focus Mode</span>
+      </div>
+      <div class="focus-mode-subtitle">Your top 3 priorities</div>
+    </div>
+    ${focusAssignments.map((assignment, index) => {
+      const dueDate = new Date(assignment.dueDate);
+      const isOverdue = dueDate < now;
+      const isDueToday = !isOverdue && dueDate >= todayStart && dueDate < todayEnd;
+
+      const dueDateText = dueDate.toLocaleDateString('en-US', {
+        month: 'short',
+        day: 'numeric',
+        hour: 'numeric',
+        minute: '2-digit'
+      });
+
+      const priorityConfig = [
+        { label: 'PRIORITY 1', color: '#DC2626', bgColor: '#FEE2E2' },
+        { label: 'PRIORITY 2', color: '#D97706', bgColor: '#FEF3C7' },
+        { label: 'PRIORITY 3', color: '#1e3a5f', bgColor: '#DBEAFE' }
+      ][index];
+
+      const assignmentUrl = assignment.url || '#';
+      const badges = getAssignmentBadges(assignment);
+      const gradeDisplay = getGradeDisplay(assignment);
+
+      // Get AI-generated tags for this assignment
+      const aiTags = getTagsForAssignment(assignment.id);
+      const aiChipsHtml = aiTags.length > 0 ? `
+        <div class="ai-chips">
+          ${aiTags.map(tag => `<span class="ai-chip">${escapeHtml(tag)}</span>`).join('')}
+        </div>
+      ` : '';
+
+      return `
+        <div class="focus-mode-card">
+          <div class="focus-mode-badge" style="background: ${priorityConfig.bgColor}; color: ${priorityConfig.color};">
+            ${priorityConfig.label}
+          </div>
+          <a href="${escapeHtml(assignmentUrl)}" target="_blank" class="assignment-card ${isOverdue ? 'overdue' : ''}">
+            <div class="assignment-info">
+              <div class="assignment-title">${escapeHtml(assignment.name || 'Untitled Assignment')}</div>
+              <div class="assignment-meta">
+                <span>${escapeHtml(assignment.courseName || 'Unknown Course')}</span>
+                ${assignment.pointsPossible ? `<span>${assignment.pointsPossible} pts</span>` : ''}
+              </div>
+              ${aiChipsHtml}
+              <div class="assignment-due-date ${isOverdue ? 'overdue' : isDueToday ? 'due-today' : 'upcoming'}">
+                Due: ${dueDateText}
+              </div>
+            </div>
+            ${badges || gradeDisplay ? `<div class="assignment-badges">${badges}${gradeDisplay}</div>` : ''}
+          </a>
+        </div>
+      `;
+    }).join('')}
+    <div style="text-align: center; margin-top: 24px;">
+      <button class="secondary small" id="exitFocusMode">
+        Show All Assignments
+      </button>
+    </div>
+  `;
+
+  // Add exit button listener
+  document.getElementById('exitFocusMode')?.addEventListener('click', () => {
+    toggleFocusMode();
+  });
+}
+
 function renderAssignments() {
   updateSectionHeader();
   const assignmentsList = document.getElementById('assignmentsList');
@@ -152,6 +272,12 @@ function renderAssignments() {
   // Calculate time range boundaries
   const timeRangeStart = new Date(now.getTime() - assignmentTimeRange.weeksBefore * 7 * 24 * 60 * 60 * 1000);
   const timeRangeEnd = new Date(now.getTime() + assignmentTimeRange.weeksAfter * 7 * 24 * 60 * 60 * 1000);
+
+  // Handle Focus Mode
+  if (focusModeEnabled) {
+    renderFocusMode(now, todayStart, todayEnd, timeRangeStart, timeRangeEnd);
+    return;
+  }
 
 
   if (allAssignments.length === 0) {
@@ -557,7 +683,7 @@ settingsBtn.addEventListener('click', async () => {
   }
 
   // Load time range settings
-  document.getElementById('assignmentWeeksBefore').value = result.assignmentWeeksBefore || 2;
+  document.getElementById('assignmentWeeksBefore').value = result.assignmentWeeksBefore || 0;
   document.getElementById('assignmentWeeksAfter').value = result.assignmentWeeksAfter || 2;
 });
 
@@ -779,10 +905,10 @@ function startAutoRefresh() {
     clearInterval(autoRefreshInterval);
   }
 
-  // Refresh every 5 minutes (300000 ms)
+  // Refresh every 30 minutes (1800000 ms)
   autoRefreshInterval = setInterval(() => {
     refreshCanvasData();
-  }, 300000);
+  }, 1800000);
 }
 
 function stopAutoRefresh() {
@@ -853,13 +979,39 @@ document.getElementById('autoRefreshToggle').addEventListener('change', (e) => {
   saveAutoRefreshSetting(e.target.checked);
 });
 
+// Focus Mode toggle
+function toggleFocusMode() {
+  focusModeEnabled = !focusModeEnabled;
+
+  // Update button visual state
+  const focusModeBtn = document.getElementById('focusModeBtn');
+  if (focusModeEnabled) {
+    focusModeBtn.classList.add('active');
+    // Hide summary cards in focus mode
+    document.querySelector('.summary-cards').style.display = 'none';
+  } else {
+    focusModeBtn.classList.remove('active');
+    // Show summary cards in normal mode
+    document.querySelector('.summary-cards').style.display = 'grid';
+  }
+
+  // Save state to localStorage
+  chrome.storage.local.set({ focusModeEnabled });
+
+  // Re-render
+  renderAssignments();
+}
+
+// Focus Mode button click handler
+document.getElementById('focusModeBtn').addEventListener('click', toggleFocusMode);
+
 // Save time range settings
 document.getElementById('saveTimeRange').addEventListener('click', async () => {
   const weeksBefore = parseInt(document.getElementById('assignmentWeeksBefore').value);
   const weeksAfter = parseInt(document.getElementById('assignmentWeeksAfter').value);
 
-  if (isNaN(weeksBefore) || weeksBefore < 1 || weeksBefore > 52) {
-    showStatusMessage('timeRangeStatus', 'Weeks before must be between 1 and 52', 'error');
+  if (isNaN(weeksBefore) || weeksBefore < 0 || weeksBefore > 52) {
+    showStatusMessage('timeRangeStatus', 'Weeks before must be between 0 and 52', 'error');
     return;
   }
 
@@ -883,6 +1035,33 @@ document.getElementById('saveTimeRange').addEventListener('click', async () => {
     renderAssignments();
   } catch (error) {
     showStatusMessage('timeRangeStatus', '✗ Save failed', 'error');
+  }
+});
+
+// Reset time range to defaults
+document.getElementById('resetTimeRange').addEventListener('click', async () => {
+  const defaultWeeksBefore = 0;
+  const defaultWeeksAfter = 2;
+
+  try {
+    await chrome.storage.local.set({
+      assignmentWeeksBefore: defaultWeeksBefore,
+      assignmentWeeksAfter: defaultWeeksAfter
+    });
+
+    // Update UI inputs
+    document.getElementById('assignmentWeeksBefore').value = defaultWeeksBefore;
+    document.getElementById('assignmentWeeksAfter').value = defaultWeeksAfter;
+
+    // Update global state
+    assignmentTimeRange = { weeksBefore: defaultWeeksBefore, weeksAfter: defaultWeeksAfter };
+
+    showStatusMessage('timeRangeStatus', '✓ Reset to defaults', 'success');
+
+    // Re-render assignments with new time range
+    renderAssignments();
+  } catch (error) {
+    showStatusMessage('timeRangeStatus', '✗ Reset failed', 'error');
   }
 });
 
@@ -919,8 +1098,8 @@ async function loadTimeRangeSettings() {
   try {
     const result = await chrome.storage.local.get(['assignmentWeeksBefore', 'assignmentWeeksAfter']);
     assignmentTimeRange = {
-      weeksBefore: result.assignmentWeeksBefore || 1,
-      weeksAfter: result.assignmentWeeksAfter || 1
+      weeksBefore: result.assignmentWeeksBefore !== undefined ? result.assignmentWeeksBefore : 0,
+      weeksAfter: result.assignmentWeeksAfter !== undefined ? result.assignmentWeeksAfter : 2
     };
   } catch (error) {
   }
@@ -1079,6 +1258,41 @@ function showToast(message, actionText = null, actionCallback = null) {
   }, 4000);
 }
 
+// Check and auto-generate insights if needed
+async function checkAndAutoGenerateInsights() {
+  const SIX_HOURS_MS = 6 * 60 * 60 * 1000;
+
+  try {
+    const result = await chrome.storage.local.get(['savedInsights', 'insightsTimestamp', 'claudeApiKey']);
+    const now = Date.now();
+    const timestamp = result.insightsTimestamp || 0;
+    const age = now - timestamp;
+
+    // Check if insights are stale (>6 hours old) or don't exist
+    const needsRegeneration = !result.savedInsights || age > SIX_HOURS_MS;
+
+    if (needsRegeneration && result.claudeApiKey) {
+      // Auto-generate insights
+      const insightsContent = document.getElementById('insightsContent');
+      insightsContent.innerHTML = `
+        <div class="insights-loading">
+          <div class="spinner"></div>
+          <p>Refreshing your insights...</p>
+        </div>
+      `;
+
+      // Trigger generation without waiting for user click
+      await generateAIInsights();
+    } else if (!result.claudeApiKey) {
+      // If no API key, the generateAIInsights function will show the appropriate prompt
+      // Just ensure the button text is updated
+      await updateInsightsButtonText();
+    }
+  } catch (error) {
+    console.error('Error checking insights:', error);
+  }
+}
+
 // Initial load
 async function initialize() {
   await updateCanvasUrl();
@@ -1105,6 +1319,14 @@ async function initialize() {
 
   // Load auto-refresh setting
   await loadAutoRefreshSetting();
+
+  // Load focus mode state
+  const focusModeResult = await chrome.storage.local.get(['focusModeEnabled']);
+  focusModeEnabled = focusModeResult.focusModeEnabled || false;
+  if (focusModeEnabled) {
+    document.getElementById('focusModeBtn').classList.add('active');
+    document.querySelector('.summary-cards').style.display = 'none';
+  }
 
   // Initialize grade visibility icon (always starts hidden)
   updateGradesIcon();

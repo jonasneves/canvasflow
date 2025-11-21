@@ -91,14 +91,54 @@
 
   <!-- AI Dashboard Tab -->
   <div class="tab-content" id="ai-dashboard">
-    <div id="insightsContent">
-      <div class="insights-placeholder">
-        <i data-lucide="zap" style="width: 48px; height: 48px;"></i>
-        <p style="margin-bottom: 16px;">AI-powered insights for your assignments</p>
-        <button class="btn-primary" id="generateInsightsBtn" style="padding: 10px 20px; font-size: 14px;">
-          <span id="generateInsightsBtnText">Loading...</span>
-        </button>
-        <p class="insights-placeholder-note" style="margin-top: 12px; font-size: 13px; color: #6B7280; line-height: 1.5;">Get AI-generated priority recommendations and a personalized study plan to help you focus on what matters most this week</p>
+    <!-- Today Section (Always Visible) -->
+    <div id="todaySection" style="display: none; background: linear-gradient(135deg, #1e3a5f 0%, #2c4f7c 100%); padding: 16px; border-radius: 12px; margin-bottom: 16px;">
+      <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 12px;">
+        <i data-lucide="calendar-check" style="width: 20px; height: 20px; color: white;"></i>
+        <h3 style="margin: 0; color: white; font-size: 16px; font-weight: 600;">Today's Priorities</h3>
+      </div>
+      <div id="todayContent" style="display: flex; flex-direction: column; gap: 8px;">
+        <!-- Today's priorities will be inserted here -->
+      </div>
+    </div>
+
+    <!-- View Toggle Tabs -->
+    <div style="display: flex; gap: 8px; margin-bottom: 16px; background: #F3F4F6; padding: 4px; border-radius: 8px;">
+      <button class="ai-view-tab active" data-view="list" style="flex: 1; padding: 8px 12px; background: white; border: none; border-radius: 6px; font-size: 13px; font-weight: 600; color: #111827; cursor: pointer; transition: all 0.2s; display: flex; align-items: center; justify-content: center; gap: 6px;">
+        <i data-lucide="list" style="width: 16px; height: 16px;"></i>
+        <span>List View</span>
+      </button>
+      <button class="ai-view-tab" data-view="calendar" style="flex: 1; padding: 8px 12px; background: transparent; border: none; border-radius: 6px; font-size: 13px; font-weight: 600; color: #6B7280; cursor: pointer; transition: all 0.2s; display: flex; align-items: center; justify-content: center; gap: 6px;">
+        <i data-lucide="calendar" style="width: 16px; height: 16px;"></i>
+        <span>Calendar View</span>
+      </button>
+    </div>
+
+    <!-- List View Content -->
+    <div class="ai-view-content" id="listViewContent">
+      <div id="insightsContent">
+        <div class="insights-placeholder">
+          <i data-lucide="zap" style="width: 48px; height: 48px;"></i>
+          <p style="margin-bottom: 16px;">AI-powered insights for your assignments</p>
+          <button class="btn-primary" id="generateInsightsBtn" style="padding: 10px 20px; font-size: 14px;">
+            <span id="generateInsightsBtnText">Loading...</span>
+          </button>
+          <p class="insights-placeholder-note" style="margin-top: 12px; font-size: 13px; color: #6B7280; line-height: 1.5;">Get AI-generated priority recommendations and a personalized study plan to help you focus on what matters most this week</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Calendar View Content -->
+    <div class="ai-view-content" id="calendarViewContent" style="display: none;">
+      <div id="scheduleContent">
+        <div class="insights-placeholder">
+          <i data-lucide="calendar" style="width: 48px; height: 48px;"></i>
+          <p style="margin-bottom: 16px;">AI-generated weekly study schedule</p>
+          <button class="btn-primary" id="generateScheduleBtn" style="padding: 10px 20px; font-size: 14px;">
+            <span id="generateScheduleBtnText">Loading...</span>
+          </button>
+          <p class="insights-placeholder-note" style="margin-top: 12px; font-size: 13px; color: #6B7280; line-height: 1.5;">Get a personalized day-by-day breakdown of when to work on each assignment</p>
+        </div>
       </div>
     </div>
   </div>

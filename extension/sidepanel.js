@@ -580,6 +580,9 @@ async function loadAssignments() {
       // Render assignments with current filter
       renderAssignments();
 
+      // Render Today's Priorities section (Phase 3.1)
+      renderTodaySection();
+
     } else {
       assignmentsList.innerHTML = `
         <div class="empty-state">
@@ -1232,10 +1235,11 @@ async function loadSavedInsights() {
         regenerateBtn.addEventListener('click', generateAIInsights);
       }
 
-      const viewScheduleBtn = document.getElementById('viewScheduleBtn');
+      const viewScheduleBtn = document.getElementById('viewScheduleBtn') || document.getElementById('viewScheduleFromInsights');
       if (viewScheduleBtn) {
         viewScheduleBtn.addEventListener('click', () => {
-          chrome.tabs.create({ url: chrome.runtime.getURL('schedule.html') });
+          // Switch to calendar view tab (Phase 3.1)
+          document.querySelector('.ai-view-tab[data-view="calendar"]')?.click();
         });
       }
 
@@ -1407,6 +1411,9 @@ async function initialize() {
 
   // Update AI insights button text
   await updateInsightsButtonText();
+
+  // Update schedule button text (Phase 3.1)
+  await updateScheduleButtonText();
 
   // Load AI metadata (tags) from storage
   const metadataResult = await chrome.storage.local.get(['ai_metadata']);
@@ -1819,6 +1826,470 @@ function escapeHtml(text) {
 
 // Generate Insights Button
 document.getElementById('generateInsightsBtn').addEventListener('click', generateAIInsights);
+
+// ==================== Phase 3.1: Unified AI View ====================
+
+// View Tab Switching
+document.querySelectorAll('.ai-view-tab').forEach(tab => {
+  tab.addEventListener('click', function() {
+    const view = this.dataset.view;
+
+    // Update tab styling
+    document.querySelectorAll('.ai-view-tab').forEach(t => {
+      if (t === this) {
+        t.style.background = 'white';
+        t.style.color = '#111827';
+        t.classList.add('active');
+      } else {
+        t.style.background = 'transparent';
+        t.style.color = '#6B7280';
+        t.classList.remove('active');
+      }
+    });
+
+    // Show/hide content
+    if (view === 'list') {
+      document.getElementById('listViewContent').style.display = 'block';
+      document.getElementById('calendarViewContent').style.display = 'none';
+    } else {
+      document.getElementById('listViewContent').style.display = 'none';
+      document.getElementById('calendarViewContent').style.display = 'block';
+      // Load schedule if not loaded
+      loadSavedSchedule();
+    }
+  });
+});
+
+// Update schedule button text based on API key
+async function updateScheduleButtonText() {
+  const result = await chrome.storage.local.get(['claudeApiKey']);
+  const btnText = document.getElementById('generateScheduleBtnText');
+
+  if (btnText) {
+    if (result.claudeApiKey) {
+      btnText.textContent = 'Generate Schedule';
+    } else {
+      btnText.textContent = 'Configure API Key';
+    }
+  }
+}
+
+// Generate Schedule Button
+document.getElementById('generateScheduleBtn').addEventListener('click', generateAISchedule);
+
+// Render Today's Priorities
+function renderTodaySection() {
+  const now = new Date();
+  const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  const todayEnd = new Date(todayStart.getTime() + 24 * 60 * 60 * 1000);
+
+  // Get assignments due today or overdue
+  const todayAssignments = assignmentsData.filter(a => {
+    if (!a.dueDate || a.submission?.submitted) return false;
+    const dueDate = new Date(a.dueDate);
+    return dueDate <= todayEnd; // Include overdue and due today
+  });
+
+  // Calculate impact scores and sort
+  const scored = todayAssignments.map(a => ({
+    ...a,
+    impactScore: calculateImpactScore(a, now)
+  })).sort((a, b) => b.impactScore - a.impactScore);
+
+  // Take top 3
+  const topPriorities = scored.slice(0, 3);
+
+  const todaySection = document.getElementById('todaySection');
+  const todayContent = document.getElementById('todayContent');
+
+  if (topPriorities.length === 0) {
+    todaySection.style.display = 'none';
+    return;
+  }
+
+  todaySection.style.display = 'block';
+
+  todayContent.innerHTML = topPriorities.map((a, idx) => {
+    const dueDate = new Date(a.dueDate);
+    const isOverdue = dueDate < now;
+    const priorityColors = ['#EF4444', '#F59E0B', '#10B981'];
+    const priorityLabels = ['URGENT', 'HIGH', 'MEDIUM'];
+
+    return `
+      <div style="background: rgba(255, 255, 255, 0.95); padding: 12px; border-radius: 8px; border-left: 4px solid ${priorityColors[idx]}; cursor: pointer; transition: all 0.2s;"
+           onclick="window.open('${escapeHtml(a.url)}', '_blank')"
+           onmouseover="this.style.transform='translateX(4px)'; this.style.boxShadow='0 4px 12px rgba(0,0,0,0.1)'"
+           onmouseout="this.style.transform='translateX(0)'; this.style.boxShadow='none'">
+        <div style="display: flex; align-items: start; justify-content: space-between; gap: 8px; margin-bottom: 6px;">
+          <span style="font-weight: 600; font-size: 13px; color: #111827; flex: 1;">${escapeHtml(a.name)}</span>
+          <span style="background: ${priorityColors[idx]}; color: white; padding: 2px 8px; border-radius: 4px; font-size: 10px; font-weight: 700; white-space: nowrap;">${priorityLabels[idx]}</span>
+        </div>
+        <div style="display: flex; align-items: center; gap: 8px; font-size: 11px; color: #6B7280;">
+          <span>${escapeHtml(a.courseName)}</span>
+          <span>•</span>
+          <span style="color: ${isOverdue ? '#EF4444' : '#374151'}; font-weight: 500;">
+            ${isOverdue ? 'Overdue' : formatDueDate(dueDate)}
+          </span>
+        </div>
+      </div>
+    `;
+  }).join('');
+
+  // Re-initialize lucide icons
+  if (window.lucide) {
+    window.lucide.createIcons();
+  }
+}
+
+// Load saved schedule from storage
+async function loadSavedSchedule() {
+  try {
+    const result = await chrome.storage.local.get(['dashboardSchedule', 'dashboardScheduleTimestamp']);
+    const scheduleContent = document.getElementById('scheduleContent');
+
+    if (result.dashboardSchedule) {
+      scheduleContent.innerHTML = `
+        <div class="insights-loaded">
+          ${result.dashboardSchedule}
+        </div>
+      `;
+
+      // Setup event listeners
+      setupDayToggleListeners();
+      setupTaskCardClickListeners();
+
+      // Add regenerate button
+      if (result.dashboardScheduleTimestamp) {
+        const footerHtml = createInsightsFooter(result.dashboardScheduleTimestamp, 'schedule');
+        scheduleContent.innerHTML += footerHtml;
+
+        // Re-attach listeners for regenerate button
+        const regenerateBtn = document.getElementById('regenerateScheduleBtn');
+        if (regenerateBtn) {
+          regenerateBtn.addEventListener('click', generateAISchedule);
+        }
+      }
+    }
+  } catch (error) {
+    console.error('Error loading saved schedule:', error);
+  }
+}
+
+// Generate AI Schedule
+async function generateAISchedule() {
+  const btn = document.getElementById('generateScheduleBtn') || document.getElementById('regenerateScheduleBtn');
+  const scheduleContent = document.getElementById('scheduleContent');
+
+  // Check if API key is set first
+  const result = await chrome.storage.local.get(['claudeApiKey']);
+
+  if (!result.claudeApiKey) {
+    // Show settings prompt if no API key
+    const settingsPrompt = `
+      <div class="insights-loaded" style="text-align: center; padding: 40px 20px;">
+        <h3 style="margin-bottom: 12px; color: #111827;">Claude API Key Required</h3>
+        <p style="margin-bottom: 24px; color: #6B7280; font-size: 14px;">
+          To generate AI-powered schedules, configure your Claude API key in Settings.
+        </p>
+        <button class="btn-primary" id="openSettingsFromSchedule" style="padding: 10px 20px; font-size: 14px;">
+          Open Settings
+        </button>
+      </div>
+    `;
+    scheduleContent.innerHTML = settingsPrompt;
+
+    document.getElementById('openSettingsFromSchedule').addEventListener('click', () => {
+      document.getElementById('settingsModal').classList.add('show');
+    });
+
+    return;
+  }
+
+  // Show loading state
+  if (btn) {
+    btn.disabled = true;
+    btn.classList.add('loading');
+  }
+
+  scheduleContent.innerHTML = `
+    <div class="insights-loading">
+      <div class="spinner"></div>
+      <p>Analyzing your assignments...</p>
+    </div>
+  `;
+
+  try {
+    // Refresh Canvas data first
+    await refreshData();
+
+    scheduleContent.innerHTML = `
+      <div class="insights-loading">
+        <div class="spinner"></div>
+        <p>Creating your weekly schedule with Claude AI...</p>
+      </div>
+    `;
+
+    // Prepare assignments data
+    const assignmentsForAI = prepareAssignmentsForAI();
+
+    // Call Claude API with DASHBOARD_SCHEDULE_SCHEMA
+    const schedule = await window.ClaudeClient.callClaude(
+      result.claudeApiKey,
+      assignmentsForAI,
+      window.AISchemas.DASHBOARD_SCHEDULE_SCHEMA,
+      'dashboard'
+    );
+
+    // Format schedule for display (reuse formatStructuredInsights from schedule.js)
+    const formattedSchedule = formatScheduleForDisplay(schedule);
+
+    scheduleContent.innerHTML = `
+      <div class="insights-loaded fade-in">
+        ${formattedSchedule}
+      </div>
+    `;
+
+    // Setup event listeners
+    setupDayToggleListeners();
+    setupTaskCardClickListeners();
+
+    // Save schedule to storage
+    const timestamp = Date.now();
+    await chrome.storage.local.set({
+      dashboardSchedule: formattedSchedule,
+      dashboardScheduleTimestamp: timestamp
+    });
+
+    // Add footer with regenerate button
+    const footerHtml = createInsightsFooter(timestamp, 'schedule');
+    scheduleContent.innerHTML += footerHtml;
+
+    // Re-attach listener
+    const regenerateBtn = document.getElementById('regenerateScheduleBtn');
+    if (regenerateBtn) {
+      regenerateBtn.addEventListener('click', generateAISchedule);
+    }
+
+  } catch (error) {
+    scheduleContent.innerHTML = `
+      <div class="insights-error">
+        <strong>Failed to generate schedule:</strong> ${escapeHtml(error.message)}
+        <p style="margin-top: 8px; font-size: 12px;">Check your API key in settings or try again.</p>
+      </div>
+    `;
+  } finally {
+    if (btn) {
+      btn.classList.remove('loading');
+      btn.disabled = false;
+    }
+  }
+}
+
+// Format schedule for display (similar to schedule.js formatStructuredInsights)
+function formatScheduleForDisplay(schedule) {
+  const weeklyPlanHtml = schedule.weekly_plan.map((day, dayIdx) => {
+    const tasksHtml = day.tasks.map(task => {
+      const timeBlock = window.AIMappers.formatTimeBlock(task.start_hour, task.duration_hours);
+      const assignmentUrl = findAssignmentUrl(task.assignment);
+      const clickableClass = assignmentUrl ? ' clickable' : '';
+      const dataUrlAttr = assignmentUrl ? ` data-url="${escapeHtml(assignmentUrl)}"` : '';
+
+      return `
+        <div class="schedule-task-card${clickableClass}"${dataUrlAttr}>
+          <div class="task-header">
+            <strong class="task-title">${escapeHtml(task.assignment)}</strong>
+            <span class="task-time-badge">${timeBlock}</span>
+          </div>
+          <p class="task-notes">
+            <i data-lucide="lightbulb" style="width: 14px; height: 14px; color: #6B7280; flex-shrink: 0;"></i>
+            <span>${escapeHtml(task.notes)}</span>
+          </p>
+        </div>
+      `;
+    }).join('');
+
+    const tasksCount = day.tasks.length;
+    const dayId = `schedule-day-${dayIdx}`;
+    const defaultBg = dayIdx === 0 || dayIdx === 1 ? '#FAFAFA' : 'white';
+
+    const workloadLabel = window.AIMappers.mapWorkloadToLabel(day.workload_score);
+    const workloadColor = window.AIMappers.mapWorkloadToColor(day.workload_score);
+
+    return `
+      <div style="background: white; border-radius: 10px; border: 1px solid #E5E7EB; overflow: hidden; margin-bottom: 16px;">
+        <button
+          class="day-plan-toggle"
+          data-day-id="${dayId}"
+          data-default-bg="${defaultBg}"
+          style="width: 100%; padding: 18px 24px; background: ${defaultBg}; border: none; cursor: pointer; display: flex; align-items: center; justify-content: space-between; transition: background 0.2s;"
+        >
+          <div style="display: flex; align-items: center; gap: 16px;">
+            <div style="width: 12px; height: 12px; border-radius: 50%; background: ${workloadColor}; flex-shrink: 0;"></div>
+            <div style="text-align: left;">
+              <div style="font-weight: 700; color: #111827; font-size: 18px;">${escapeHtml(day.day)}</div>
+              <div style="font-size: 15px; color: #6B7280; margin-top: 4px;">${escapeHtml(day.focus)}</div>
+            </div>
+          </div>
+          <div style="display: flex; align-items: center; gap: 16px;">
+            <div style="text-align: right;">
+              <div style="font-size: 14px; font-weight: 600; color: #374151;">${tasksCount} session${tasksCount !== 1 ? 's' : ''}</div>
+              <div style="font-size: 13px; color: #9CA3AF; text-transform: capitalize; margin-top: 2px;">${workloadLabel} load</div>
+            </div>
+            <i data-lucide="chevron-down" class="day-icon" style="width: 24px; height: 24px; color: #9CA3AF; transition: transform 0.2s; transform: ${dayIdx < 2 ? 'rotate(180deg)' : 'rotate(0deg)'}; flex-shrink: 0;"></i>
+          </div>
+        </button>
+        <div id="${dayId}" class="day-content" style="display: ${dayIdx < 2 ? 'block' : 'none'}; padding: 24px; border-top: 1px solid #E5E7EB; background: #FAFAFA;">
+          ${tasksCount > 0 ? tasksHtml : '<p style="color: #9CA3AF; text-align: center; padding: 32px 0; font-size: 15px;">No sessions scheduled - rest day!</p>'}
+        </div>
+      </div>
+    `;
+  }).join('');
+
+  return `<div>${weeklyPlanHtml}</div>`;
+}
+
+// Helper function to create insights footer (updated to support schedule)
+function createInsightsFooter(timestamp, type = 'insights') {
+  const now = Date.now();
+  const diff = now - timestamp;
+  const minutes = Math.floor(diff / 60000);
+  const hours = Math.floor(minutes / 60);
+  const days = Math.floor(hours / 24);
+
+  let timeAgo;
+  if (days > 0) {
+    timeAgo = `${days} day${days > 1 ? 's' : ''} ago`;
+  } else if (hours > 0) {
+    timeAgo = `${hours} hour${hours > 1 ? 's' : ''} ago`;
+  } else if (minutes > 0) {
+    timeAgo = `${minutes} minute${minutes > 1 ? 's' : ''} ago`;
+  } else {
+    timeAgo = 'just now';
+  }
+
+  const btnId = type === 'schedule' ? 'regenerateScheduleBtn' : 'regenerateInsightsBtn';
+  const viewBtnHtml = type === 'insights' ? `
+    <button class="btn-secondary" id="viewScheduleFromInsights" style="padding: 8px 16px; font-size: 13px; display: inline-flex; align-items: center; justify-content: center; gap: 6px; border: 1px solid #E5E7EB;">
+      <i data-lucide="calendar" style="width: 14px; height: 14px;"></i>
+      <span>View Schedule</span>
+    </button>
+  ` : '';
+
+  return `<div style="text-align: center; padding: 16px 0 0 0; border-top: 1px solid #E5E7EB;">
+    <div style="font-size: 11px; color: #9CA3AF; margin-bottom: 10px;">Last generated ${timeAgo}</div>
+    <div style="display: flex; gap: 8px; justify-content: center;">
+      <button class="btn-primary" id="${btnId}" style="padding: 8px 16px; font-size: 13px; display: inline-flex; align-items: center; justify-content: center; gap: 6px;">
+        <i data-lucide="refresh-cw" style="width: 14px; height: 14px;"></i>
+        <span>Regenerate</span>
+      </button>
+      ${viewBtnHtml}
+    </div>
+  </div>`;
+}
+
+// Setup day toggle listeners
+function setupDayToggleListeners() {
+  document.querySelectorAll('.day-plan-toggle').forEach(btn => {
+    // Remove existing listeners
+    const newBtn = btn.cloneNode(true);
+    btn.parentNode.replaceChild(newBtn, btn);
+
+    newBtn.addEventListener('click', function() {
+      const dayId = this.dataset.dayId;
+      const dayContent = document.getElementById(dayId);
+      const icon = this.querySelector('.day-icon');
+
+      if (dayContent.style.display === 'none') {
+        dayContent.style.display = 'block';
+        if (icon) icon.style.transform = 'rotate(180deg)';
+      } else {
+        dayContent.style.display = 'none';
+        if (icon) icon.style.transform = 'rotate(0deg)';
+      }
+    });
+
+    // Hover effects
+    newBtn.addEventListener('mouseenter', function() {
+      this.style.background = '#F9FAFB';
+    });
+    newBtn.addEventListener('mouseleave', function() {
+      this.style.background = this.dataset.defaultBg;
+    });
+  });
+}
+
+// Setup task card click listeners
+function setupTaskCardClickListeners() {
+  document.querySelectorAll('.schedule-task-card.clickable').forEach(card => {
+    // Remove existing listeners
+    const newCard = card.cloneNode(true);
+    card.parentNode.replaceChild(newCard, card);
+
+    newCard.addEventListener('click', function() {
+      const url = this.dataset.url;
+      if (url) {
+        window.open(url, '_blank');
+      }
+    });
+  });
+}
+
+// Helper function to find assignment URL by fuzzy matching name with scoring
+function findAssignmentUrl(assignmentName) {
+  if (!assignmentsData || assignmentsData.length === 0) {
+    return null;
+  }
+
+  const cleanName = assignmentName.toLowerCase().trim();
+
+  // Calculate match score for each assignment
+  const scored = assignmentsData
+    .filter(a => a.name && a.url)
+    .map(assignment => {
+      const aName = assignment.name.toLowerCase().trim();
+      let score = 0;
+
+      // Exact match = 100 points
+      if (aName === cleanName) {
+        score = 100;
+      }
+      // One contains the other = 80 points
+      else if (aName.includes(cleanName) || cleanName.includes(aName)) {
+        score = 80;
+      }
+      // Word-based matching with high threshold
+      else {
+        const aiWords = cleanName.split(/\s+/).filter(w => w.length > 3);
+        const assignmentWords = aName.split(/\s+/).filter(w => w.length > 3);
+
+        if (aiWords.length > 0 && assignmentWords.length > 0) {
+          // Count how many AI words appear in the assignment name
+          const matchingWords = aiWords.filter(word =>
+            assignmentWords.some(aWord => aWord.includes(word) || word.includes(aWord))
+          );
+
+          // Require at least 70% of words to match for medium confidence
+          const matchRatio = matchingWords.length / aiWords.length;
+          if (matchRatio >= 0.7) {
+            score = matchRatio * 60; // Max 60 points for word matching
+          }
+        }
+      }
+
+      return { assignment, score };
+    })
+    .filter(item => item.score > 0)
+    .sort((a, b) => b.score - a.score);
+
+  // Only return if we have a confident match (score >= 70)
+  if (scored.length > 0 && scored[0].score >= 70) {
+    return scored[0].assignment.url;
+  }
+
+  return null;
+}
+
+// ==================== End Phase 3.1 ====================
 
 // Open Dashboard Button (now in header)
 document.getElementById('openDashboardBtn').addEventListener('click', () => {

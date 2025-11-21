@@ -1,5 +1,5 @@
 /**
- * AI Router for Yoink Extension
+ * AI Router for CanvasFlow Extension
  *
  * Provides model selection and auto-fallback routing for GitHub Models API calls.
  * Supports multiple AI providers through GitHub's unified inference API.

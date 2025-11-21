@@ -1,23 +1,25 @@
-/* CanvasFlow Color Theme - Cadet Blue & Warm Coral */
+/* CanvasFlow Color Theme - Deep Navy & Warm Coral */
 :root {
-  /* Primary Brand Colors */
-  --color-primary: #5f9ea0;           /* Cadet Blue - main theme color */
-  --color-primary-dark: #4a7a7c;      /* Darker Cadet Blue for hover states */
-  --color-primary-light: #7db5b7;     /* Lighter Cadet Blue */
-  --color-primary-rgb: 95, 158, 160;  /* RGB values for rgba() usage */
+  /* Primary Brand Colors - Updated to Deep Navy */
+  --color-primary: #1e3a5f;           /* Deep Navy - main theme color */
+  --color-primary-dark: #2c4f7c;      /* Lighter Navy for hover states */
+  --color-primary-light: #3d5a7f;     /* Even Lighter Navy */
+  --color-primary-rgb: 30, 58, 95;    /* RGB values for rgba() usage */
 
   /* Logo/Accent Color */
   --color-accent: #E86F5F;            /* Warm Coral - logo color */
 
-  /* Status Colors */
+  /* Status Colors - Updated for better visual hierarchy */
   --color-success: #5f9ea0;           /* Completed - Cadet Blue */
-  --color-warning: #E89923;           /* Upcoming - Orange */
-  --color-danger: #C84E00;            /* Overdue - Dark Orange */
+  --color-info: #4A90A4;              /* Upcoming - Calmer Blue-Teal */
+  --color-warning: #F77F00;           /* Due Today - Warmer Rich Orange */
+  --color-danger: #E63946;            /* Overdue - Softer Red */
   --color-error: #EF4444;             /* Error - Red */
 
   /* Background Colors for Status */
   --bg-success: rgba(95, 158, 160, 0.15);
-  --bg-warning: #FCF7E5;
+  --bg-info: rgba(74, 144, 164, 0.15);
+  --bg-warning: #FFF4E6;
   --bg-danger: #FEE2E2;
 
   /* Text Colors */
@@ -25,7 +27,7 @@
   --text-secondary: #374151;
   --text-muted: #6B7280;
   --text-light: #9CA3AF;
-  --text-on-primary: #3d6566;         /* Darker Cadet Blue for text on light backgrounds */
+  --text-on-primary: #1e3a5f;         /* Deep Navy for text on light backgrounds */
 
   /* Neutral Colors */
   --color-white: #FFFFFF;
@@ -36,7 +38,7 @@
   --color-gray-600: #6B7280;
 
   /* Gradients */
-  --gradient-primary: linear-gradient(135deg, #5f9ea0 0%, #4a7a7c 100%);
+  --gradient-primary: linear-gradient(135deg, #1e3a5f 0%, #2c4f7c 100%);
 
   /* Legacy blue colors (being phased out) */
   --color-old-blue: #00539B;

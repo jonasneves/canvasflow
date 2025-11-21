@@ -15,7 +15,7 @@ body {
 
 /* Header */
 .header {
-  background: #5f9ea0;
+  background: #1e3a5f;
   border-bottom: 1px solid #E5E7EB;
   padding: 20px 40px;
   position: sticky;
@@ -61,7 +61,7 @@ body {
   font-size: 15px;
   font-weight: 600;
   border: none;
-  background: #5f9ea0;
+  background: #1e3a5f;
   color: white;
   border-radius: 8px;
   cursor: pointer;
@@ -73,7 +73,7 @@ body {
 }
 
 .btn-generate:hover {
-  background: #4a7a7c;
+  background: #2c4f7c;
   transform: translateY(-1px);
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
 }
@@ -106,7 +106,7 @@ body {
   width: 8px;
   height: 8px;
   border-radius: 50%;
-  background: #5f9ea0;
+  background: #1e3a5f;
   animation: pulse 2s ease-in-out infinite;
 }
 
@@ -192,7 +192,7 @@ body {
 .summary-card:hover {
   box-shadow: 0 8px 20px rgba(0, 0, 0, 0.12);
   transform: translateY(-4px) scale(1.02);
-  border-color: #5f9ea0;
+  border-color: #1e3a5f;
 }
 
 .summary-card:active {
@@ -211,17 +211,17 @@ body {
 
 .summary-icon.total {
   background: #E2E6ED;
-  color: #5f9ea0;
+  color: #1e3a5f;
 }
 
 .summary-icon.upcoming {
   background: #FCF7E5;
-  color: #E89923;
+  color: #F77F00;
 }
 
 .summary-icon.overdue {
   background: #FEE2E2;
-  color: #C84E00;
+  color: #E63946;
 }
 
 .summary-icon.completed {
@@ -279,7 +279,7 @@ body {
   display: flex;
   align-items: center;
   justify-content: center;
-  color: #5f9ea0;
+  color: #1e3a5f;
   border: 1px solid #E5E7EB;
   flex-shrink: 0;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.04);
@@ -333,12 +333,12 @@ body {
 }
 
 .btn-primary {
-  background: #5f9ea0;
+  background: #1e3a5f;
   color: white;
 }
 
 .btn-primary:hover {
-  background: #4a7a7c;
+  background: #2c4f7c;
 }
 
 .btn-secondary {
@@ -367,7 +367,7 @@ body {
   padding: 14px;
   background: white;
   border: 1px solid #E5E7EB;
-  border-left: 4px solid #5f9ea0;
+  border-left: 4px solid #1e3a5f;
   border-radius: 8px;
   margin-bottom: 12px;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
@@ -378,7 +378,7 @@ body {
 }
 
 .schedule-task-card.clickable:hover {
-  border-color: #5f9ea0;
+  border-color: #1e3a5f;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
   transform: translateX(4px);
 }
@@ -399,7 +399,7 @@ body {
 
 .task-time-badge {
   background: #E2E6ED;
-  color: #5f9ea0;
+  color: #1e3a5f;
   padding: 4px 10px;
   border-radius: 6px;
   font-size: 13px;
@@ -543,9 +543,9 @@ body {
 }
 
 .filter-btn.active {
-  background: #5f9ea0;
+  background: #1e3a5f;
   color: white;
-  border-color: #5f9ea0;
+  border-color: #1e3a5f;
 }
 
 /* Assignments List */
@@ -567,7 +567,7 @@ body {
   height: 40px;
   margin: 0 auto 16px;
   border: 3px solid #E2E6ED;
-  border-top-color: #5f9ea0;
+  border-top-color: #1e3a5f;
   border-radius: 50%;
   animation: spin 0.8s linear infinite;
 }
@@ -593,7 +593,7 @@ body {
 
 .assignment-item:hover {
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
-  border-color: #5f9ea0;
+  border-color: #1e3a5f;
   transform: translateX(4px);
 }
 
@@ -605,15 +605,15 @@ body {
 }
 
 .assignment-status.upcoming {
-  background: #E89923;
+  background: #F77F00;
 }
 
 .assignment-status.overdue {
-  background: #C84E00;
+  background: #E63946;
 }
 
 .assignment-status.completed {
-  background: #5f9ea0;
+  background: #1e3a5f;
 }
 
 .assignment-status.none {
@@ -648,7 +648,7 @@ body {
 .canvas-link {
   display: inline-flex;
   align-items: center;
-  color: #5f9ea0;
+  color: #1e3a5f;
   opacity: 0.6;
   transition: all 0.2s ease;
   padding: 4px;
@@ -682,11 +682,11 @@ body {
 }
 
 .assignment-due.overdue {
-  color: #C84E00;
+  color: #E63946;
 }
 
 .assignment-due.soon {
-  color: #E89923;
+  color: #F77F00;
 }
 
 .assignment-badge {
@@ -703,17 +703,17 @@ body {
 
 .assignment-badge.submitted {
   background: #E2E6ED;
-  color: #4a7a7c;
+  color: #2c4f7c;
 }
 
 .assignment-badge.late {
   background: rgba(200, 78, 0, 0.15);
-  color: #C84E00;
+  color: #E63946;
 }
 
 .assignment-badge.missing {
   background: #FCF7E5;
-  color: #E89923;
+  color: #F77F00;
 }
 
 /* Modal */
@@ -838,7 +838,7 @@ body {
 
 .settings-input:focus {
   outline: none;
-  border-color: #5f9ea0;
+  border-color: #1e3a5f;
   box-shadow: 0 0 0 3px rgba(0, 83, 155, 0.1);
 }
 
@@ -854,7 +854,7 @@ body {
 }
 
 .settings-help a {
-  color: #5f9ea0;
+  color: #1e3a5f;
   text-decoration: none;
 }
 
@@ -875,7 +875,7 @@ body {
   width: 18px;
   height: 18px;
   cursor: pointer;
-  accent-color: #5f9ea0;
+  accent-color: #1e3a5f;
 }
 
 /* Responsive */

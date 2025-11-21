@@ -23,7 +23,7 @@
     .header {
       padding: 16px 20px;
       border-bottom: 1px solid #E5E7EB;
-      background: #5f9ea0;
+      background: #1e3a5f;
       flex-shrink: 0;
       display: flex;
       align-items: center;
@@ -149,7 +149,7 @@
     }
 
     .tab-button.active {
-      color: #5f9ea0;
+      color: #1e3a5f;
       background: #fff;
       font-weight: 600;
       border-bottom: 3px solid transparent;
@@ -162,7 +162,7 @@
       left: 0;
       right: 0;
       height: 3px;
-      background: #5f9ea0;
+      background: #1e3a5f;
       border-radius: 1px 1px 0 0;
     }
 
@@ -190,7 +190,7 @@
       padding: 16px 20px;
       flex-shrink: 0;
       animation: slideDown 0.3s ease-out;
-      border-left: 4px solid #5f9ea0;
+      border-left: 4px solid #1e3a5f;
     }
 
     .config-banner-content {
@@ -203,7 +203,7 @@
     .config-banner-icon {
       width: 36px;
       height: 36px;
-      background: linear-gradient(135deg, #5f9ea0 0%, #4a7a7c 100%);
+      background: linear-gradient(135deg, #1e3a5f 0%, #2c4f7c 100%);
       border-radius: 8px;
       display: flex;
       align-items: center;
@@ -236,7 +236,7 @@
     }
 
     .config-banner-btn {
-      background: #5f9ea0;
+      background: #1e3a5f;
       color: white;
       border: none;
       padding: 8px 16px;
@@ -250,7 +250,7 @@
     }
 
     .config-banner-btn:hover {
-      background: #4a7a7c;
+      background: #2c4f7c;
       transform: translateY(-1px);
       box-shadow: 0 4px 12px rgba(0, 83, 155, 0.3);
     }
@@ -336,7 +336,7 @@
     .summary-card:hover {
       box-shadow: 0 8px 20px rgba(0, 0, 0, 0.12);
       transform: translateY(-2px);
-      border-color: #5f9ea0;
+      border-color: #1e3a5f;
     }
 
     .summary-card:active {
@@ -344,7 +344,7 @@
     }
 
     .summary-card.active {
-      border-color: #5f9ea0;
+      border-color: #1e3a5f;
       box-shadow: 0 4px 12px rgba(0, 83, 155, 0.15);
     }
 
@@ -364,7 +364,7 @@
     }
 
     .summary-card.upcoming .summary-value {
-      color: #5f9ea0;
+      color: #1e3a5f;
     }
 
     .summary-label {
@@ -422,24 +422,24 @@
 
     .checkbox-circle.checked {
       opacity: 1;
-      background: #5f9ea0;
-      border-color: #5f9ea0;
+      background: #1e3a5f;
+      border-color: #1e3a5f;
     }
 
     .checkbox-circle:hover {
-      border-color: #5f9ea0;
+      border-color: #1e3a5f;
       background: rgba(0, 83, 155, 0.05);
     }
 
     .checkbox-circle.checked:hover {
-      background: #5f9ea0;
+      background: #1e3a5f;
     }
 
     .assignment-card {
       padding: 14px;
       background: white;
       border: 1px solid #E5E7EB;
-      border-left: 4px solid #5f9ea0;
+      border-left: 4px solid #1e3a5f;
       border-radius: 8px;
       transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
       cursor: pointer;
@@ -452,17 +452,17 @@
 
     .assignment-card:hover {
       background: white;
-      border-color: #5f9ea0;
+      border-color: #1e3a5f;
       box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
       transform: translateX(2px);
     }
 
     .assignment-card.overdue {
-      border-left-color: #C84E00;
+      border-left-color: #E63946;
     }
 
     .assignment-card.completed {
-      border-left-color: #5f9ea0;
+      border-left-color: #1e3a5f;
       opacity: 0.85;
     }
 
@@ -516,11 +516,11 @@
     }
 
     .assignment-due-date.overdue {
-      color: #C84E00;
+      color: #E63946;
     }
 
     .assignment-due-date.due-today {
-      color: #E89923;
+      color: #F77F00;
     }
 
     .assignment-due-date.upcoming {
@@ -549,17 +549,17 @@
 
     .assignment-badge.submitted {
       background: #E2E6ED;
-      color: #4a7a7c;
+      color: #2c4f7c;
     }
 
     .assignment-badge.late {
       background: rgba(200, 78, 0, 0.15);
-      color: #C84E00;
+      color: #E63946;
     }
 
     .assignment-badge.missing {
       background: #FCF7E5;
-      color: #E89923;
+      color: #F77F00;
     }
 
     .assignment-grade {
@@ -591,7 +591,7 @@
     .dashboard-link {
       display: block;
       padding: 16px;
-      background: linear-gradient(135deg, #5f9ea0 0%, #4a7a7c 100%);
+      background: linear-gradient(135deg, #1e3a5f 0%, #2c4f7c 100%);
       color: white;
       text-align: center;
       border-radius: 8px;
@@ -623,7 +623,7 @@
 
     /* AI Insights Styles */
     .btn-primary {
-      background: linear-gradient(135deg, #5f9ea0 0%, #4a7a7c 100%);
+      background: linear-gradient(135deg, #1e3a5f 0%, #2c4f7c 100%);
       color: white;
       border: none;
       border-radius: 8px;
@@ -726,7 +726,7 @@
 
     .canvas-url-input:focus {
       outline: none;
-      border-color: #5f9ea0;
+      border-color: #1e3a5f;
       box-shadow: 0 0 0 3px rgba(0, 83, 155, 0.1);
     }
 
@@ -808,12 +808,12 @@
     }
 
     button.primary {
-      background: #5f9ea0;
+      background: #1e3a5f;
       color: white;
     }
 
     button.primary:hover {
-      background: #4a7a7c;
+      background: #2c4f7c;
     }
 
     button.primary:active {
@@ -850,7 +850,7 @@
     .refresh-button {
       background: transparent;
       border: none;
-      color: #5f9ea0;
+      color: #1e3a5f;
       cursor: pointer;
       padding: 4px 8px;
       font-size: 12px;
@@ -899,7 +899,7 @@
       width: 16px;
       height: 16px;
       border: 2px solid #E5E7EB;
-      border-top-color: #5f9ea0;
+      border-top-color: #1e3a5f;
       border-radius: 50%;
       animation: spin 0.6s linear infinite;
       margin-right: 8px;

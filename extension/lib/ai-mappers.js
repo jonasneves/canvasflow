@@ -18,10 +18,10 @@ window.AIMappers = window.AIMappers || {};
  */
 window.AIMappers.mapUrgencyToColor = function(urgencyScore) {
   const colorMap = {
-    0: '#339898',   // Manageable - Teal
-    1: '#E89923',   // Moderate - Orange
-    2: '#E89923',   // High - Orange
-    3: '#C84E00'    // Critical - Orange-red
+    0: '#4A90A4',   // Manageable - Calm Blue-Teal
+    1: '#F77F00',   // Moderate - Warm Orange
+    2: '#F77F00',   // High - Warm Orange
+    3: '#E63946'    // Critical - Softer Red
   };
   return colorMap[urgencyScore] ?? colorMap[1]; // Default to moderate
 };

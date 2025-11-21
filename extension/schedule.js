@@ -259,7 +259,7 @@ async function generateAIInsights() {
           To generate AI-powered weekly schedules and study insights, you need to configure your Claude API key.
         </p>
         <button id="openSettingsBtn" style="
-          background: #5f9ea0;
+          background: #1e3a5f;
           color: white;
           border: none;
           padding: 14px 28px;
@@ -272,7 +272,7 @@ async function generateAIInsights() {
           Open Settings
         </button>
         <p style="margin-top: 20px; font-size: 14px; color: #9CA3AF;">
-          Don't have an API key? <a href="https://console.anthropic.com/" target="_blank" style="color: #5f9ea0; text-decoration: underline;">Get one from Anthropic</a>
+          Don't have an API key? <a href="https://console.anthropic.com/" target="_blank" style="color: #1e3a5f; text-decoration: underline;">Get one from Anthropic</a>
         </p>
       </div>
     `;
@@ -291,7 +291,7 @@ async function generateAIInsights() {
       openSettingsBtn.style.background = '#004080';
     });
     openSettingsBtn.addEventListener('mouseout', () => {
-      openSettingsBtn.style.background = '#5f9ea0';
+      openSettingsBtn.style.background = '#1e3a5f';
     });
 
     return;

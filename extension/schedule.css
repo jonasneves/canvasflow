@@ -87,8 +87,25 @@ body {
   cursor: not-allowed;
 }
 
-.btn-generate.loading svg {
-  animation: spin 1s linear infinite;
+.btn-generate.loading span {
+  background: linear-gradient(90deg,
+    rgba(255, 255, 255, 0.6) 0%,
+    rgba(255, 255, 255, 1) 50%,
+    rgba(255, 255, 255, 0.6) 100%);
+  background-size: 200% 100%;
+  background-clip: text;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  animation: textWave 1.5s ease-in-out infinite;
+}
+
+@keyframes textWave {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
 }
 
 .header-status {

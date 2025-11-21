@@ -184,17 +184,8 @@ function setupAutoRefresh(enabled) {
 
 // Update insights timestamp display
 function updateInsightsTimestamp(timestamp) {
-  // Find or create timestamp element
-  let timestampEl = document.getElementById('dashboardInsightsTimestamp');
-  if (!timestampEl) {
-    timestampEl = document.createElement('div');
-    timestampEl.id = 'dashboardInsightsTimestamp';
-    timestampEl.style.cssText = 'font-size: 12px; color: #9CA3AF; font-weight: 500; display: flex; align-items: center; gap: 6px;';
-    const headerCard = document.querySelector('.section-header-card');
-    if (headerCard) {
-      headerCard.appendChild(timestampEl);
-    }
-  }
+  const timestampEl = document.getElementById('dashboardInsightsTimestamp');
+  if (!timestampEl) return;
 
   if (timestamp) {
     const now = Date.now();
@@ -215,13 +206,13 @@ function updateInsightsTimestamp(timestamp) {
     }
 
     timestampEl.innerHTML = `
-      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="opacity: 0.7;">
         <circle cx="12" cy="12" r="10"></circle>
         <polyline points="12 6 12 12 16 14"></polyline>
       </svg>
       <span>Updated ${timeAgo}</span>
     `;
-    timestampEl.style.display = 'flex';
+    timestampEl.style.cssText = 'font-size: 11px; color: #9CA3AF; font-weight: 500; display: flex; align-items: center; gap: 4px; margin-top: 4px;';
   } else {
     timestampEl.style.display = 'none';
   }

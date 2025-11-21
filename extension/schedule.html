@@ -24,7 +24,7 @@
     <!-- Schedule Section -->
     <section class="schedule-section" id="insightsSection">
       <div class="section-header-card">
-        <div style="display: flex; align-items: center; gap: 16px;">
+        <div style="display: flex; align-items: center; gap: 16px; flex: 1;">
           <div class="section-header-icon">
             <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
               <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
@@ -36,6 +36,8 @@
           <div class="section-header-text">
             <h1 class="section-card-title">This Week's Schedule</h1>
             <p class="section-card-subtitle">AI-Generated Study Plan</p>
+            <!-- Timestamp will be inserted here by JS -->
+            <div id="dashboardInsightsTimestamp" style="display: none;"></div>
           </div>
         </div>
         <button class="btn-generate" id="generateInsightsBtn">
@@ -44,7 +46,6 @@
           </svg>
           <span id="generateInsightsBtnText">Loading...</span>
         </button>
-        <!-- Timestamp will be inserted here by JS -->
       </div>
       <div class="insights-content" id="insightsContent">
         <div class="insights-placeholder">

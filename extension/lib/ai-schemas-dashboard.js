@@ -1,5 +1,5 @@
 /**
- * Dashboard Schedule Schema for Claude Structured Outputs (Browser Version)
+ * Dashboard Schedule Schema for Structured Outputs (Browser Version)
  *
  * This file defines the dashboard-specific JSON schema with weekly_plan.
  * Browser-compatible version - uses global window object instead of ES6 modules.

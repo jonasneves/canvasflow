@@ -664,9 +664,9 @@ settingsBtn.addEventListener('click', async () => {
   settingsModal.classList.add('show');
 
   // Load current settings
-  const result = await chrome.storage.local.get(['claudeApiKey', 'assignmentWeeksBefore', 'assignmentWeeksAfter']);
-  if (result.claudeApiKey) {
-    document.getElementById('claudeApiKey').value = result.claudeApiKey;
+  const result = await chrome.storage.local.get(['githubToken', 'assignmentWeeksBefore', 'assignmentWeeksAfter']);
+  if (result.githubToken) {
+    document.getElementById('githubToken').value = result.githubToken;
   }
 
   // Load time range settings
@@ -1135,7 +1135,7 @@ document.getElementById('resetTimeRange').addEventListener('click', async () => 
 
 // API Key toggle visibility
 document.getElementById('toggleApiKeyBtn').addEventListener('click', () => {
-  const input = document.getElementById('claudeApiKey');
+  const input = document.getElementById('githubToken');
   const eyeIcon = document.getElementById('eyeIcon');
   const eyeOffIcon = document.getElementById('eyeOffIcon');
 
@@ -1151,10 +1151,10 @@ document.getElementById('toggleApiKeyBtn').addEventListener('click', () => {
 });
 
 // Save API key
-document.getElementById('claudeApiKey').addEventListener('change', async (e) => {
+document.getElementById('githubToken').addEventListener('change', async (e) => {
   const apiKey = e.target.value.trim();
   try {
-    await chrome.storage.local.set({ claudeApiKey: apiKey });
+    await chrome.storage.local.set({ githubToken: apiKey });
     // Update button text to reflect API key is now configured
     await updateInsightsButtonText();
   } catch (error) {
@@ -1365,7 +1365,7 @@ async function checkAndAutoGenerateInsights() {
   const SIX_HOURS_MS = 6 * 60 * 60 * 1000;
 
   try {
-    const result = await chrome.storage.local.get(['savedInsights', 'insightsTimestamp', 'claudeApiKey']);
+    const result = await chrome.storage.local.get(['savedInsights', 'insightsTimestamp', 'githubToken']);
     const now = Date.now();
     const timestamp = result.insightsTimestamp || 0;
     const age = now - timestamp;
@@ -1373,7 +1373,7 @@ async function checkAndAutoGenerateInsights() {
     // Check if insights are stale (>6 hours old) or don't exist
     const needsRegeneration = !result.savedInsights || age > SIX_HOURS_MS;
 
-    if (needsRegeneration && result.claudeApiKey) {
+    if (needsRegeneration && result.githubToken) {
       // Auto-generate insights
       const insightsContent = document.getElementById('insightsContent');
       insightsContent.innerHTML = `
@@ -1385,7 +1385,7 @@ async function checkAndAutoGenerateInsights() {
 
       // Trigger generation without waiting for user click
       await generateAIInsights();
-    } else if (!result.claudeApiKey) {
+    } else if (!result.githubToken) {
       // If no API key, the generateAIInsights function will show the appropriate prompt
       // Just ensure the button text is updated
       await updateInsightsButtonText();
@@ -1490,10 +1490,10 @@ async function initialize() {
 
 // AI Insights functionality
 async function updateInsightsButtonText() {
-  const result = await chrome.storage.local.get(['claudeApiKey']);
+  const result = await chrome.storage.local.get(['githubToken']);
   const btnText = document.getElementById('generateInsightsBtnText');
 
-  if (result.claudeApiKey) {
+  if (result.githubToken) {
     btnText.textContent = 'Generate AI Insights';
   } else {
     btnText.textContent = 'Configure API Key';
@@ -1506,9 +1506,9 @@ async function generateAIInsights() {
   const insightsContent = document.getElementById('insightsContent');
 
   // Check if API key is set first
-  const result = await chrome.storage.local.get(['claudeApiKey']);
+  const result = await chrome.storage.local.get(['githubToken']);
 
-  if (!result.claudeApiKey) {
+  if (!result.githubToken) {
     // Show settings prompt if no API key (no need to refresh data)
     const settingsPrompt = `
       <div class="insights-loaded" style="text-align: center; padding: 40px 20px;">
@@ -1575,7 +1575,7 @@ async function generateAIInsights() {
     // Continue anyway with cached data
   }
 
-  // Generate insights with Claude API (data already refreshed above)
+  // Generate insights with AI (data already refreshed above)
   insightsContent.innerHTML = `
     <div class="insights-loading">
       <div class="spinner"></div>
@@ -1585,7 +1585,7 @@ async function generateAIInsights() {
 
   try {
     const assignmentsData = prepareAssignmentsForAI();
-    const insights = await callClaudeWithStructuredOutput(result.claudeApiKey, assignmentsData);
+    const insights = await callClaudeWithStructuredOutput(result.githubToken, assignmentsData);
 
     const formattedInsights = formatStructuredInsights(insights);
     const timestamp = Date.now();
@@ -1631,7 +1631,7 @@ async function generateAIInsights() {
     const errorHtml = `
       <div class="insights-error">
         <strong>Failed to generate insights:</strong> ${escapeHtml(error.message)}
-        <p style="margin-top: 8px; font-size: 12px;">Check your API key in settings or use Claude Desktop via MCP instead.</p>
+        <p style="margin-top: 8px; font-size: 12px;">Check your GitHub token in settings.</p>
       </div>
     `;
     insightsContent.innerHTML = errorHtml;
@@ -1716,7 +1716,7 @@ function getTagsForAssignment(assignmentId) {
   return window.currentAIMetadata?.[assignmentId]?.tags || [];
 }
 
-// Phase 4: Use shared Claude client with AI Router for model selection and fallback
+// Use AI client with router for model selection and fallback
 async function callClaudeWithStructuredOutput(apiKey, assignmentsData) {
   const result = await window.ClaudeClient.callClaudeWithRouter(
     apiKey,
@@ -1896,11 +1896,11 @@ document.querySelectorAll('.ai-view-tab').forEach(tab => {
 
 // Update schedule button text based on API key
 async function updateScheduleButtonText() {
-  const result = await chrome.storage.local.get(['claudeApiKey']);
+  const result = await chrome.storage.local.get(['githubToken']);
   const btnText = document.getElementById('generateScheduleBtnText');
 
   if (btnText) {
-    if (result.claudeApiKey) {
+    if (result.githubToken) {
       btnText.textContent = 'Generate Schedule';
     } else {
       btnText.textContent = 'Configure API Key';
@@ -1951,9 +1951,9 @@ async function generateAISchedule() {
   const scheduleContent = document.getElementById('scheduleContent');
 
   // Check if API key is set first
-  const result = await chrome.storage.local.get(['claudeApiKey']);
+  const result = await chrome.storage.local.get(['githubToken']);
 
-  if (!result.claudeApiKey) {
+  if (!result.githubToken) {
     // Show settings prompt if no API key
     const settingsPrompt = `
       <div class="insights-loaded" style="text-align: center; padding: 40px 20px;">
@@ -2002,9 +2002,9 @@ async function generateAISchedule() {
     // Prepare assignments data
     const assignmentsForAI = prepareAssignmentsForAI();
 
-    // Call Claude API with DASHBOARD_SCHEDULE_SCHEMA using AI Router
+    // Call AI with DASHBOARD_SCHEDULE_SCHEMA using AI Router
     const routerResult = await window.ClaudeClient.callClaudeWithRouter(
-      result.claudeApiKey,
+      result.githubToken,
       assignmentsForAI,
       window.AISchemas.DASHBOARD_SCHEDULE_SCHEMA,
       'dashboard'

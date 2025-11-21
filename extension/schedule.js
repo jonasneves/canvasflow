@@ -31,10 +31,10 @@ async function initializeDashboard() {
 
 // Update insights button text based on API key
 async function updateInsightsButtonText() {
-  const result = await chrome.storage.local.get(['claudeApiKey']);
+  const result = await chrome.storage.local.get(['githubToken']);
   const btnText = document.getElementById('generateInsightsBtnText');
 
-  if (result.claudeApiKey) {
+  if (result.githubToken) {
     btnText.textContent = 'Generate Schedule';
   } else {
     btnText.textContent = 'Configure API Key';
@@ -248,9 +248,9 @@ async function generateAIInsights() {
   const insightsContent = document.getElementById('insightsContent');
 
   // Check if API key is set first
-  const result = await chrome.storage.local.get(['claudeApiKey']);
+  const result = await chrome.storage.local.get(['githubToken']);
 
-  if (!result.claudeApiKey) {
+  if (!result.githubToken) {
     // Show settings prompt if no API key (no need to refresh data)
     const settingsPrompt = `
       <div class="insights-loaded" style="text-align: center; padding: 60px 20px;">
@@ -313,7 +313,7 @@ async function generateAIInsights() {
     // Continue anyway with cached data
   }
 
-  // Generate insights with Claude API (data already refreshed above)
+  // Generate insights with AI (data already refreshed above)
   insightsContent.innerHTML = `
     <div class="insights-loading">
       <div class="spinner"></div>
@@ -323,7 +323,7 @@ async function generateAIInsights() {
 
   try {
     const assignmentsData = prepareAssignmentsForAI();
-    const insights = await callClaudeWithStructuredOutput(result.claudeApiKey, assignmentsData);
+    const insights = await callClaudeWithStructuredOutput(result.githubToken, assignmentsData);
 
     const formattedInsights = formatStructuredInsights(insights);
     insightsContent.innerHTML = `
@@ -350,7 +350,7 @@ async function generateAIInsights() {
     const errorHtml = `
       <div class="insights-error">
         <strong>Failed to generate insights:</strong> ${escapeHtml(error.message)}
-        <p style="margin-top: 8px; font-size: 12px;">Check your API key in settings or use Claude Desktop via MCP instead.</p>
+        <p style="margin-top: 8px; font-size: 12px;">Check your GitHub token in settings.</p>
       </div>
     `;
     insightsContent.innerHTML = errorHtml;
@@ -408,7 +408,7 @@ function prepareAssignmentsForAI() {
   };
 }
 
-// Phase 4: Use shared Claude client with AI Router for model selection and fallback
+// Use AI client with router for model selection and fallback
 async function callClaudeWithStructuredOutput(apiKey, assignmentsData) {
   const result = await window.ClaudeClient.callClaudeWithRouter(
     apiKey,

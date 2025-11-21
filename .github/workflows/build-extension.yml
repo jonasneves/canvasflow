@@ -103,7 +103,7 @@ jobs:
         id: release_notes
         run: |
           cat > release-notes.md << 'EOF'
-          ## CanvasFlow v${{ steps.version.outputs.version }}
+          ## Yoink v${{ steps.version.outputs.version }}
 
           ### Chrome Extension
 

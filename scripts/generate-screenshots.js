@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
 /**
- * Automated Screenshot Generator for CanvasFlow Chrome Extension
+ * Automated Screenshot Generator for Yoink Chrome Extension
  *
  * This script generates high-quality screenshots for the Chrome Web Store listing.
  * It uses Puppeteer to load the extension and capture screenshots at the correct resolution.
@@ -27,7 +27,7 @@ if (!fs.existsSync(OUTPUT_DIR)) {
   fs.mkdirSync(OUTPUT_DIR, { recursive: true });
 }
 
-console.log('📸 CanvasFlow Screenshot Generator\n');
+console.log('📸 Yoink Screenshot Generator\n');
 console.log('Note: This script requires manual setup since Chrome extensions');
 console.log('cannot be fully automated via Puppeteer without Chrome DevTools Protocol.\n');
 
@@ -67,7 +67,7 @@ Follow these steps to capture high-quality screenshots for the Chrome Web Store:
 
 **Steps:**
 1. Open a Canvas page
-2. Click the CanvasFlow extension icon
+2. Click the Yoink extension icon
 3. Ensure sidepanel shows assignments
 4. Make sure you have a mix of overdue, due today, and upcoming assignments
 5. Capture: Use Chrome's built-in screenshot tool or:
@@ -134,15 +134,15 @@ Follow these steps to capture high-quality screenshots for the Chrome Web Store:
 ### Screenshot #5: In-Context View
 
 **What to show:**
-- CanvasFlow sidepanel open alongside a Canvas page
+- Yoink sidepanel open alongside a Canvas page
 - Shows integration context
 - Canvas assignments page visible on left
-- CanvasFlow panel on right
+- Yoink panel on right
 
 **Steps:**
 1. Navigate to a Canvas assignments page
-2. Open CanvasFlow sidepanel
-3. Arrange windows to show both Canvas and CanvasFlow
+2. Open Yoink sidepanel
+3. Arrange windows to show both Canvas and Yoink
 4. Ensure browser chrome (address bar, tabs) is visible
 5. Capture full browser window
 
@@ -264,7 +264,7 @@ const htmlTemplate = `<!DOCTYPE html>
       <li>Screenshot #2: AI Insights Panel (with generated insights)</li>
       <li>Screenshot #3: Weekly Schedule (full-page view)</li>
       <li>Screenshot #4: Settings Modal (configuration options)</li>
-      <li>Screenshot #5: In-Context View (Canvas + CanvasFlow together)</li>
+      <li>Screenshot #5: In-Context View (Canvas + Yoink together)</li>
     </ul>
 
     <div class="tip">

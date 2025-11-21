@@ -1,7 +1,7 @@
 @echo off
-REM CanvasFlow Native Host Installation Script for Windows
+REM Yoink Native Host Installation Script for Windows
 
-echo CanvasFlow Native Host Installer
+echo Yoink Native Host Installer
 echo =================================
 echo.
 
@@ -18,7 +18,7 @@ node -v
 echo.
 
 REM Set installation directory
-set "INSTALL_DIR=%APPDATA%\CanvasFlow\native-host"
+set "INSTALL_DIR=%APPDATA%\Yoink\native-host"
 echo Installation directory: %INSTALL_DIR%
 echo.
 
@@ -50,7 +50,7 @@ set "HOST_PATH=%HOST_PATH:\=\\%"
 (
 echo {
 echo   "name": "com.canvasflow.host",
-echo   "description": "CanvasFlow Native Messaging Host",
+echo   "description": "Yoink Native Messaging Host",
 echo   "path": "%HOST_PATH%",
 echo   "type": "stdio",
 echo   "allowed_origins": [
@@ -67,15 +67,15 @@ echo =================================
 echo CHROME EXTENSION ID CONFIGURATION
 echo =================================
 echo.
-echo To complete setup, you need your CanvasFlow extension ID:
+echo To complete setup, you need your Yoink extension ID:
 echo.
 echo   1. Open Chrome and go to: chrome://extensions/
 echo   2. Enable 'Developer mode' (top right)
-echo   3. Find 'CanvasFlow' in the list
+echo   3. Find 'Yoink' in the list
 echo   4. Copy the ID (looks like: abcdefghijklmnopqrstuvwxyz123456)
 echo.
 
-set /p EXTENSION_ID="Enter your CanvasFlow extension ID (or press Enter to skip): "
+set /p EXTENSION_ID="Enter your Yoink extension ID (or press Enter to skip): "
 
 if not "%EXTENSION_ID%"=="" (
     REM Replace EXTENSION_ID in the manifest file
@@ -114,7 +114,7 @@ echo Then restart Claude Desktop and ask: 'What are my Canvas courses?'
 echo.
 echo Final steps:
 echo 1. Restart Chrome
-echo 2. Click 'Refresh Canvas Data' in the CanvasFlow extension
+echo 2. Click 'Refresh Canvas Data' in the Yoink extension
 echo 3. Restart Claude Desktop (if using MCP)
 echo.
 pause

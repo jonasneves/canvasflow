@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# CanvasFlow Release Automation Script
+# Yoink Release Automation Script
 # This script automates the release process for Chrome Web Store submission
 
 set -e  # Exit on error
@@ -17,7 +17,7 @@ SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 PROJECT_ROOT="$(dirname "$SCRIPT_DIR")"
 
 echo -e "${BLUE}╔════════════════════════════════════════════╗${NC}"
-echo -e "${BLUE}║   CanvasFlow Release Automation Script    ║${NC}"
+echo -e "${BLUE}║   Yoink Release Automation Script    ║${NC}"
 echo -e "${BLUE}╚════════════════════════════════════════════╝${NC}"
 echo ""
 
@@ -157,7 +157,7 @@ echo ""
 # Generate release notes
 echo -e "${BLUE}Generating release notes...${NC}"
 cat > "$OUTPUT_DIR/release-notes-v$NEW_VERSION.md" << EOF
-# CanvasFlow v$NEW_VERSION
+# Yoink v$NEW_VERSION
 
 ## Chrome Extension
 

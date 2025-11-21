@@ -1,10 +1,10 @@
 #!/bin/bash
-# CanvasFlow Native Host Installation Script
+# Yoink Native Host Installation Script
 # Supports macOS and Linux
 
 set -e
 
-echo "CanvasFlow Native Host Installer"
+echo "Yoink Native Host Installer"
 echo "================================="
 echo ""
 
@@ -63,7 +63,7 @@ if [ "${PLATFORM}" = "macos" ]; then
     cat > "${NATIVE_MANIFEST_DIR}/com.canvasflow.host.json" <<EOF
 {
   "name": "com.canvasflow.host",
-  "description": "CanvasFlow Native Messaging Host",
+  "description": "Yoink Native Messaging Host",
   "path": "${INSTALL_DIR}/host.js",
   "type": "stdio",
   "allowed_origins": [
@@ -81,7 +81,7 @@ elif [ "${PLATFORM}" = "linux" ]; then
     cat > "${NATIVE_MANIFEST_DIR}/com.canvasflow.host.json" <<EOF
 {
   "name": "com.canvasflow.host",
-  "description": "CanvasFlow Native Messaging Host",
+  "description": "Yoink Native Messaging Host",
   "path": "${INSTALL_DIR}/host.js",
   "type": "stdio",
   "allowed_origins": [
@@ -100,16 +100,16 @@ echo "================================="
 echo "CHROME EXTENSION ID CONFIGURATION"
 echo "================================="
 echo ""
-echo "To complete setup, you need your CanvasFlow extension ID:"
+echo "To complete setup, you need your Yoink extension ID:"
 echo ""
 echo "  1. Open Chrome and go to: chrome://extensions/"
 echo "  2. Enable 'Developer mode' (top right)"
-echo "  3. Find 'CanvasFlow' in the list"
+echo "  3. Find 'Yoink' in the list"
 echo "  4. Copy the ID (looks like: abcdefghijklmnopqrstuvwxyz123456)"
 echo ""
 
 # Prompt for extension ID
-read -p "Enter your CanvasFlow extension ID (or press Enter to skip): " EXTENSION_ID
+read -p "Enter your Yoink extension ID (or press Enter to skip): " EXTENSION_ID
 
 if [ -n "${EXTENSION_ID}" ]; then
     # Update the manifest file with the actual extension ID
@@ -162,6 +162,6 @@ echo "Then restart Claude Desktop and ask: 'What are my Canvas courses?'"
 echo ""
 echo "Final steps:"
 echo "1. Restart Chrome"
-echo "2. Click 'Refresh Canvas Data' in the CanvasFlow extension"
+echo "2. Click 'Refresh Canvas Data' in the Yoink extension"
 echo "3. Restart Claude Desktop (if using MCP)"
 echo ""

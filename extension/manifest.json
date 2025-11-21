@@ -1,8 +1,8 @@
 {
   "manifest_version": 3,
-  "name": "CanvasFlow: AI Assistant for Canvas LMS",
+  "name": "Yoink: AI Assistant for Canvas LMS",
   "version": "1.0.0",
-  "description": "Smart Canvas companion with AI insights, assignment tracking, and weekly schedule generation for better studying.",
+  "description": "Smart Canvas companion with AI insights, assignment tracking, and weekly schedule generation. Don't let deadlines yoink you - you yoink them!",
   "homepage_url": "https://github.com/jonasneves/canvasflow",
   "permissions": [
     "storage",
@@ -28,7 +28,7 @@
     "run_at": "document_idle"
   }],
   "action": {
-    "default_title": "CanvasFlow - Canvas Dashboard"
+    "default_title": "Yoink - Canvas Dashboard"
   },
   "side_panel": {
     "default_path": "sidepanel.html"

@@ -4,13 +4,13 @@
 
 ## Overview
 
-CanvasFlow is a Chrome extension that enhances your Canvas LMS experience with AI-powered insights. This privacy policy explains how we handle your data.
+Yoink is a Chrome extension that enhances your Canvas LMS experience with AI-powered insights. This privacy policy explains how we handle your data.
 
 ## Data Collection and Storage
 
 ### Local Data Storage
 
-All Canvas data accessed by CanvasFlow is stored locally in your browser using Chrome's storage API. This includes:
+All Canvas data accessed by Yoink is stored locally in your browser using Chrome's storage API. This includes:
 
 - Course information (names, codes, term data)
 - Assignment details (titles, due dates, submission status, grades)
@@ -21,7 +21,7 @@ All Canvas data accessed by CanvasFlow is stored locally in your browser using C
 
 ### Canvas LMS Access
 
-CanvasFlow accesses your Canvas LMS data through the Canvas API using your existing browser session. We do not collect, store, or transmit your Canvas credentials. All Canvas API requests are made directly from your browser to your institution's Canvas instance.
+Yoink accesses your Canvas LMS data through the Canvas API using your existing browser session. We do not collect, store, or transmit your Canvas credentials. All Canvas API requests are made directly from your browser to your institution's Canvas instance.
 
 ## Third-Party Services
 
@@ -34,7 +34,7 @@ When you explicitly request AI-powered insights or schedule generation:
 - We do not collect, store, or have access to your API key or the data sent to Claude
 - Claude API usage is subject to [Anthropic's Privacy Policy](https://www.anthropic.com/legal/privacy)
 
-**AI features are entirely optional.** You can use CanvasFlow without providing an API key or generating AI insights.
+**AI features are entirely optional.** You can use Yoink without providing an API key or generating AI insights.
 
 ### MCP Server (Optional)
 
@@ -47,7 +47,7 @@ The optional Model Context Protocol (MCP) server for Claude Desktop integration:
 
 ## Data We Do NOT Collect
 
-CanvasFlow does not:
+Yoink does not:
 
 - Collect personal information
 - Track your browsing activity
@@ -80,7 +80,7 @@ You have full control over your data:
 
 ## Open Source
 
-CanvasFlow is open source. You can review the complete source code at:
+Yoink is open source. You can review the complete source code at:
 https://github.com/jonasneves/canvasflow
 
 ## Changes to This Policy
@@ -103,4 +103,4 @@ This extension is designed to respect your privacy and comply with applicable da
 
 ---
 
-By using CanvasFlow, you acknowledge that you have read and understood this privacy policy.
+By using Yoink, you acknowledge that you have read and understood this privacy policy.

@@ -1,10 +1,10 @@
-# CanvasFlow Native Host
+# Yoink Native Host
 
-Native messaging host for CanvasFlow that enables MCP (Model Context Protocol) integration with Claude Desktop.
+Native messaging host for Yoink that enables MCP (Model Context Protocol) integration with Claude Desktop.
 
 ## Overview
 
-This optional component allows Claude Desktop to access your Canvas assignment data through the CanvasFlow Chrome extension. When installed, you can ask Claude about your courses, assignments, and deadlines directly from Claude Desktop.
+This optional component allows Claude Desktop to access your Canvas assignment data through the Yoink Chrome extension. When installed, you can ask Claude about your courses, assignments, and deadlines directly from Claude Desktop.
 
 ## Features
 
@@ -27,7 +27,7 @@ Claude Desktop <-> Native Host <-> Chrome Extension <-> Canvas LMS
 ### Prerequisites
 
 - Node.js 14 or higher
-- CanvasFlow Chrome extension installed
+- Yoink Chrome extension installed
 - Claude Desktop application (optional, for MCP integration)
 
 ### Quick Install
@@ -98,7 +98,7 @@ The install script will:
 
 4. Update the manifest with your extension ID:
    - Open Chrome and go to `chrome://extensions/`
-   - Enable "Developer mode" and note the CanvasFlow extension ID
+   - Enable "Developer mode" and note the Yoink extension ID
    - Edit the installed manifest file and replace `EXTENSION_ID` with your actual ID
 
 5. Restart Chrome
@@ -126,7 +126,7 @@ native-host/
 Defines the native messaging host configuration:
 - Host name: `canvas-mcp-server`
 - Entry point: `host.js`
-- Allowed origins: CanvasFlow extension ID
+- Allowed origins: Yoink extension ID
 
 ### MCP Server
 
@@ -172,7 +172,7 @@ echo '{"action":"ping"}' | node host.js
 
 ## Security
 
-- Host only accepts connections from the CanvasFlow extension
+- Host only accepts connections from the Yoink extension
 - All communication is local (no network exposure)
 - Canvas data is never stored by the native host
 - MCP server runs in isolated process

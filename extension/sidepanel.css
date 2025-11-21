@@ -1238,3 +1238,63 @@
     .focus-mode-card .assignment-card {
       border-width: 2px;
     }
+
+    /* Phase 3.1: Schedule View Styles */
+    .schedule-task-card {
+      padding: 14px;
+      background: white;
+      border: 1px solid #E5E7EB;
+      border-left: 4px solid #1e3a5f;
+      border-radius: 8px;
+      margin-bottom: 12px;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .schedule-task-card.clickable {
+      cursor: pointer;
+    }
+
+    .schedule-task-card.clickable:hover {
+      border-color: #1e3a5f;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+      transform: translateX(4px);
+    }
+
+    .task-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: start;
+      margin-bottom: 8px;
+    }
+
+    .task-title {
+      color: #111827;
+      font-size: 15px;
+      font-weight: 600;
+      flex: 1;
+    }
+
+    .task-time-badge {
+      background: #E2E6ED;
+      color: #1e3a5f;
+      padding: 4px 10px;
+      border-radius: 6px;
+      font-size: 13px;
+      font-weight: 600;
+      white-space: nowrap;
+      margin-left: 12px;
+    }
+
+    .task-notes {
+      margin: 0;
+      color: #6B7280;
+      font-size: 14px;
+      font-style: italic;
+      display: flex;
+      align-items: start;
+      gap: 8px;
+    }
+
+    .day-content {
+      transition: all 0.2s ease;
+    }

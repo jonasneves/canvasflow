@@ -15,9 +15,8 @@ This extension uses Chrome Manifest V3 and leverages modern AI capabilities:
 ### Key Technical Features
 
 - **No Canvas API Dependency**: Extracts data directly from DOM, no authentication flow required
-- **Extended Thinking**: Separate reasoning token budget for better AI analysis
-- **Structured Outputs**: Grammar-based JSON validation ensures consistent responses
-- **Adaptive Token Budgets**: Different limits for sidepanel (1500/1024) vs schedule (3000/2000)
+- **Structured Outputs**: Tool-based approach ensures consistent JSON responses
+- **Adaptive Token Budgets**: Different limits for sidepanel (1500) vs schedule (3000)
 
 ## File Structure
 
@@ -78,19 +77,19 @@ Key test scenarios:
 
 The extension leverages Claude's latest capabilities for reliable AI responses:
 
-- **Structured Outputs**: Grammar-based JSON validation ensures consistent response format
+- **Structured Outputs**: Tool-based approach ensures consistent response format
   - Sidepanel schema: Priority rankings, urgency scores, actionable recommendations
   - Schedule schema: 7-day time-blocked plan with strategic advice
   - No parsing errors - guaranteed valid JSON from the API
 
-- **Extended Thinking**: Separate reasoning budget for higher quality analysis
-  - Sidepanel: 1024 thinking tokens + 1500 output tokens
-  - Schedule: 2000 thinking tokens + 3000 output tokens
-  - Better insights without increasing output token costs
+- **Adaptive Token Budgets**: Different limits based on output complexity
+  - Sidepanel: 1500 max tokens (quick insights)
+  - Schedule: 3000 max tokens (detailed weekly plan)
+  - Optimized for cost and quality
 
 - **Direct HTTP API**: Browser-compatible implementation (SDK not available in extensions)
   - Custom fetch-based client in `lib/claude-client.js`
-  - Handles thinking blocks and text content extraction
+  - Uses forced tool calling to guarantee JSON structure
   - Supports both prompt types with adaptive budgets
 
 ### Canvas LMS

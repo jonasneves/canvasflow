@@ -15,7 +15,7 @@ body {
 
 /* Header */
 .header {
-  background: #14b8a6;
+  background: #5f9ea0;
   border-bottom: 1px solid #E5E7EB;
   padding: 20px 40px;
   position: sticky;
@@ -150,7 +150,7 @@ body {
   width: 8px;
   height: 8px;
   border-radius: 50%;
-  background: #339898;
+  background: #5f9ea0;
   animation: pulse 2s ease-in-out infinite;
 }
 
@@ -269,8 +269,8 @@ body {
 }
 
 .summary-icon.completed {
-  background: rgba(51, 152, 152, 0.15);
-  color: #1D6363;
+  background: rgba(95, 158, 160, 0.15);
+  color: #3d6566;
 }
 
 .summary-content {
@@ -579,7 +579,7 @@ body {
 }
 
 .assignment-status.completed {
-  background: #339898;
+  background: #5f9ea0;
 }
 
 .assignment-status.none {
@@ -663,8 +663,8 @@ body {
 }
 
 .assignment-badge.completed {
-  background: rgba(51, 152, 152, 0.15);
-  color: #1D6363;
+  background: rgba(95, 158, 160, 0.15);
+  color: #3d6566;
 }
 
 .assignment-badge.submitted {

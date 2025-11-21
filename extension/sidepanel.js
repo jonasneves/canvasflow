@@ -1499,8 +1499,8 @@ function formatStructuredInsights(insights) {
     </div>
 
     <!-- Study Tips -->
-    <h4 style="margin: 24px 0 12px 0; color: #339898; font-size: 16px; display: flex; align-items: center; gap: 8px; font-weight: 700;">
-      ${createLucideIcon('lightbulb', 18, '#339898')}
+    <h4 style="margin: 24px 0 12px 0; color: #5f9ea0; font-size: 16px; display: flex; align-items: center; gap: 8px; font-weight: 700;">
+      ${createLucideIcon('lightbulb', 18, '#5f9ea0')}
       Strategic Study Tips
     </h4>
     <div style="background: #F9FAFB; padding: 16px; border-radius: 8px; border: 1px solid #E5E7EB;">

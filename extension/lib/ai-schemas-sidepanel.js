@@ -36,11 +36,14 @@ window.AISchemas.SIDEPANEL_INSIGHTS_SCHEMA = {
     properties: {
       priority_tasks: {
         type: "array",
-        description: "Top priority assignments (1-8 items)",
-        minItems: 1,
+        description: "Top priority assignments (provide 1-8 items)",
         items: {
           type: "object",
           properties: {
+            assignment_id: {
+              type: "string",
+              description: "Canvas assignment ID to map this insight to the actual assignment"
+            },
             task: {
               type: "string",
               description: "Assignment name and action (max 150 chars)"
@@ -48,6 +51,11 @@ window.AISchemas.SIDEPANEL_INSIGHTS_SCHEMA = {
             reason: {
               type: "string",
               description: "Why prioritized (max 200 chars)"
+            },
+            ui_tags: {
+              type: "array",
+              items: { type: "string" },
+              description: "Provide exactly 2 short action tags. First tag: assignment type (Reading, Essay, Quiz, Exam, Project, Lab, Discussion). Second tag: key insight (Est: 30m, High Impact, Group Work, 50 pts, Multiple Choice). Keep each tag under 15 chars."
             },
             urgency_score: {
               type: "integer",
@@ -58,7 +66,7 @@ window.AISchemas.SIDEPANEL_INSIGHTS_SCHEMA = {
               description: "Estimated hours (0.5 to 8)"
             }
           },
-          required: ["task", "reason", "urgency_score", "estimated_hours"],
+          required: ["assignment_id", "task", "reason", "ui_tags", "urgency_score", "estimated_hours"],
           additionalProperties: false
         }
       },
@@ -81,7 +89,6 @@ window.AISchemas.SIDEPANEL_INSIGHTS_SCHEMA = {
           recommendations: {
             type: "array",
             description: "Recommendations (provide 2-5 items, max 150 chars each)",
-            minItems: 1,
             items: {
               type: "string"
             }
@@ -93,7 +100,6 @@ window.AISchemas.SIDEPANEL_INSIGHTS_SCHEMA = {
       study_tips: {
         type: "array",
         description: "Study tips (provide 3-5 items, max 150 chars each)",
-        minItems: 1,
         items: {
           type: "string"
         }

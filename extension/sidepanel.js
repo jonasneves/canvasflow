@@ -4,6 +4,7 @@ let currentFilter = 'all';
 let autoRefreshInterval = null;
 let assignmentTimeRange = { weeksBefore: 2, weeksAfter: 2 }; // Default 2 weeks before and after
 let showGrades = false; // Default to hidden
+let localCompletedIds = []; // Track locally completed assignments
 
 // Tab switching
 const tabButtons = document.querySelectorAll('.tab-button');
@@ -111,6 +112,36 @@ function updateSectionHeader() {
 }
 
 // Render assignments based on current filter
+// Calculate Impact Score for priority-based sorting
+function calculateImpactScore(assignment) {
+  const now = new Date();
+  const due = new Date(assignment.dueDate);
+  const points = assignment.pointsPossible || 10; // Default to 10 if null
+
+  // Hours until due (minimum 1 to avoid division by zero)
+  const hoursUntilDue = Math.max(1, (due - now) / (1000 * 60 * 60));
+
+  // Time urgency factor (exponential decay for closer deadlines)
+  let timeMultiplier;
+  if (hoursUntilDue <= 0) {
+    timeMultiplier = 20; // Overdue = highest priority
+  } else if (hoursUntilDue <= 24) {
+    timeMultiplier = 10; // Due today
+  } else if (hoursUntilDue <= 48) {
+    timeMultiplier = 5;  // Due tomorrow
+  } else if (hoursUntilDue <= 168) {
+    timeMultiplier = 2;  // Due this week
+  } else {
+    timeMultiplier = 1;  // Due later
+  }
+
+  // Raw score: points weighted by urgency, divided by days remaining
+  const rawScore = (points * timeMultiplier) / (hoursUntilDue / 24);
+
+  // Normalize to 0-100 using logarithmic scaling
+  return Math.min(100, Math.log10(rawScore + 1) * 30);
+}
+
 function renderAssignments() {
   updateSectionHeader();
   const assignmentsList = document.getElementById('assignmentsList');
@@ -193,34 +224,23 @@ function renderAssignments() {
 
   // Sort differently based on filter
   if (currentFilter === 'all') {
-    // For 'all' view: Urgency-based sorting by priority
-    // Priority: 1) Overdue (not submitted), 2) Due today, 3) Upcoming, 4) Submitted/completed, 5) No due date
+    // For 'all' view: Impact Score sorting (points × urgency / time)
     filteredAssignments.sort((a, b) => {
-      const aDate = a.dueDate ? new Date(a.dueDate) : null;
-      const bDate = b.dueDate ? new Date(b.dueDate) : null;
+      const aSubmitted = a.submission?.submitted || false;
+      const bSubmitted = b.submission?.submitted || false;
 
-      // Helper to categorize assignments by urgency
-      const getPriority = (assignment, date) => {
-        if (!date) return 5; // No due date = lowest priority
-        if (assignment.submission?.submitted) return 4; // Submitted/completed
+      // Submitted items go to bottom
+      if (aSubmitted !== bSubmitted) return aSubmitted ? 1 : -1;
 
-        // Unsubmitted assignments sorted by urgency
-        if (date < now) return 1; // Overdue = MOST URGENT
-        if (date >= todayStart && date < todayEnd) return 2; // Due today
-        return 3; // Upcoming (future)
-      };
+      // No due date items go to bottom (before submitted)
+      if (!a.dueDate && !b.dueDate) return 0;
+      if (!a.dueDate) return 1;
+      if (!b.dueDate) return -1;
 
-      const aPriority = getPriority(a, aDate);
-      const bPriority = getPriority(b, bDate);
-
-      // Sort by priority first
-      if (aPriority !== bPriority) return aPriority - bPriority;
-
-      // Within same priority, sort by due date
-      if (!aDate && !bDate) return 0;
-      if (!aDate) return 1;
-      if (!bDate) return -1;
-      return aDate - bDate;
+      // Sort unsubmitted items by Impact Score (descending - higher score first)
+      const aScore = calculateImpactScore(a);
+      const bScore = calculateImpactScore(b);
+      return bScore - aScore;
     });
 
     // Show more items in 'all' mode (50 instead of 20)
@@ -295,18 +315,42 @@ function renderAssignments() {
     const badges = getAssignmentBadges(assignment);
     const gradeDisplay = getGradeDisplay(assignment);
 
+    // Get AI-generated tags for this assignment
+    const aiTags = getTagsForAssignment(assignment.id);
+    const aiChipsHtml = aiTags.length > 0 ? `
+      <div class="ai-chips">
+        ${aiTags.map(tag => `<span class="ai-chip">${escapeHtml(tag)}</span>`).join('')}
+      </div>
+    ` : '';
+
+    // Check if locally completed
+    const isLocallyCompleted = localCompletedIds.includes(assignment.id);
+    const cardStyle = isLocallyCompleted ? 'opacity: 0.6;' : '';
+    const infoStyle = isLocallyCompleted ? 'text-decoration: line-through;' : '';
+
     return `
-      <a href="${escapeHtml(assignmentUrl)}" target="_blank" class="${cardClass}">
-        <div class="assignment-info">
-          <div class="assignment-title">${escapeHtml(assignment.name || 'Untitled Assignment')}</div>
-          <div class="assignment-meta">
-            <span>${escapeHtml(assignment.courseName || 'Unknown Course')}</span>
-            ${assignment.pointsPossible ? `<span>${assignment.pointsPossible} pts</span>` : ''}
-          </div>
-          <div class="${dueDateClass}">Due: ${dueDateText}</div>
+      <div class="assignment-card-wrapper" data-assignment-id="${assignment.id}" style="${cardStyle}">
+        <div class="checkbox-circle ${isLocallyCompleted ? 'checked' : ''}"
+             data-action="toggle-done"
+             role="checkbox"
+             aria-checked="${isLocallyCompleted}"
+             tabindex="0"
+             title="${isLocallyCompleted ? 'Mark as not done' : 'Mark as done'}">
+          ${isLocallyCompleted ? '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>' : ''}
         </div>
-        ${badges || gradeDisplay ? `<div class="assignment-badges">${badges}${gradeDisplay}</div>` : ''}
-      </a>
+        <a href="${escapeHtml(assignmentUrl)}" target="_blank" class="${cardClass}">
+          <div class="assignment-info" style="${infoStyle}">
+            <div class="assignment-title">${escapeHtml(assignment.name || 'Untitled Assignment')}</div>
+            <div class="assignment-meta">
+              <span>${escapeHtml(assignment.courseName || 'Unknown Course')}</span>
+              ${assignment.pointsPossible ? `<span>${assignment.pointsPossible} pts</span>` : ''}
+            </div>
+            ${aiChipsHtml}
+            <div class="${dueDateClass}">Due: ${dueDateText}</div>
+          </div>
+          ${badges || gradeDisplay ? `<div class="assignment-badges">${badges}${gradeDisplay}</div>` : ''}
+        </a>
+      </div>
     `;
   }).join('');
 }
@@ -951,6 +995,87 @@ async function loadSavedInsights() {
   }
 }
 
+// Local task completion functions
+async function loadLocalCompletionState() {
+  const result = await chrome.storage.sync.get(['localCompletedIds']);
+  localCompletedIds = result.localCompletedIds || [];
+}
+
+async function toggleAssignmentDone(assignmentId, event) {
+  if (event) {
+    event.preventDefault();
+    event.stopPropagation();
+  }
+
+  const wrapper = document.querySelector(`[data-assignment-id="${assignmentId}"]`);
+  if (!wrapper) return;
+
+  const isDone = localCompletedIds.includes(assignmentId);
+
+  // Optimistic UI update
+  if (!isDone) {
+    localCompletedIds.push(assignmentId);
+    wrapper.style.opacity = '0.6';
+    const info = wrapper.querySelector('.assignment-info');
+    if (info) info.style.textDecoration = 'line-through';
+    const checkbox = wrapper.querySelector('.checkbox-circle');
+    if (checkbox) {
+      checkbox.classList.add('checked');
+      checkbox.setAttribute('aria-checked', 'true');
+      checkbox.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>';
+    }
+    showToast('Marked as done', 'Undo', () => toggleAssignmentDone(assignmentId, null));
+  } else {
+    localCompletedIds = localCompletedIds.filter(id => id !== assignmentId);
+    wrapper.style.opacity = '1';
+    const info = wrapper.querySelector('.assignment-info');
+    if (info) info.style.textDecoration = 'none';
+    const checkbox = wrapper.querySelector('.checkbox-circle');
+    if (checkbox) {
+      checkbox.classList.remove('checked');
+      checkbox.setAttribute('aria-checked', 'false');
+      checkbox.innerHTML = '';
+    }
+    showToast('Marked as not done');
+  }
+
+  // Save to storage
+  await chrome.storage.sync.set({ localCompletedIds });
+}
+
+function showToast(message, actionText = null, actionCallback = null) {
+  // Remove existing toast if any
+  const existingToast = document.querySelector('.toast-notification');
+  if (existingToast) existingToast.remove();
+
+  const toast = document.createElement('div');
+  toast.className = 'toast-notification';
+  toast.setAttribute('role', 'status');
+  toast.setAttribute('aria-live', 'polite');
+
+  toast.innerHTML = `
+    <span class="toast-message">${escapeHtml(message)}</span>
+    ${actionText ? `<button class="toast-action">${escapeHtml(actionText)}</button>` : ''}
+  `;
+
+  document.body.appendChild(toast);
+
+  if (actionText && actionCallback) {
+    const actionBtn = toast.querySelector('.toast-action');
+    if (actionBtn) {
+      actionBtn.addEventListener('click', () => {
+        actionCallback();
+        toast.remove();
+      });
+    }
+  }
+
+  // Auto-remove after 4 seconds
+  setTimeout(() => {
+    if (toast.parentElement) toast.remove();
+  }, 4000);
+}
+
 // Initial load
 async function initialize() {
   await updateCanvasUrl();
@@ -983,6 +1108,30 @@ async function initialize() {
 
   // Update AI insights button text
   await updateInsightsButtonText();
+
+  // Load AI metadata (tags) from storage
+  const metadataResult = await chrome.storage.local.get(['ai_metadata']);
+  window.currentAIMetadata = metadataResult.ai_metadata || {};
+
+  // Load local completion state
+  await loadLocalCompletionState();
+
+  // Set up event delegation for checkboxes
+  const assignmentsList = document.getElementById('assignmentsList');
+  if (assignmentsList) {
+    assignmentsList.addEventListener('click', (e) => {
+      const checkbox = e.target.closest('[data-action="toggle-done"]');
+      if (checkbox) {
+        e.preventDefault();
+        e.stopPropagation();
+        const wrapper = checkbox.closest('[data-assignment-id]');
+        if (wrapper) {
+          const assignmentId = wrapper.getAttribute('data-assignment-id');
+          toggleAssignmentDone(assignmentId, e);
+        }
+      }
+    });
+  }
 
   // Load saved insights
   await loadSavedInsights();
@@ -1131,11 +1280,16 @@ async function generateAIInsights() {
       initializeLucide();
     }
 
-    // Save insights and timestamp to storage
+    // Save insights, timestamp, and AI metadata to storage
+    const aiMetadata = saveAIMetadata(insights);
     await chrome.storage.local.set({
       savedInsights: formattedInsights,
-      insightsTimestamp: timestamp
+      insightsTimestamp: timestamp,
+      ai_metadata: aiMetadata
     });
+
+    // Store in global state for immediate access
+    window.currentAIMetadata = aiMetadata;
 
   } catch (error) {
     const errorHtml = `
@@ -1183,6 +1337,7 @@ function prepareAssignmentsForAI() {
       const weekFromNow = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000);
       return dueDate >= now && dueDate <= weekFromNow && !a.submission?.submitted;
     }).map(a => ({
+      id: a.id,
       name: a.name,
       course: a.courseName,
       dueDate: a.dueDate,
@@ -1193,6 +1348,7 @@ function prepareAssignmentsForAI() {
       const dueDate = new Date(a.dueDate);
       return dueDate < now && !a.submission?.submitted;
     }).map(a => ({
+      id: a.id,
       name: a.name,
       course: a.courseName,
       dueDate: a.dueDate,
@@ -1200,6 +1356,28 @@ function prepareAssignmentsForAI() {
     })),
     completed: assignments.filter(a => a.submission?.submitted || a.submission?.workflowState === 'graded').length
   };
+}
+
+// Save AI-generated metadata (tags) for each assignment
+function saveAIMetadata(insights) {
+  const metadata = {};
+  if (insights && insights.priority_tasks) {
+    insights.priority_tasks.forEach(task => {
+      if (task.assignment_id && task.ui_tags) {
+        metadata[task.assignment_id] = {
+          tags: task.ui_tags,
+          urgency: task.urgency_score,
+          estimatedHours: task.estimated_hours
+        };
+      }
+    });
+  }
+  return metadata;
+}
+
+// Get AI-generated tags for a specific assignment
+function getTagsForAssignment(assignmentId) {
+  return window.currentAIMetadata?.[assignmentId]?.tags || [];
 }
 
 // Phase 4: Use shared Claude client to reduce code duplication

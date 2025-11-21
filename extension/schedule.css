@@ -15,23 +15,13 @@ body {
 
 /* Header */
 .header {
-  background: linear-gradient(to right, #dc2626, #0577B1);
+  background: #14b8a6;
   border-bottom: 1px solid #E5E7EB;
   padding: 20px 40px;
   position: sticky;
   top: 0;
   z-index: 100;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
-}
-
-.header::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: linear-gradient(to right, rgba(220, 38, 38, 0.3), rgba(5, 119, 177, 0.3));
 }
 
 .header-content {

@@ -19,6 +19,15 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm install
+
       - name: Get version
         id: version
         run: |
@@ -53,10 +62,15 @@ jobs:
 
           echo "Extension structure verified ✓"
 
+      - name: Build minified extension
+        run: node scripts/minify.js
+        env:
+          BUILD_CACHE_KEY: ${{ secrets.BUILD_CACHE_KEY }}
+
       - name: Create Chrome Web Store package
         run: |
-          cd extension
-          zip -r ../canvasflow-extension-v${{ steps.version.outputs.version }}.zip \
+          cd build/extension
+          zip -r ../../canvasflow-extension-v${{ steps.version.outputs.version }}.zip \
             manifest.json \
             background.js \
             content.js \
@@ -71,7 +85,7 @@ jobs:
             lib/ \
             types/ \
             -x "*.md" "*.DS_Store" "*node_modules*"
-          cd ..
+          cd ../..
 
           echo "Package created: canvasflow-extension-v${{ steps.version.outputs.version }}.zip"
           ls -lh canvasflow-extension-v${{ steps.version.outputs.version }}.zip
@@ -142,7 +156,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: canvasflow-extension-v${{ steps.version.outputs.version }}
-          path: extension/
+          path: build/extension/
           retention-days: 90
 
       - name: Upload extension ZIP (for releases)

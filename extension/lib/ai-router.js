@@ -164,7 +164,8 @@ window.AIRouter.executeWithFallback = async function(apiCall, options = {}) {
     modelsToTry = window.AIRouter.getModelsByPriority();
   }
 
-  for (const model of modelsToTry) {
+  for (let i = 0; i < modelsToTry.length; i++) {
+    const model = modelsToTry[i];
     try {
       const startTime = performance.now();
       const result = await apiCall(model.id);
@@ -178,7 +179,7 @@ window.AIRouter.executeWithFallback = async function(apiCall, options = {}) {
         failures: failures
       };
     } catch (error) {
-      console.error(`Model ${model.name} failed:`, error);
+      console.warn(`Model ${model.name} failed:`, error.message);
 
       const errorInfo = {
         modelId: model.id,
@@ -205,7 +206,10 @@ window.AIRouter.executeWithFallback = async function(apiCall, options = {}) {
         break;
       }
 
-      // Continue to next model
+      // Log which model we're switching to
+      if (i < modelsToTry.length - 1) {
+        console.warn(`Switching to ${modelsToTry[i + 1].name}`);
+      }
     }
   }
 

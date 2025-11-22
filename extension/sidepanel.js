@@ -56,28 +56,6 @@ async function updateCanvasUrl() {
   }
 }
 
-// Update status indicators
-async function updateStatus() {
-  chrome.runtime.sendMessage({ type: 'GET_MCP_STATUS' }, (response) => {
-    if (response) {
-      document.getElementById('courseCount').textContent = response.courseCount || '0';
-
-      const lastUpdate = response.dataLastUpdate
-        ? new Date(response.dataLastUpdate).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
-        : 'Never';
-      document.getElementById('lastUpdate').textContent = lastUpdate;
-
-      const nativeStatus = document.getElementById('nativeStatus');
-      if (response.nativeHostConnected) {
-        nativeStatus.textContent = 'Connected';
-        nativeStatus.className = 'status-value connected';
-      } else {
-        nativeStatus.textContent = 'Disconnected';
-        nativeStatus.className = 'status-value disconnected';
-      }
-    }
-  });
-}
 
 // Update section header based on current filter
 function updateSectionHeader() {
@@ -681,45 +659,6 @@ settingsModal.addEventListener('click', (e) => {
   }
 });
 
-// Refresh Data Button (in MCP Server tab)
-document.getElementById('refreshDataBtn').addEventListener('click', async () => {
-  const button = document.getElementById('refreshDataBtn');
-  const icon = button.querySelector('i');
-  const buttonText = button.querySelector('span');
-  const originalText = buttonText.textContent;
-
-  // Add spinning animation and update text
-  if (icon) {
-    icon.style.animation = 'spin 1s linear infinite';
-  }
-  buttonText.textContent = 'Refreshing...';
-  button.disabled = true;
-
-  try {
-    const response = await new Promise((resolve) => {
-      chrome.runtime.sendMessage({ type: 'REFRESH_DATA' }, resolve);
-    });
-
-    if (response && response.success) {
-      updateStatus();
-      loadAssignments(); // Reload assignments after refresh
-      buttonText.textContent = 'Refreshed!';
-      setTimeout(() => {
-        buttonText.textContent = originalText;
-      }, 2000);
-    }
-  } catch (error) {
-    buttonText.textContent = 'Failed to refresh';
-    setTimeout(() => {
-      buttonText.textContent = originalText;
-    }, 2000);
-  } finally {
-    if (icon) {
-      icon.style.animation = '';
-    }
-    button.disabled = false;
-  }
-});
 
 // Summary card filters
 document.querySelectorAll('.summary-card').forEach(card => {
@@ -877,7 +816,6 @@ async function refreshCanvasData() {
     });
 
     if (response && response.success) {
-      updateStatus();
       loadAssignments();
     }
   } catch (error) {
@@ -1330,7 +1268,6 @@ async function checkAndAutoGenerateInsights() {
 // Initial load
 async function initialize() {
   await updateCanvasUrl();
-  updateStatus();
 
   // Check and show configuration banner if needed
   await checkAndShowConfigBanner();
@@ -2151,16 +2088,6 @@ function findAssignmentUrl(assignmentName) {
 // Open Dashboard Button (now in header)
 document.getElementById('openDashboardBtn').addEventListener('click', () => {
   chrome.tabs.create({ url: chrome.runtime.getURL('schedule.html') });
-});
-
-// Setup instructions toggle
-const setupToggle = document.getElementById('setupToggle');
-const setupContent = document.getElementById('setupContent');
-const setupChevron = setupToggle.querySelector('.chevron');
-
-setupToggle.addEventListener('click', () => {
-  const isOpen = setupContent.classList.toggle('open');
-  setupChevron.classList.toggle('open', isOpen);
 });
 
 // Configuration banner handlers

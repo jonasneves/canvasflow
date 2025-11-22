@@ -247,10 +247,10 @@ async function generateAIInsights() {
   const btn = document.getElementById('generateInsightsBtn');
   const insightsContent = document.getElementById('insightsContent');
 
-  // Check if API key is set first
-  const result = await chrome.storage.local.get(['githubToken']);
+  // Check if API key is set first (embedded or user-provided)
+  const apiToken = await window.AIRouter.getToken();
 
-  if (!result.githubToken) {
+  if (!apiToken) {
     // Show settings prompt if no API key (no need to refresh data)
     const settingsPrompt = `
       <div class="insights-loaded" style="text-align: center; padding: 60px 20px;">
@@ -323,7 +323,7 @@ async function generateAIInsights() {
 
   try {
     const assignmentsData = prepareAssignmentsForAI();
-    const insights = await callClaudeWithStructuredOutput(result.githubToken, assignmentsData);
+    const insights = await callClaudeWithStructuredOutput(apiToken, assignmentsData);
 
     const formattedInsights = formatStructuredInsights(insights);
     insightsContent.innerHTML = `

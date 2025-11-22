@@ -24,5 +24,9 @@ Thumbs.db
 *.crx
 *.pem
 
+# Build artifacts
+build/
+dist/
+
 # Local configs
 .canvas-mcp-config

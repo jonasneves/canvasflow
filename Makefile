@@ -1,4 +1,4 @@
-.PHONY: help release package clean test
+.PHONY: help release release-mini package minify clean test install-deps
 
 # Default target
 help:
@@ -6,13 +6,18 @@ help:
 	@echo ""
 	@echo "Available commands:"
 	@echo "  make release       - Create release packages (prompts for version)"
+	@echo "  make release-mini  - Create minified release packages"
+	@echo "  make minify        - Minify JavaScript files only"
 	@echo "  make package       - Same as release"
 	@echo "  make test          - Verify extension structure"
 	@echo "  make clean         - Remove build artifacts"
+	@echo "  make install-deps  - Install Node.js dependencies"
 	@echo ""
 	@echo "Examples:"
-	@echo "  make release       # Creates release with current version"
+	@echo "  make release           # Creates release with current version"
+	@echo "  make release-mini      # Creates minified release"
 	@echo "  VERSION=1.0.1 make release  # Creates release with specific version"
+	@echo "  VERSION=1.0.1 make release-mini  # Creates minified release with specific version"
 
 # Create release packages
 release:
@@ -25,6 +30,29 @@ release:
 
 # Alias for release
 package: release
+
+# Create minified release packages
+release-mini:
+	@echo "Creating minified release packages..."
+	@if [ -n "$(VERSION)" ]; then \
+		./scripts/release.sh --minify $(VERSION); \
+	else \
+		./scripts/release.sh --minify; \
+	fi
+
+# Minify JavaScript files only (without creating release)
+minify: install-deps
+	@echo "Minifying JavaScript files..."
+	@node scripts/minify.js
+
+# Install Node.js dependencies
+install-deps:
+	@if [ ! -d "node_modules" ]; then \
+		echo "Installing dependencies..."; \
+		npm install; \
+	else \
+		echo "Dependencies already installed"; \
+	fi
 
 # Test extension structure
 test:
@@ -71,8 +99,9 @@ test:
 clean:
 	@echo "Cleaning build artifacts..."
 	@rm -rf dist/
+	@rm -rf build/
 	@rm -rf screenshots/*.png
-	@echo "✓ Cleaned dist/ and screenshots/"
+	@echo "✓ Cleaned dist/, build/, and screenshots/"
 
 # Quick start guide
 quickstart:

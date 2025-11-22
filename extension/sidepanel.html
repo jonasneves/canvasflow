@@ -271,46 +271,6 @@
           <div class="status-message" id="canvasUrlStatus"></div>
         </div>
 
-        <!-- AI Model Selection Card -->
-        <div class="settings-card">
-          <div class="settings-card-title">AI Model</div>
-          <p style="font-size: 12px; color: #6B7280; margin: 0 0 12px 0;">
-            Choose which model to use for generating insights via GitHub Models
-          </p>
-          <div style="margin-bottom: 12px;">
-            <label style="font-size: 12px; color: #374151; display: block; margin-bottom: 6px;">Selection Mode</label>
-            <div style="display: flex; gap: 12px;">
-              <label style="display: flex; align-items: center; gap: 6px; cursor: pointer;">
-                <input type="radio" name="aiSelectionMode" value="auto" id="aiModeAuto" checked>
-                <span style="font-size: 13px; color: #374151;">Auto (with fallback)</span>
-              </label>
-              <label style="display: flex; align-items: center; gap: 6px; cursor: pointer;">
-                <input type="radio" name="aiSelectionMode" value="manual" id="aiModeManual">
-                <span style="font-size: 13px; color: #374151;">Manual</span>
-              </label>
-            </div>
-          </div>
-          <div style="margin-bottom: 12px;">
-            <label style="font-size: 12px; color: #374151; display: block; margin-bottom: 6px;">Model</label>
-            <select id="aiModelSelect" style="width: 100%; padding: 8px 12px; border: 1px solid #D1D5DB; border-radius: 6px; font-size: 13px; background: white; cursor: pointer;">
-              <option value="gpt-4o">GPT-4o (Recommended)</option>
-              <option value="gpt-4o-mini">GPT-4o Mini (Fast)</option>
-              <option value="Meta-Llama-3.1-405B-Instruct">Llama 3.1 405B</option>
-              <option value="Meta-Llama-3.1-70B-Instruct">Llama 3.1 70B</option>
-              <option value="Mistral-large-2407">Mistral Large</option>
-            </select>
-          </div>
-          <div id="aiFallbackToggle" style="display: flex; align-items: center; gap: 8px;">
-            <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; flex: 1;">
-              <input type="checkbox" id="aiEnableFallback" checked style="cursor: pointer;">
-              <span style="font-size: 13px; color: #374151;">Enable automatic fallback on errors</span>
-            </label>
-          </div>
-          <p style="font-size: 11px; color: #6B7280; margin-top: 8px;">
-            In auto mode, if a model fails, the system will try the next available model.
-          </p>
-        </div>
-
         <!-- Time Range Card -->
         <div class="settings-card">
           <div class="settings-card-title">Assignment Time Range</div>

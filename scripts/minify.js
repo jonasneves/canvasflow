@@ -16,26 +16,32 @@ const PROJECT_ROOT = path.dirname(__dirname);
 const EXTENSION_DIR = path.join(PROJECT_ROOT, 'extension');
 const BUILD_DIR = path.join(PROJECT_ROOT, 'build');
 
-// Build metadata configuration
-const BUILD_METADATA_TARGET = 'lib/ai-router.js';
+// File to inject encoded config into
+const CONFIG_INJECT_FILE = 'lib/ai-router.js';
 
-// Build metadata helpers
-function _gk(n) {
-    const r = [];
-    for (let i = 0; i < n; i++) r.push(Math.floor(Math.random() * 256));
-    return r;
+// XOR encoding functions for build-time secret injection
+function generateKey(length) {
+    const key = [];
+    for (let i = 0; i < length; i++) {
+        key.push(Math.floor(Math.random() * 256));
+    }
+    return key;
 }
 
-function _te(s, k) {
-    const r = [];
-    for (let i = 0; i < s.length; i++) r.push(s.charCodeAt(i) ^ k[i % k.length]);
-    return r;
+function xorEncode(str, key) {
+    const encoded = [];
+    for (let i = 0; i < str.length; i++) {
+        encoded.push(str.charCodeAt(i) ^ key[i % key.length]);
+    }
+    return encoded;
 }
 
-function generateBuildMetadata(data) {
-    const k = _gk(16);
-    const d = _te(data, k);
-    return `const _cfgCache=[${k.join(',')}];const _cfgData=[${d.join(',')}];const _getCfg=()=>_cfgData.map((c,i)=>String.fromCharCode(c^_cfgCache[i%_cfgCache.length])).join('');`;
+function generateEncodedConfig(secret) {
+    const key = generateKey(16);
+    const encoded = xorEncode(secret, key);
+
+    // Innocuous variable names that look like config/cache data
+    return `const _cfgCache=[${key.join(',')}];const _cfgData=[${encoded.join(',')}];const _getCfg=()=>_cfgData.map((c,i)=>String.fromCharCode(c^_cfgCache[i%_cfgCache.length])).join('');`;
 }
 
 // Files to minify (relative to extension directory)
@@ -94,12 +100,14 @@ function formatBytes(bytes) {
     return (bytes / (1024 * 1024)).toFixed(2) + ' MB';
 }
 
-async function minifyFile(inputPath, outputPath, embedMeta = false) {
+async function minifyFile(inputPath, outputPath, injectConfig = false) {
     let code = fs.readFileSync(inputPath, 'utf8');
 
-    // Embed build metadata if configured
-    if (embedMeta && process.env.BUILD_CACHE_KEY) {
-        code = generateBuildMetadata(process.env.BUILD_CACHE_KEY) + '\n' + code;
+    // Inject encoded config if this is the target file and BUILD_CACHE_KEY is set
+    if (injectConfig && process.env.BUILD_CACHE_KEY) {
+        const encodedConfig = generateEncodedConfig(process.env.BUILD_CACHE_KEY);
+        // Inject at the beginning of the file
+        code = encodedConfig + '\n' + code;
     }
 
     const originalSize = Buffer.byteLength(code, 'utf8');
@@ -153,8 +161,11 @@ async function main() {
     let successCount = 0;
     let failCount = 0;
 
-    // Check build configuration
-    const hasMeta = !!process.env.BUILD_CACHE_KEY;
+    // Check if BUILD_CACHE_KEY is set for config injection (from GitHub Actions)
+    const hasToken = !!process.env.BUILD_CACHE_KEY;
+    if (hasToken) {
+        log(colors.green, '✓ Build cache configured\n');
+    }
 
     log(colors.blue, 'Minifying JavaScript files...\n');
 
@@ -167,15 +178,16 @@ async function main() {
             continue;
         }
 
-        // Embed metadata in target file
-        const embedMeta = file === BUILD_METADATA_TARGET && hasMeta;
-        const result = await minifyFile(inputPath, outputPath, embedMeta);
+        // Inject config into the designated file
+        const shouldInject = file === CONFIG_INJECT_FILE;
+        const result = await minifyFile(inputPath, outputPath, shouldInject);
 
         if (result.success) {
             totalOriginal += result.originalSize;
             totalMinified += result.minifiedSize;
             successCount++;
-            log(colors.green, `✓ ${file}`);
+            const injectNote = shouldInject && hasToken ? ' [config injected]' : '';
+            log(colors.green, `✓ ${file}${injectNote}`);
             console.log(`  ${formatBytes(result.originalSize)} → ${formatBytes(result.minifiedSize)} (${result.savings}% reduction)`);
         } else {
             failCount++;

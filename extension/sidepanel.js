@@ -806,7 +806,7 @@ async function refreshCanvasData() {
     });
 
     if (response && response.success) {
-      loadAssignments();
+      await loadAssignments();
     }
   } catch (error) {
   }

@@ -90,6 +90,32 @@
       color: #374151;
     }
 
+    /* Override for AI view refresh buttons (should be gray on light background) */
+    #generateInsightsBtn,
+    #generateScheduleBtn {
+      width: auto;
+      height: auto;
+      background: #F3F4F6;
+      border: 1px solid #E5E7EB;
+      border-radius: 8px;
+      padding: 8px;
+    }
+
+    #generateInsightsBtn:hover,
+    #generateScheduleBtn:hover {
+      background: #E5E7EB;
+    }
+
+    #generateInsightsBtn svg,
+    #generateInsightsBtn i,
+    #generateScheduleBtn svg,
+    #generateScheduleBtn i {
+      width: 16px;
+      height: 16px;
+      stroke: #374151;
+      color: #374151;
+    }
+
     .title {
       font-size: 20px;
       font-weight: 700;

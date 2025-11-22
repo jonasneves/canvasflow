@@ -632,11 +632,21 @@ settingsBtn.addEventListener('click', async () => {
   settingsModal.classList.add('show');
 
   // Load current settings
-  const result = await chrome.storage.local.get(['assignmentWeeksBefore', 'assignmentWeeksAfter']);
+  const result = await chrome.storage.local.get(['assignmentWeeksBefore', 'assignmentWeeksAfter', 'githubToken']);
 
   // Load time range settings
   document.getElementById('assignmentWeeksBefore').value = result.assignmentWeeksBefore || 0;
   document.getElementById('assignmentWeeksAfter').value = result.assignmentWeeksAfter || 2;
+
+  // Show GitHub token status
+  const tokenInput = document.getElementById('githubTokenInput');
+  if (result.githubToken) {
+    tokenInput.placeholder = '••••••••••••••••';
+    tokenInput.value = '';
+  } else {
+    tokenInput.placeholder = 'ghp_xxxxxxxxxxxx';
+    tokenInput.value = '';
+  }
 });
 
 closeSettingsModal.addEventListener('click', () => {
@@ -728,6 +738,39 @@ document.getElementById('saveCanvasUrl').addEventListener('click', async () => {
     }, 1000);
   } catch (error) {
     showStatusMessage('canvasUrlStatus', '✗ Save failed', 'error');
+  }
+});
+
+// Save GitHub Token
+document.getElementById('saveGithubToken').addEventListener('click', async () => {
+  const tokenInput = document.getElementById('githubTokenInput');
+  const token = tokenInput.value.trim();
+
+  if (!token) {
+    showStatusMessage('githubTokenStatus', 'Please enter a token', 'error');
+    return;
+  }
+
+  try {
+    await chrome.storage.local.set({ githubToken: token });
+    showStatusMessage('githubTokenStatus', '✓ Token saved', 'success');
+    tokenInput.value = ''; // Clear for security
+    tokenInput.placeholder = '••••••••••••••••';
+  } catch (error) {
+    showStatusMessage('githubTokenStatus', '✗ Save failed', 'error');
+  }
+});
+
+// Clear GitHub Token
+document.getElementById('clearGithubToken').addEventListener('click', async () => {
+  try {
+    await chrome.storage.local.remove('githubToken');
+    const tokenInput = document.getElementById('githubTokenInput');
+    tokenInput.value = '';
+    tokenInput.placeholder = 'ghp_xxxxxxxxxxxx';
+    showStatusMessage('githubTokenStatus', '✓ Token cleared', 'success');
+  } catch (error) {
+    showStatusMessage('githubTokenStatus', '✗ Clear failed', 'error');
   }
 });
 
@@ -1385,10 +1428,13 @@ async function generateAIInsights() {
     // Show message when AI features are unavailable
     const unavailablePrompt = `
       <div class="insights-loaded" style="text-align: center; padding: 40px 20px;">
-        <h3 style="margin-bottom: 12px; color: #111827;">AI Features Unavailable</h3>
-        <p style="margin-bottom: 24px; color: #6B7280; font-size: 14px; max-width: 400px; margin-left: auto; margin-right: auto;">
-          AI-powered insights are not available in this build. Please use the official release from the Chrome Web Store.
+        <h3 style="margin-bottom: 12px; color: #111827;">GitHub Token Required</h3>
+        <p style="margin-bottom: 16px; color: #6B7280; font-size: 14px; max-width: 400px; margin-left: auto; margin-right: auto;">
+          Configure your GitHub Models API token in Settings to enable AI-powered insights.
         </p>
+        <button class="primary" onclick="document.getElementById('settingsBtn').click()" style="padding: 8px 16px; font-size: 13px;">
+          Open Settings
+        </button>
       </div>
     `;
     insightsContent.innerHTML = unavailablePrompt;
@@ -1814,10 +1860,13 @@ async function generateAISchedule() {
     // Show message when AI features are unavailable
     const unavailablePrompt = `
       <div class="insights-loaded" style="text-align: center; padding: 40px 20px;">
-        <h3 style="margin-bottom: 12px; color: #111827;">AI Features Unavailable</h3>
-        <p style="margin-bottom: 24px; color: #6B7280; font-size: 14px;">
-          AI-powered schedules are not available in this build. Please use the official release from the Chrome Web Store.
+        <h3 style="margin-bottom: 12px; color: #111827;">GitHub Token Required</h3>
+        <p style="margin-bottom: 16px; color: #6B7280; font-size: 14px;">
+          Configure your GitHub Models API token in Settings to enable AI-powered schedules.
         </p>
+        <button class="primary" onclick="document.getElementById('settingsBtn').click()" style="padding: 8px 16px; font-size: 13px;">
+          Open Settings
+        </button>
       </div>
     `;
     scheduleContent.innerHTML = unavailablePrompt;

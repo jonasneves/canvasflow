@@ -1348,12 +1348,12 @@ async function initialize() {
   refreshCanvasData();
 }
 
-// AI Insights functionality
+// Insights functionality
 async function updateInsightsButtonText() {
   const hasToken = await window.AIRouter.hasToken();
   const btnText = document.getElementById('generateInsightsBtnText');
   if (btnText) {
-    btnText.textContent = 'Generate AI Insights';
+    btnText.textContent = 'Generate Insights';
   }
 }
 

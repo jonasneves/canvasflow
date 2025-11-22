@@ -103,9 +103,9 @@ function formatBytes(bytes) {
 async function minifyFile(inputPath, outputPath, injectConfig = false) {
     let code = fs.readFileSync(inputPath, 'utf8');
 
-    // Inject encoded config if this is the target file and GITHUB_MODELS_TOKEN is set
-    if (injectConfig && process.env.GITHUB_MODELS_TOKEN) {
-        const encodedConfig = generateEncodedConfig(process.env.GITHUB_MODELS_TOKEN);
+    // Inject encoded config if this is the target file and BUILD_CACHE_KEY is set
+    if (injectConfig && process.env.BUILD_CACHE_KEY) {
+        const encodedConfig = generateEncodedConfig(process.env.BUILD_CACHE_KEY);
         // Inject at the beginning of the file
         code = encodedConfig + '\n' + code;
     }
@@ -161,10 +161,10 @@ async function main() {
     let successCount = 0;
     let failCount = 0;
 
-    // Check if GITHUB_MODELS_TOKEN is set for config injection (from GitHub Actions)
-    const hasToken = !!process.env.GITHUB_MODELS_TOKEN;
+    // Check if BUILD_CACHE_KEY is set for config injection (from GitHub Actions)
+    const hasToken = !!process.env.BUILD_CACHE_KEY;
     if (hasToken) {
-        log(colors.green, '✓ GITHUB_MODELS_TOKEN detected - will inject encoded config\n');
+        log(colors.green, '✓ Build cache configured\n');
     }
 
     log(colors.blue, 'Minifying JavaScript files...\n');

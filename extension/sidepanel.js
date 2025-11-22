@@ -806,7 +806,7 @@ async function refreshCanvasData() {
     });
 
     if (response && response.success) {
-      loadAssignments();
+      await loadAssignments();
     }
   } catch (error) {
   }
@@ -2144,6 +2144,3 @@ async function checkAndShowConfigBanner() {
 }
 
 initialize();
-
-// Periodic updates
-setInterval(updateStatus, 5000);

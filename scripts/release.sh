@@ -16,6 +16,23 @@ NC='\033[0m' # No Color
 SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 PROJECT_ROOT="$(dirname "$SCRIPT_DIR")"
 
+# Parse arguments
+MINIFY=true
+VERSION_ARG=""
+
+while [[ $# -gt 0 ]]; do
+    case $1 in
+        --no-minify)
+            MINIFY=false
+            shift
+            ;;
+        *)
+            VERSION_ARG="$1"
+            shift
+            ;;
+    esac
+done
+
 echo -e "${BLUE}╔════════════════════════════════════════════════╗${NC}"
 echo -e "${BLUE}║   CanvasFlow Release Automation Script   ║${NC}"
 echo -e "${BLUE}╚════════════════════════════════════════════════╝${NC}"
@@ -33,14 +50,21 @@ echo -e "${GREEN}Current version: $CURRENT_VERSION${NC}"
 echo ""
 
 # Ask for new version if not provided
-if [ -z "$1" ]; then
+if [ -z "$VERSION_ARG" ]; then
     echo -e "${YELLOW}Enter new version number (or press Enter to keep $CURRENT_VERSION):${NC}"
     read NEW_VERSION
     if [ -z "$NEW_VERSION" ]; then
         NEW_VERSION=$CURRENT_VERSION
     fi
 else
-    NEW_VERSION=$1
+    NEW_VERSION=$VERSION_ARG
+fi
+
+# Show build type
+if [ "$MINIFY" = true ]; then
+    echo -e "${GREEN}Build type: MINIFIED${NC}"
+else
+    echo -e "${GREEN}Build type: Standard (unminified)${NC}"
 fi
 
 echo -e "${GREEN}Release version: $NEW_VERSION${NC}"
@@ -107,10 +131,35 @@ fi
 OUTPUT_DIR="$PROJECT_ROOT/dist"
 mkdir -p "$OUTPUT_DIR"
 
+# Run minification if requested
+if [ "$MINIFY" = true ]; then
+    echo -e "${BLUE}Running JavaScript minification...${NC}"
+
+    # Check if node_modules exists, if not install dependencies
+    if [ ! -d "$PROJECT_ROOT/node_modules" ]; then
+        echo -e "${YELLOW}Installing dependencies...${NC}"
+        cd "$PROJECT_ROOT"
+        npm install --silent
+    fi
+
+    # Run minification script
+    cd "$PROJECT_ROOT"
+    node scripts/minify.js
+
+    # Use build directory for minified release
+    EXTENSION_SOURCE="$PROJECT_ROOT/build/extension"
+    PACKAGE_SUFFIX="-mini"
+    echo ""
+else
+    # Use original extension directory
+    EXTENSION_SOURCE="$PROJECT_ROOT/extension"
+    PACKAGE_SUFFIX=""
+fi
+
 # Create Chrome Web Store package
 echo -e "${BLUE}Creating Chrome Web Store package...${NC}"
-cd "$PROJECT_ROOT/extension"
-zip -r "$OUTPUT_DIR/canvasflow-extension-v$NEW_VERSION.zip" \
+cd "$EXTENSION_SOURCE"
+zip -r "$OUTPUT_DIR/canvasflow-extension-v$NEW_VERSION$PACKAGE_SUFFIX.zip" \
     manifest.json \
     background.js \
     content.js \
@@ -128,8 +177,8 @@ zip -r "$OUTPUT_DIR/canvasflow-extension-v$NEW_VERSION.zip" \
 
 cd "$PROJECT_ROOT"
 
-FILE_SIZE=$(ls -lh "$OUTPUT_DIR/canvasflow-extension-v$NEW_VERSION.zip" | awk '{print $5}')
-echo -e "${GREEN}✓ Package created: canvasflow-extension-v$NEW_VERSION.zip ($FILE_SIZE)${NC}"
+FILE_SIZE=$(ls -lh "$OUTPUT_DIR/canvasflow-extension-v$NEW_VERSION$PACKAGE_SUFFIX.zip" | awk '{print $5}')
+echo -e "${GREEN}✓ Package created: canvasflow-extension-v$NEW_VERSION$PACKAGE_SUFFIX.zip ($FILE_SIZE)${NC}"
 
 # Create native host package
 echo -e "${BLUE}Creating native host package...${NC}"
@@ -150,7 +199,7 @@ echo ""
 
 # Verify ZIP contents
 echo -e "${BLUE}Verifying package contents...${NC}"
-FILE_COUNT=$(unzip -l "$OUTPUT_DIR/canvasflow-extension-v$NEW_VERSION.zip" | grep -c "^-" || true)
+FILE_COUNT=$(unzip -l "$OUTPUT_DIR/canvasflow-extension-v$NEW_VERSION$PACKAGE_SUFFIX.zip" | grep -c "^-" || true)
 echo -e "${GREEN}✓ Extension package contains $FILE_COUNT files${NC}"
 echo ""
 
@@ -339,10 +388,15 @@ echo -e "${BLUE}Version:${NC} $NEW_VERSION"
 echo -e "${BLUE}Output Directory:${NC} $OUTPUT_DIR"
 echo ""
 echo -e "${YELLOW}Files created:${NC}"
-echo -e "  - canvasflow-extension-v$NEW_VERSION.zip"
+echo -e "  - canvasflow-extension-v$NEW_VERSION$PACKAGE_SUFFIX.zip"
 echo -e "  - canvasflow-native-host-v$NEW_VERSION.zip"
 echo -e "  - release-notes-v$NEW_VERSION.md"
 echo -e "  - submission-checklist-v$NEW_VERSION.md"
+
+if [ "$MINIFY" = true ]; then
+    echo ""
+    echo -e "${GREEN}JavaScript files have been minified for production!${NC}"
+fi
 echo ""
 echo -e "${YELLOW}Next steps:${NC}"
 echo -e "  1. Review ${BLUE}dist/submission-checklist-v$NEW_VERSION.md${NC}"

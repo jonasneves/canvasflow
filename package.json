@@ -1,0 +1,17 @@
+{
+  "name": "canvasflow",
+  "version": "1.0.0",
+  "description": "Smart Canvas companion with AI insights, assignment tracking, and weekly schedule generation",
+  "private": true,
+  "scripts": {
+    "minify": "node scripts/minify.js",
+    "release": "./scripts/release.sh",
+    "release:mini": "./scripts/release.sh --minify"
+  },
+  "devDependencies": {
+    "terser": "^5.31.0"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}

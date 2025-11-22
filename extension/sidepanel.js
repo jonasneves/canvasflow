@@ -1129,9 +1129,9 @@ async function loadSavedInsights() {
         initializeLucide();
       }
     } else {
-      // No saved insights - auto-generate if token is available
+      // No saved insights - auto-generate if token is available AND we have assignments
       const hasToken = await window.AIRouter.hasToken();
-      if (hasToken) {
+      if (hasToken && allAssignments.length > 0) {
         generateAIInsights();
       }
     }
@@ -1233,7 +1233,8 @@ async function checkAndAutoGenerateInsights() {
     // Check if insights are stale (>6 hours old) or don't exist
     const needsRegeneration = !result.savedInsights || age > SIX_HOURS_MS;
 
-    if (needsRegeneration && result.githubToken) {
+    // Only auto-generate if we have assignments to analyze
+    if (needsRegeneration && result.githubToken && allAssignments.length > 0) {
       // Auto-generate insights
       const insightsContent = document.getElementById('insightsContent');
       insightsContent.innerHTML = `
@@ -1361,6 +1362,21 @@ async function generateAIInsights() {
   // Try to find either button (could be generateInsightsBtn or regenerateInsightsBtn)
   const btn = document.getElementById('generateInsightsBtn') || document.getElementById('regenerateInsightsBtn');
   const insightsContent = document.getElementById('insightsContent');
+
+  // Check if we have assignments to analyze
+  if (allAssignments.length === 0) {
+    insightsContent.innerHTML = `
+      <div class="insights-placeholder">
+        <i data-lucide="sparkles" style="width: 48px; height: 48px;"></i>
+        <p style="margin-bottom: 16px;">No assignments to analyze</p>
+        <p class="insights-placeholder-note" style="margin-top: 12px; font-size: 13px; color: #6B7280; line-height: 1.5;">Load your Canvas data first to get AI-powered insights</p>
+      </div>
+    `;
+    if (typeof initializeLucide === 'function') {
+      initializeLucide(insightsContent);
+    }
+    return;
+  }
 
   // Check if API key is set first (embedded or user-provided)
   const apiToken = await window.AIRouter.getToken();
@@ -1760,9 +1776,9 @@ async function loadSavedSchedule() {
         initializeLucide();
       }
     } else {
-      // No saved schedule - auto-generate if token is available
+      // No saved schedule - auto-generate if token is available AND we have assignments
       const hasToken = await window.AIRouter.hasToken();
-      if (hasToken) {
+      if (hasToken && allAssignments.length > 0) {
         generateAISchedule();
       }
     }
@@ -1775,6 +1791,21 @@ async function loadSavedSchedule() {
 async function generateAISchedule() {
   const btn = document.getElementById('generateScheduleBtn') || document.getElementById('regenerateScheduleBtn');
   const scheduleContent = document.getElementById('scheduleContent');
+
+  // Check if we have assignments to analyze
+  if (allAssignments.length === 0) {
+    scheduleContent.innerHTML = `
+      <div class="insights-placeholder">
+        <i data-lucide="calendar" style="width: 48px; height: 48px;"></i>
+        <p style="margin-bottom: 16px;">No assignments to schedule</p>
+        <p class="insights-placeholder-note" style="margin-top: 12px; font-size: 13px; color: #6B7280; line-height: 1.5;">Load your Canvas data first to get an AI-powered schedule</p>
+      </div>
+    `;
+    if (typeof initializeLucide === 'function') {
+      initializeLucide(scheduleContent);
+    }
+    return;
+  }
 
   // Check if API key is set first (embedded or user-provided)
   const apiToken = await window.AIRouter.getToken();

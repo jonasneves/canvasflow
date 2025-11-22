@@ -1,12 +1,12 @@
-// Canvas MCP Server - Content Script
+// CanvasFlow - Content Script
 (function() {
   'use strict';
 
   // Prevent multiple executions
-  if (window.canvasMCPInitialized) {
+  if (window.canvasFlowInitialized) {
     return;
   }
-  window.canvasMCPInitialized = true;
+  window.canvasFlowInitialized = true;
 
   const API_BASE = '/api/v1';
 

@@ -24,14 +24,12 @@ Creates production-ready packages for Chrome Web Store submission.
 - Checks for eval() usage
 - Updates version in manifest.json
 - Creates Chrome Web Store ZIP package
-- Creates native host ZIP package
 - Generates release notes
 - Creates submission checklist
 
 **Output:**
 All files are created in the `dist/` directory:
 - `canvasflow-extension-vX.X.X.zip` - Ready for Chrome Web Store
-- `canvasflow-native-host-vX.X.X.zip` - Optional MCP integration
 - `release-notes-vX.X.X.md` - Release documentation
 - `submission-checklist-vX.X.X.md` - Pre-submission checklist
 
@@ -55,7 +53,6 @@ git push origin v1.0.0
 
 **Outputs:**
 - Extension ZIP package (artifact + release)
-- Native host ZIP package (artifact + release)
 - Release notes (auto-generated)
 - Build summary
 

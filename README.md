@@ -15,7 +15,6 @@ CanvasFlow is a Chrome extension that enhances your Canvas LMS experience with A
 - **AI-Powered Insights**: AI analyzes your workload and provides strategic recommendations via GitHub Models
 - **Structured Outputs**: Consistent, reliable AI responses using tool-based approach
 - **Weekly Schedule Generation**: AI-generated 7-day study plans optimized for your deadlines and workload
-- **Browser-Based MCP Server**: Embedded MCP server for Canvas LMS lets you talk to your coursework data through Claude Desktop - no separate server installation needed
 - **Smart Filtering**: Filter assignments by time range, course, and completion status
 
 ## Project Structure
@@ -23,7 +22,7 @@ CanvasFlow is a Chrome extension that enhances your Canvas LMS experience with A
 ```
 canvasflow/
 ├── extension/          Chrome extension files
-├── native-host/        Native messaging host (optional MCP integration)
+├── scripts/            Build and release scripts
 └── README.md           This file
 ```
 
@@ -41,17 +40,8 @@ canvasflow/
 
 1. Click the CanvasFlow icon while on any Canvas LMS page
 2. Open Settings (gear icon in the sidepanel)
-3. Enter your GitHub token with Models access (required for AI features)
+3. Configure your Canvas instance URL if not auto-detected
 4. Adjust assignment time range and auto-refresh settings as needed
-
-### GitHub Token
-
-To use AI-powered insights and schedule generation, you need a GitHub token with Models access:
-
-1. Visit https://github.com/settings/tokens
-2. Create a new token with appropriate permissions
-3. Enable GitHub Models access
-4. Enter the token in CanvasFlow Settings
 
 ## Usage
 
@@ -79,14 +69,6 @@ AI-generated 7-day study plan:
 - **Time-Blocked Schedule**: Optimized daily task distribution
 - **Strategic Recommendations**: Week-level planning and focus areas
 - **Workload Balancing**: Even distribution based on assignment complexity
-
-### MCP Integration (Optional)
-
-Connect Claude Desktop to your Canvas data:
-
-- **Browser-Based Server**: No separate server installation required
-- **Real-Time Data**: Claude Desktop can query your Canvas assignments
-- **Native Messaging**: Secure local communication between extension and Claude Desktop
 
 ## Privacy
 

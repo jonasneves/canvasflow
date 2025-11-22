@@ -6,7 +6,7 @@ Chrome extension component of CanvasFlow - provides the user interface and Canva
 
 This extension uses Chrome Manifest V3 and leverages modern AI capabilities:
 
-- **Background Service Worker** (`background.js`): Manages data sync, alarms, and native messaging
+- **Background Service Worker** (`background.js`): Manages data sync and alarms
 - **Content Script** (`content.js`): Direct DOM extraction from Canvas (no Canvas API required)
 - **Sidepanel** (`sidepanel.html/js`): Dashboard with assignment overview and AI insights tab
 - **Schedule View** (`schedule.html/js`): Full-page AI-generated weekly schedule
@@ -133,8 +133,6 @@ Required permissions and their purpose:
 - `sidePanel`: Display sidepanel interface
 - `<all_urls>`: Access Canvas sites (various domains)
 
-Note: MCP server integration uses HTTP to localhost (no special permissions required)
-
 ## Publishing
 
 ### Preparation Checklist
@@ -158,7 +156,6 @@ Note: MCP server integration uses HTTP to localhost (no special permissions requ
 - Requires manual API key entry (no OAuth flow)
 - Canvas DOM changes may affect data extraction
 - AI features require network connection and API quota
-- Native messaging host must be installed separately for MCP features
 
 ## Support
 

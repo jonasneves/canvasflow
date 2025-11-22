@@ -27,6 +27,3 @@ Thumbs.db
 # Build artifacts
 build/
 dist/
-
-# Local configs
-.canvas-mcp-config

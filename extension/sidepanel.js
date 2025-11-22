@@ -30,16 +30,6 @@ tabButtons.forEach(button => {
   });
 });
 
-// Helper function to send MCP requests
-async function sendMCPRequest(method, params = {}) {
-  return new Promise((resolve) => {
-    chrome.runtime.sendMessage({
-      type: 'MCP_REQUEST',
-      payload: { method, params }
-    }, resolve);
-  });
-}
-
 // Load and display the current Canvas URL
 async function updateCanvasUrl() {
   try {

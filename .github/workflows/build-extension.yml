@@ -76,6 +76,8 @@ jobs:
             content.js \
             sidepanel.html \
             sidepanel.js \
+            sidepanel.css \
+            colors.css \
             schedule.html \
             schedule.js \
             schedule.css \
@@ -98,21 +100,6 @@ jobs:
           FILE_COUNT=$(unzip -l canvasflow-extension-v${{ steps.version.outputs.version }}.zip | grep -c "^-")
           echo "Total files in package: $FILE_COUNT"
 
-      - name: Create native host package
-        run: |
-          cd native-host
-          zip -r ../canvasflow-native-host-v${{ steps.version.outputs.version }}.zip \
-            host.js \
-            package.json \
-            package-lock.json \
-            manifest.json \
-            README.md \
-            -x "*.DS_Store" "*node_modules*"
-          cd ..
-
-          echo "Native host package created: canvasflow-native-host-v${{ steps.version.outputs.version }}.zip"
-          ls -lh canvasflow-native-host-v${{ steps.version.outputs.version }}.zip
-
       - name: Generate release notes
         id: release_notes
         run: |
@@ -125,7 +112,6 @@ jobs:
           - AI-powered insights using GitHub Models with structured outputs
           - Weekly schedule generation
           - Direct Canvas data extraction (no API key required)
-          - MCP server integration for Claude Desktop
 
           **Installation:**
           1. Download `canvasflow-extension-v${{ steps.version.outputs.version }}.zip`
@@ -136,13 +122,6 @@ jobs:
 
           **For Chrome Web Store submission:**
           Use `canvasflow-extension-v${{ steps.version.outputs.version }}.zip` directly
-
-          ### Native Host (Optional - for MCP Integration)
-
-          **Installation:**
-          1. Download `canvasflow-native-host-v${{ steps.version.outputs.version }}.zip`
-          2. Extract and run the installation script
-          3. See native-host/README.md for detailed instructions
 
           ---
 
@@ -166,20 +145,12 @@ jobs:
           path: canvasflow-extension-v${{ steps.version.outputs.version }}.zip
           retention-days: 90
 
-      - name: Upload native host package
-        uses: actions/upload-artifact@v4
-        with:
-          name: canvasflow-native-host-v${{ steps.version.outputs.version }}
-          path: canvasflow-native-host-v${{ steps.version.outputs.version }}.zip
-          retention-days: 90
-
       - name: Create GitHub Release
         if: startsWith(github.ref, 'refs/tags/')
         uses: softprops/action-gh-release@v1
         with:
           files: |
             canvasflow-extension-v${{ steps.version.outputs.version }}.zip
-            canvasflow-native-host-v${{ steps.version.outputs.version }}.zip
           body_path: release-notes.md
           draft: false
           prerelease: false
@@ -195,11 +166,9 @@ jobs:
           echo "### Packages Created:" >> $GITHUB_STEP_SUMMARY
           echo "- ✅ Chrome Extension: \`canvasflow-extension-v${{ steps.version.outputs.version }}\` (artifact)" >> $GITHUB_STEP_SUMMARY
           echo "- ✅ Chrome Extension ZIP: \`canvasflow-extension-v${{ steps.version.outputs.version }}.zip\` (for releases)" >> $GITHUB_STEP_SUMMARY
-          echo "- ✅ Native Host: \`canvasflow-native-host-v${{ steps.version.outputs.version }}.zip\`" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "### File Sizes:" >> $GITHUB_STEP_SUMMARY
           ls -lh canvasflow-extension-v${{ steps.version.outputs.version }}.zip | awk '{print "- Extension ZIP: " $5}' >> $GITHUB_STEP_SUMMARY
-          ls -lh canvasflow-native-host-v${{ steps.version.outputs.version }}.zip | awk '{print "- Native Host: " $5}' >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "### 📥 For Chrome Web Store Submission:" >> $GITHUB_STEP_SUMMARY
           echo "1. Download the \`canvasflow-extension-v${{ steps.version.outputs.version }}\` artifact" >> $GITHUB_STEP_SUMMARY

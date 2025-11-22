@@ -179,22 +179,6 @@ cd "$PROJECT_ROOT"
 
 FILE_SIZE=$(ls -lh "$OUTPUT_DIR/canvasflow-extension-v$NEW_VERSION$PACKAGE_SUFFIX.zip" | awk '{print $5}')
 echo -e "${GREEN}✓ Package created: canvasflow-extension-v$NEW_VERSION$PACKAGE_SUFFIX.zip ($FILE_SIZE)${NC}"
-
-# Create native host package
-echo -e "${BLUE}Creating native host package...${NC}"
-cd "$PROJECT_ROOT/native-host"
-zip -r "$OUTPUT_DIR/canvasflow-native-host-v$NEW_VERSION.zip" \
-    host.js \
-    package.json \
-    package-lock.json \
-    manifest.json \
-    README.md \
-    -x "*.DS_Store" "*node_modules*" > /dev/null
-
-cd "$PROJECT_ROOT"
-
-FILE_SIZE=$(ls -lh "$OUTPUT_DIR/canvasflow-native-host-v$NEW_VERSION.zip" | awk '{print $5}')
-echo -e "${GREEN}✓ Native host package created ($FILE_SIZE)${NC}"
 echo ""
 
 # Verify ZIP contents
@@ -215,7 +199,6 @@ cat > "$OUTPUT_DIR/release-notes-v$NEW_VERSION.md" << EOF
 - AI-powered insights using GitHub Models with structured outputs
 - Weekly schedule generation with time-blocked tasks
 - Direct Canvas data extraction (no API key required)
-- MCP server integration for Claude Desktop
 - Modern, intuitive UI with color-coded assignments
 - Privacy-first: all data stored locally
 - Manifest V3 compliant
@@ -231,13 +214,6 @@ cat > "$OUTPUT_DIR/release-notes-v$NEW_VERSION.md" << EOF
 
 #### For Chrome Web Store:
 Use \`canvasflow-extension-v$NEW_VERSION.zip\` directly in the Developer Dashboard
-
-### Native Host (Optional - for MCP Integration)
-
-**Installation:**
-1. Download \`canvasflow-native-host-v$NEW_VERSION.zip\`
-2. Extract and run the installation script
-3. See native-host/README.md for detailed instructions
 
 ---
 
@@ -304,7 +280,6 @@ cat > "$OUTPUT_DIR/submission-checklist-v$NEW_VERSION.md" << EOF
 - [ ] Check for console errors
 - [ ] Test with and without API key
 - [ ] Verify auto-refresh functionality
-- [ ] Test MCP server integration (optional)
 
 ### Store Listing
 
@@ -389,7 +364,6 @@ echo -e "${BLUE}Output Directory:${NC} $OUTPUT_DIR"
 echo ""
 echo -e "${YELLOW}Files created:${NC}"
 echo -e "  - canvasflow-extension-v$NEW_VERSION$PACKAGE_SUFFIX.zip"
-echo -e "  - canvasflow-native-host-v$NEW_VERSION.zip"
 echo -e "  - release-notes-v$NEW_VERSION.md"
 echo -e "  - submission-checklist-v$NEW_VERSION.md"
 

@@ -36,15 +36,6 @@ When you explicitly request AI-powered insights or schedule generation:
 
 **AI features are entirely optional.** You can use CanvasFlow without providing a token or generating AI insights.
 
-### MCP Server (Optional)
-
-The optional Model Context Protocol (MCP) server for Claude Desktop integration:
-
-- Runs locally on your machine
-- Communicates with the Chrome extension via native messaging
-- Does not send data to external servers
-- Only processes data when explicitly queried through Claude Desktop
-
 ## Data We Do NOT Collect
 
 CanvasFlow does not:

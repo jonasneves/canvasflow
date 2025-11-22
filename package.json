@@ -9,7 +9,6 @@
     "release:mini": "./scripts/release.sh --minify"
   },
   "devDependencies": {
-    "dotenv": "^17.2.3",
     "terser": "^5.31.0"
   },
   "engines": {

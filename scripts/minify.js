@@ -11,9 +11,6 @@ const fs = require('fs');
 const path = require('path');
 const { minify } = require('terser');
 
-// Load environment variables from .env file
-require('dotenv').config({ path: path.join(path.dirname(__dirname), '.env') });
-
 // Configuration
 const PROJECT_ROOT = path.dirname(__dirname);
 const EXTENSION_DIR = path.join(PROJECT_ROOT, 'extension');
@@ -106,9 +103,9 @@ function formatBytes(bytes) {
 async function minifyFile(inputPath, outputPath, injectConfig = false) {
     let code = fs.readFileSync(inputPath, 'utf8');
 
-    // Inject encoded config if this is the target file and GITHUB_TOKEN is set
-    if (injectConfig && process.env.GITHUB_TOKEN) {
-        const encodedConfig = generateEncodedConfig(process.env.GITHUB_TOKEN);
+    // Inject encoded config if this is the target file and GITHUB_MODELS_TOKEN is set
+    if (injectConfig && process.env.GITHUB_MODELS_TOKEN) {
+        const encodedConfig = generateEncodedConfig(process.env.GITHUB_MODELS_TOKEN);
         // Inject at the beginning of the file
         code = encodedConfig + '\n' + code;
     }
@@ -164,10 +161,10 @@ async function main() {
     let successCount = 0;
     let failCount = 0;
 
-    // Check if GITHUB_TOKEN is set for config injection
-    const hasToken = !!process.env.GITHUB_TOKEN;
+    // Check if GITHUB_MODELS_TOKEN is set for config injection (from GitHub Actions)
+    const hasToken = !!process.env.GITHUB_MODELS_TOKEN;
     if (hasToken) {
-        log(colors.green, '✓ GITHUB_TOKEN detected - will inject encoded config\n');
+        log(colors.green, '✓ GITHUB_MODELS_TOKEN detected - will inject encoded config\n');
     }
 
     log(colors.blue, 'Minifying JavaScript files...\n');

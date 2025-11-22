@@ -30,4 +30,3 @@ dist/
 
 # Local configs
 .canvas-mcp-config
-.env

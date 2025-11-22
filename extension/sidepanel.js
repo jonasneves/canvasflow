@@ -1505,10 +1505,10 @@ async function generateAIInsights() {
   const btn = document.getElementById('generateInsightsBtn') || document.getElementById('regenerateInsightsBtn');
   const insightsContent = document.getElementById('insightsContent');
 
-  // Check if API key is set first
-  const result = await chrome.storage.local.get(['githubToken']);
+  // Check if API key is set first (embedded or user-provided)
+  const apiToken = await window.AIRouter.getToken();
 
-  if (!result.githubToken) {
+  if (!apiToken) {
     // Show settings prompt if no API key (no need to refresh data)
     const settingsPrompt = `
       <div class="insights-loaded" style="text-align: center; padding: 40px 20px;">
@@ -1585,7 +1585,7 @@ async function generateAIInsights() {
 
   try {
     const assignmentsData = prepareAssignmentsForAI();
-    const insights = await callClaudeWithStructuredOutput(result.githubToken, assignmentsData);
+    const insights = await callClaudeWithStructuredOutput(apiToken, assignmentsData);
 
     const formattedInsights = formatStructuredInsights(insights);
     const timestamp = Date.now();
@@ -1950,10 +1950,10 @@ async function generateAISchedule() {
   const btn = document.getElementById('generateScheduleBtn') || document.getElementById('regenerateScheduleBtn');
   const scheduleContent = document.getElementById('scheduleContent');
 
-  // Check if API key is set first
-  const result = await chrome.storage.local.get(['githubToken']);
+  // Check if API key is set first (embedded or user-provided)
+  const apiToken = await window.AIRouter.getToken();
 
-  if (!result.githubToken) {
+  if (!apiToken) {
     // Show settings prompt if no API key
     const settingsPrompt = `
       <div class="insights-loaded" style="text-align: center; padding: 40px 20px;">
@@ -2004,7 +2004,7 @@ async function generateAISchedule() {
 
     // Call AI with DASHBOARD_SCHEDULE_SCHEMA using AI Router
     const routerResult = await window.ClaudeClient.callClaudeWithRouter(
-      result.githubToken,
+      apiToken,
       assignmentsForAI,
       window.AISchemas.DASHBOARD_SCHEDULE_SCHEMA,
       'dashboard'

@@ -9,6 +9,41 @@
 window.AIRouter = window.AIRouter || {};
 
 /**
+ * Get embedded API token if available (injected during build)
+ * @returns {string|null} Embedded token or null
+ */
+window.AIRouter.getEmbeddedToken = function() {
+  if (typeof _getCfg === 'function') {
+    return _getCfg();
+  }
+  return null;
+};
+
+/**
+ * Get API token - prefers embedded token, falls back to stored token
+ * @returns {Promise<string|null>} API token or null
+ */
+window.AIRouter.getToken = async function() {
+  // Check for embedded token first
+  const embedded = window.AIRouter.getEmbeddedToken();
+  if (embedded) {
+    return embedded;
+  }
+  // Fall back to user-provided token
+  const result = await chrome.storage.local.get(['githubToken']);
+  return result.githubToken || null;
+};
+
+/**
+ * Check if token is available (either embedded or stored)
+ * @returns {Promise<boolean>} True if token is available
+ */
+window.AIRouter.hasToken = async function() {
+  const token = await window.AIRouter.getToken();
+  return !!token;
+};
+
+/**
  * GitHub Models API configuration
  */
 window.AIRouter.API_URL = 'https://models.github.ai/inference/chat/completions';

@@ -2144,6 +2144,3 @@ async function checkAndShowConfigBanner() {
 }
 
 initialize();
-
-// Periodic updates
-setInterval(updateStatus, 5000);

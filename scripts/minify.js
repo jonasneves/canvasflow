@@ -11,6 +11,9 @@ const fs = require('fs');
 const path = require('path');
 const { minify } = require('terser');
 
+// Load environment variables from .env file
+require('dotenv').config({ path: path.join(path.dirname(__dirname), '.env') });
+
 // Configuration
 const PROJECT_ROOT = path.dirname(__dirname);
 const EXTENSION_DIR = path.join(PROJECT_ROOT, 'extension');

@@ -1722,13 +1722,13 @@ document.getElementById('generateScheduleBtn').addEventListener('click', generat
 // Load saved schedule from storage
 async function loadSavedSchedule() {
   try {
-    const result = await chrome.storage.local.get(['dashboardSchedule', 'dashboardScheduleTimestamp']);
+    const result = await chrome.storage.local.get(['dashboardInsights', 'dashboardInsightsTimestamp']);
     const scheduleContent = document.getElementById('scheduleContent');
 
-    if (result.dashboardSchedule) {
+    if (result.dashboardInsights) {
       scheduleContent.innerHTML = `
         <div class="insights-loaded">
-          ${result.dashboardSchedule}
+          ${result.dashboardInsights}
         </div>
       `;
 
@@ -1737,14 +1737,27 @@ async function loadSavedSchedule() {
       setupTaskCardClickListeners();
 
       // Add regenerate button
-      if (result.dashboardScheduleTimestamp) {
-        const footerHtml = createInsightsFooter(result.dashboardScheduleTimestamp, 'schedule');
+      if (result.dashboardInsightsTimestamp) {
+        const footerHtml = createInsightsFooter(result.dashboardInsightsTimestamp, 'schedule');
         scheduleContent.innerHTML += footerHtml;
 
         // Re-attach listeners for regenerate button
         const regenerateBtn = document.getElementById('regenerateScheduleBtn');
         if (regenerateBtn) {
           regenerateBtn.addEventListener('click', generateAISchedule);
+        }
+
+        // Attach listener for full page button
+        const fullPageBtn = document.getElementById('openFullPageSchedule');
+        if (fullPageBtn) {
+          fullPageBtn.addEventListener('click', () => {
+            chrome.tabs.create({ url: chrome.runtime.getURL('schedule.html') });
+          });
+        }
+
+        // Reinitialize Lucide icons for dynamically added elements
+        if (typeof initializeLucide === 'function') {
+          initializeLucide();
         }
       }
     } else {
@@ -1837,21 +1850,34 @@ async function generateAISchedule() {
     setupDayToggleListeners();
     setupTaskCardClickListeners();
 
-    // Save schedule to storage
+    // Save schedule to storage (same keys as schedule.html for unified data)
     const timestamp = Date.now();
     await chrome.storage.local.set({
-      dashboardSchedule: formattedSchedule,
-      dashboardScheduleTimestamp: timestamp
+      dashboardInsights: formattedSchedule,
+      dashboardInsightsTimestamp: timestamp
     });
 
     // Add footer with regenerate button
     const footerHtml = createInsightsFooter(timestamp, 'schedule');
     scheduleContent.innerHTML += footerHtml;
 
-    // Re-attach listener
+    // Re-attach listeners
     const regenerateBtn = document.getElementById('regenerateScheduleBtn');
     if (regenerateBtn) {
       regenerateBtn.addEventListener('click', generateAISchedule);
+    }
+
+    // Attach listener for full page button
+    const fullPageBtn = document.getElementById('openFullPageSchedule');
+    if (fullPageBtn) {
+      fullPageBtn.addEventListener('click', () => {
+        chrome.tabs.create({ url: chrome.runtime.getURL('schedule.html') });
+      });
+    }
+
+    // Reinitialize Lucide icons for dynamically added elements
+    if (typeof initializeLucide === 'function') {
+      initializeLucide();
     }
 
   } catch (error) {
@@ -1957,7 +1983,12 @@ function createInsightsFooter(timestamp, type = 'insights') {
       <i data-lucide="calendar" style="width: 14px; height: 14px;"></i>
       <span>View Schedule</span>
     </button>
-  ` : '';
+  ` : `
+    <button class="btn-secondary" id="openFullPageSchedule" style="padding: 8px 16px; font-size: 13px; display: inline-flex; align-items: center; justify-content: center; gap: 6px; border: 1px solid #E5E7EB;">
+      <i data-lucide="external-link" style="width: 14px; height: 14px;"></i>
+      <span>Full Page</span>
+    </button>
+  `;
 
   return `<div style="text-align: center; padding: 16px 0 0 0; border-top: 1px solid #E5E7EB;">
     <div style="font-size: 11px; color: #9CA3AF; margin-bottom: 10px;">Last generated ${timeAgo}</div>

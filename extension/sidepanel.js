@@ -669,16 +669,6 @@ settingsBtn.addEventListener('click', async () => {
   // Load time range settings
   document.getElementById('assignmentWeeksBefore').value = result.assignmentWeeksBefore || 0;
   document.getElementById('assignmentWeeksAfter').value = result.assignmentWeeksAfter || 2;
-
-  // Load AI router settings
-  const aiConfig = await window.AIRouter.getConfig();
-  document.getElementById('aiModeAuto').checked = aiConfig.selectionMode === 'auto';
-  document.getElementById('aiModeManual').checked = aiConfig.selectionMode === 'manual';
-  document.getElementById('aiModelSelect').value = aiConfig.selectedModelId;
-  document.getElementById('aiEnableFallback').checked = aiConfig.enableFallback;
-
-  // Update fallback toggle visibility based on mode
-  updateAIFallbackVisibility();
 });
 
 closeSettingsModal.addEventListener('click', () => {
@@ -1129,39 +1119,6 @@ document.getElementById('resetTimeRange').addEventListener('click', async () => 
     showStatusMessage('timeRangeStatus', '✗ Reset failed', 'error');
   }
 });
-
-// AI Router settings
-function updateAIFallbackVisibility() {
-  const isAutoMode = document.getElementById('aiModeAuto').checked;
-  const fallbackToggle = document.getElementById('aiFallbackToggle');
-  if (fallbackToggle) {
-    fallbackToggle.style.display = isAutoMode ? 'flex' : 'none';
-  }
-}
-
-// Save AI router config when settings change
-async function saveAIRouterConfig() {
-  const config = {
-    selectionMode: document.getElementById('aiModeAuto').checked ? 'auto' : 'manual',
-    selectedModelId: document.getElementById('aiModelSelect').value,
-    enableFallback: document.getElementById('aiEnableFallback').checked
-  };
-  await window.AIRouter.saveConfig(config);
-}
-
-// AI selection mode change
-document.querySelectorAll('input[name="aiSelectionMode"]').forEach(radio => {
-  radio.addEventListener('change', async () => {
-    updateAIFallbackVisibility();
-    await saveAIRouterConfig();
-  });
-});
-
-// AI model select change
-document.getElementById('aiModelSelect').addEventListener('change', saveAIRouterConfig);
-
-// AI fallback toggle change
-document.getElementById('aiEnableFallback').addEventListener('change', saveAIRouterConfig);
 
 // Load time range settings
 async function loadTimeRangeSettings() {

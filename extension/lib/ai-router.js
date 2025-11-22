@@ -178,7 +178,7 @@ window.AIRouter.executeWithFallback = async function(apiCall, options = {}) {
         failures: failures
       };
     } catch (error) {
-      console.error(`Model ${model.name} failed:`, error);
+      console.warn(`Model ${model.name} failed:`, error.message);
 
       const errorInfo = {
         modelId: model.id,

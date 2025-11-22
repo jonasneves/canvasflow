@@ -59,7 +59,7 @@ MIT License
 
 ## Version History
 
-### v1.1.0 (2025-01-XX)
+### v1.2.0 (2025-01-XX)
 
 **Features**
 - Renamed "AI Insights" tab to "Study Planner"

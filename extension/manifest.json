@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "CanvasFlow: AI Assistance for Canvas LMS",
-  "version": "1.0.0",
+  "version": "1.2.0",
   "description": "Smart Canvas companion with AI insights, assignment tracking, and weekly schedule generation.",
   "homepage_url": "https://github.com/jonasneves/canvasflow",
   "permissions": [

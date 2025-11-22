@@ -29,16 +29,10 @@ async function initializeDashboard() {
   await loadSavedInsights();
 }
 
-// Update insights button text based on API key
+// Update insights button text
 async function updateInsightsButtonText() {
-  const result = await chrome.storage.local.get(['githubToken']);
   const btnText = document.getElementById('generateInsightsBtnText');
-
-  if (result.githubToken) {
-    btnText.textContent = 'Generate Schedule';
-  } else {
-    btnText.textContent = 'Configure API Key';
-  }
+  btnText.textContent = 'Generate Schedule';
 }
 
 // Event Listeners
@@ -251,48 +245,16 @@ async function generateAIInsights() {
   const apiToken = await window.AIRouter.getToken();
 
   if (!apiToken) {
-    // Show settings prompt if no API key (no need to refresh data)
-    const settingsPrompt = `
+    // Show message when AI features are unavailable
+    const unavailablePrompt = `
       <div class="insights-loaded" style="text-align: center; padding: 60px 20px;">
-        <h3 style="margin-bottom: 16px; color: #111827; font-size: 24px;">GitHub Token Required</h3>
+        <h3 style="margin-bottom: 16px; color: #111827; font-size: 24px;">AI Features Unavailable</h3>
         <p style="margin-bottom: 32px; color: #6B7280; font-size: 16px; max-width: 500px; margin-left: auto; margin-right: auto; line-height: 1.6;">
-          To generate AI-powered weekly schedules and study insights, you need to configure your GitHub token.
-        </p>
-        <button id="openSettingsBtn" style="
-          background: #1e3a5f;
-          color: white;
-          border: none;
-          padding: 14px 28px;
-          border-radius: 8px;
-          font-size: 16px;
-          font-weight: 500;
-          cursor: pointer;
-          transition: background 0.2s;
-        ">
-          Open Settings
-        </button>
-        <p style="margin-top: 20px; font-size: 14px; color: #9CA3AF;">
-          Don't have a token? <a href="https://github.com/settings/tokens" target="_blank" style="color: #1e3a5f; text-decoration: underline;">Get one from GitHub</a>
+          AI-powered insights are not available in this build. Please use the official release from the Chrome Web Store.
         </p>
       </div>
     `;
-    insightsContent.innerHTML = settingsPrompt;
-
-    // Add event listeners to the button
-    const openSettingsBtn = document.getElementById('openSettingsBtn');
-    openSettingsBtn.addEventListener('click', async () => {
-      // Store a flag to open settings modal when sidepanel opens
-      await chrome.storage.local.set({ openSettingsOnLoad: true });
-      // Get current window to open sidepanel
-      const currentWindow = await chrome.windows.getCurrent();
-      await chrome.sidePanel.open({ windowId: currentWindow.id });
-    });
-    openSettingsBtn.addEventListener('mouseover', () => {
-      openSettingsBtn.style.background = '#004080';
-    });
-    openSettingsBtn.addEventListener('mouseout', () => {
-      openSettingsBtn.style.background = '#1e3a5f';
-    });
+    insightsContent.innerHTML = unavailablePrompt;
 
     return;
   }

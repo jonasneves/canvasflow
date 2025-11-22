@@ -664,10 +664,7 @@ settingsBtn.addEventListener('click', async () => {
   settingsModal.classList.add('show');
 
   // Load current settings
-  const result = await chrome.storage.local.get(['githubToken', 'assignmentWeeksBefore', 'assignmentWeeksAfter']);
-  if (result.githubToken) {
-    document.getElementById('githubToken').value = result.githubToken;
-  }
+  const result = await chrome.storage.local.get(['assignmentWeeksBefore', 'assignmentWeeksAfter']);
 
   // Load time range settings
   document.getElementById('assignmentWeeksBefore').value = result.assignmentWeeksBefore || 0;
@@ -1133,34 +1130,6 @@ document.getElementById('resetTimeRange').addEventListener('click', async () => 
   }
 });
 
-// API Key toggle visibility
-document.getElementById('toggleApiKeyBtn').addEventListener('click', () => {
-  const input = document.getElementById('githubToken');
-  const eyeIcon = document.getElementById('eyeIcon');
-  const eyeOffIcon = document.getElementById('eyeOffIcon');
-
-  if (input.type === 'password') {
-    input.type = 'text';
-    eyeIcon.style.display = 'none';
-    eyeOffIcon.style.display = 'block';
-  } else {
-    input.type = 'password';
-    eyeIcon.style.display = 'block';
-    eyeOffIcon.style.display = 'none';
-  }
-});
-
-// Save API key
-document.getElementById('githubToken').addEventListener('change', async (e) => {
-  const apiKey = e.target.value.trim();
-  try {
-    await chrome.storage.local.set({ githubToken: apiKey });
-    // Update button text to reflect API key is now configured
-    await updateInsightsButtonText();
-  } catch (error) {
-  }
-});
-
 // AI Router settings
 function updateAIFallbackVisibility() {
   const isAutoMode = document.getElementById('aiModeAuto').checked;
@@ -1490,14 +1459,9 @@ async function initialize() {
 
 // AI Insights functionality
 async function updateInsightsButtonText() {
-  const result = await chrome.storage.local.get(['githubToken']);
+  const hasToken = await window.AIRouter.hasToken();
   const btnText = document.getElementById('generateInsightsBtnText');
-
-  if (result.githubToken) {
-    btnText.textContent = 'Generate AI Insights';
-  } else {
-    btnText.textContent = 'Configure API Key';
-  }
+  btnText.textContent = 'Generate AI Insights';
 }
 
 async function generateAIInsights() {
@@ -1509,45 +1473,16 @@ async function generateAIInsights() {
   const apiToken = await window.AIRouter.getToken();
 
   if (!apiToken) {
-    // Show settings prompt if no API key (no need to refresh data)
-    const settingsPrompt = `
+    // Show message when AI features are unavailable
+    const unavailablePrompt = `
       <div class="insights-loaded" style="text-align: center; padding: 40px 20px;">
-        <h3 style="margin-bottom: 12px; color: #111827;">GitHub Token Required</h3>
+        <h3 style="margin-bottom: 12px; color: #111827;">AI Features Unavailable</h3>
         <p style="margin-bottom: 24px; color: #6B7280; font-size: 14px; max-width: 400px; margin-left: auto; margin-right: auto;">
-          To generate AI-powered insights and study schedules, you need to configure your GitHub token.
-        </p>
-        <button id="openSettingsBtn" style="
-          background: #1e3a5f;
-          color: white;
-          border: none;
-          padding: 12px 24px;
-          border-radius: 8px;
-          font-size: 14px;
-          font-weight: 500;
-          cursor: pointer;
-          transition: background 0.2s;
-        ">
-          Open Settings
-        </button>
-        <p style="margin-top: 16px; font-size: 12px; color: #9CA3AF;">
-          Don't have a token? <a href="https://github.com/settings/tokens" target="_blank" style="color: #1e3a5f; text-decoration: underline;">Get one from GitHub</a>
+          AI-powered insights are not available in this build. Please use the official release from the Chrome Web Store.
         </p>
       </div>
     `;
-    insightsContent.innerHTML = settingsPrompt;
-
-    // Add event listeners to the button
-    const openSettingsBtn = document.getElementById('openSettingsBtn');
-    openSettingsBtn.addEventListener('click', () => {
-      const settingsModal = document.getElementById('settingsModal');
-      settingsModal.classList.add('show');
-    });
-    openSettingsBtn.addEventListener('mouseover', () => {
-      openSettingsBtn.style.background = '#004080';
-    });
-    openSettingsBtn.addEventListener('mouseout', () => {
-      openSettingsBtn.style.background = '#1e3a5f';
-    });
+    insightsContent.innerHTML = unavailablePrompt;
 
     const timestampEl = document.getElementById('insightsTimestamp');
     if (timestampEl) {
@@ -1894,17 +1829,11 @@ document.querySelectorAll('.ai-view-tab').forEach(tab => {
   });
 });
 
-// Update schedule button text based on API key
+// Update schedule button text
 async function updateScheduleButtonText() {
-  const result = await chrome.storage.local.get(['githubToken']);
   const btnText = document.getElementById('generateScheduleBtnText');
-
   if (btnText) {
-    if (result.githubToken) {
-      btnText.textContent = 'Generate Schedule';
-    } else {
-      btnText.textContent = 'Configure API Key';
-    }
+    btnText.textContent = 'Generate Schedule';
   }
 }
 
@@ -1954,23 +1883,16 @@ async function generateAISchedule() {
   const apiToken = await window.AIRouter.getToken();
 
   if (!apiToken) {
-    // Show settings prompt if no API key
-    const settingsPrompt = `
+    // Show message when AI features are unavailable
+    const unavailablePrompt = `
       <div class="insights-loaded" style="text-align: center; padding: 40px 20px;">
-        <h3 style="margin-bottom: 12px; color: #111827;">GitHub Token Required</h3>
+        <h3 style="margin-bottom: 12px; color: #111827;">AI Features Unavailable</h3>
         <p style="margin-bottom: 24px; color: #6B7280; font-size: 14px;">
-          To generate AI-powered schedules, configure your GitHub token in Settings.
+          AI-powered schedules are not available in this build. Please use the official release from the Chrome Web Store.
         </p>
-        <button class="btn-primary" id="openSettingsFromSchedule" style="padding: 10px 20px; font-size: 14px;">
-          Open Settings
-        </button>
       </div>
     `;
-    scheduleContent.innerHTML = settingsPrompt;
-
-    document.getElementById('openSettingsFromSchedule').addEventListener('click', () => {
-      document.getElementById('settingsModal').classList.add('show');
-    });
+    scheduleContent.innerHTML = unavailablePrompt;
 
     return;
   }

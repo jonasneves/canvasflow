@@ -1398,10 +1398,6 @@ async function initialize() {
     });
   }
 
-  // Load saved AI views (insights and schedule)
-  await loadSavedInsights();
-  await loadSavedSchedule();
-
   // Check if we need to open settings (from dashboard)
   const settingsFlag = await chrome.storage.local.get(['openSettingsOnLoad']);
   if (settingsFlag.openSettingsOnLoad) {
@@ -1416,6 +1412,10 @@ async function initialize() {
 
   // Stale-while-revalidate: Load cached data first for instant display
   await loadAssignments();
+
+  // Load saved AI views after assignments are loaded (so AI has data to work with)
+  await loadSavedInsights();
+  await loadSavedSchedule();
 
   // Then trigger background refresh to get fresh data
   refreshCanvasData();

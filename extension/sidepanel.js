@@ -1441,8 +1441,9 @@ async function initialize() {
     });
   }
 
-  // Load saved insights
+  // Load saved AI views (insights and schedule)
   await loadSavedInsights();
+  await loadSavedSchedule();
 
   // Check if we need to open settings (from dashboard)
   const settingsFlag = await chrome.storage.local.get(['openSettingsOnLoad']);
@@ -1861,6 +1862,12 @@ async function loadSavedSchedule() {
         if (regenerateBtn) {
           regenerateBtn.addEventListener('click', generateAISchedule);
         }
+      }
+    } else {
+      // No saved schedule - auto-generate if token is available
+      const hasToken = await window.AIRouter.hasToken();
+      if (hasToken) {
+        generateAISchedule();
       }
     }
   } catch (error) {

@@ -1348,12 +1348,12 @@ async function initialize() {
   refreshCanvasData();
 }
 
-// AI Insights functionality
+// Insights functionality
 async function updateInsightsButtonText() {
   const hasToken = await window.AIRouter.hasToken();
   const btnText = document.getElementById('generateInsightsBtnText');
   if (btnText) {
-    btnText.textContent = 'Generate AI Insights';
+    btnText.textContent = 'Generate Insights';
   }
 }
 
@@ -2031,19 +2031,26 @@ function setupDayToggleListeners() {
   });
 }
 
-// Setup task card click listeners
+// Setup task card click listeners using event delegation
 function setupTaskCardClickListeners() {
-  document.querySelectorAll('.schedule-task-card.clickable').forEach(card => {
-    // Remove existing listeners
-    const newCard = card.cloneNode(true);
-    card.parentNode.replaceChild(newCard, card);
+  const scheduleContent = document.getElementById('scheduleContent');
+  if (!scheduleContent) return;
 
-    newCard.addEventListener('click', function() {
-      const url = this.dataset.url;
+  // Skip if already set up (avoid duplicate listeners)
+  if (scheduleContent.dataset.taskClickListener) return;
+  scheduleContent.dataset.taskClickListener = 'true';
+
+  // Use event delegation - one listener handles all task card clicks
+  scheduleContent.addEventListener('click', function(e) {
+    const card = e.target.closest('.schedule-task-card.clickable');
+    if (card) {
+      const url = card.dataset.url;
       if (url) {
+        e.preventDefault();
+        e.stopPropagation();
         window.open(url, '_blank');
       }
-    });
+    }
   });
 }
 

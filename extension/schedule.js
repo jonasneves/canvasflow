@@ -25,20 +25,12 @@ async function initializeDashboard() {
   // Then trigger background refresh to get fresh data (don't await)
   refreshCanvasData();
 
-  await updateInsightsButtonText();
   await loadSavedInsights();
-}
-
-// Update insights button text
-async function updateInsightsButtonText() {
-  const btnText = document.getElementById('generateInsightsBtnText');
-  btnText.textContent = 'Generate Schedule';
 }
 
 // Event Listeners
 function setupEventListeners() {
-  // Generate insights button
-  document.getElementById('generateInsightsBtn').addEventListener('click', generateAIInsights);
+  // No buttons to set up - schedule is generated from sidepanel
 }
 
 // Load Canvas data from background script
@@ -233,95 +225,6 @@ async function loadSavedInsights() {
       }
     }
   } catch (error) {
-  }
-}
-
-// AI Insights
-async function generateAIInsights() {
-  const btn = document.getElementById('generateInsightsBtn');
-  const insightsContent = document.getElementById('insightsContent');
-
-  // Check if API key is set first (embedded or user-provided)
-  const apiToken = await window.AIRouter.getToken();
-
-  if (!apiToken) {
-    // Show message when AI features are unavailable
-    const unavailablePrompt = `
-      <div class="insights-loaded" style="text-align: center; padding: 60px 20px;">
-        <h3 style="margin-bottom: 16px; color: #111827; font-size: 24px;">AI Features Unavailable</h3>
-        <p style="margin-bottom: 32px; color: #6B7280; font-size: 16px; max-width: 500px; margin-left: auto; margin-right: auto; line-height: 1.6;">
-          AI-powered insights are not available in this build. Please use the official release from the Chrome Web Store.
-        </p>
-      </div>
-    `;
-    insightsContent.innerHTML = unavailablePrompt;
-
-    return;
-  }
-
-  // Refresh Canvas data to ensure we have the latest assignments
-  btn.disabled = true;
-  btn.classList.add('loading');
-  insightsContent.innerHTML = `
-    <div class="insights-loading">
-      <div class="spinner"></div>
-      <p>Refreshing Canvas data...</p>
-    </div>
-  `;
-
-  try {
-    await refreshCanvasData();
-  } catch (error) {
-    // Continue anyway with cached data
-  }
-
-  // Generate insights with AI (data already refreshed above)
-  insightsContent.innerHTML = `
-    <div class="insights-loading">
-      <div class="spinner"></div>
-      <p>Analyzing your assignments with AI...</p>
-    </div>
-  `;
-
-  try {
-    const assignmentsData = prepareAssignmentsForAI();
-    const insights = await callClaudeWithStructuredOutput(apiToken, assignmentsData);
-
-    const formattedInsights = formatStructuredInsights(insights);
-    insightsContent.innerHTML = `
-      <div class="insights-loaded fade-in">
-        ${formattedInsights}
-      </div>
-    `;
-
-    // Setup event listeners AFTER HTML is inserted into DOM
-    setupDayToggleListeners();
-    setupTaskCardClickListeners();
-
-    // Save insights and timestamp to storage (dashboard-specific)
-    const timestamp = Date.now();
-    await chrome.storage.local.set({
-      dashboardInsights: formattedInsights,
-      dashboardInsightsTimestamp: timestamp
-    });
-
-    // Update timestamp display
-    updateInsightsTimestamp(timestamp);
-
-  } catch (error) {
-    const errorHtml = `
-      <div class="insights-error">
-        <strong>Failed to generate insights:</strong> ${escapeHtml(error.message)}
-        <p style="margin-top: 8px; font-size: 12px;">Check your GitHub token in settings.</p>
-      </div>
-    `;
-    insightsContent.innerHTML = errorHtml;
-
-    // Don't save error state to storage - let user retry
-    // updateInsightsTimestamp(null); // Hide timestamp for errors
-  } finally {
-    btn.classList.remove('loading');
-    btn.disabled = false;
   }
 }
 

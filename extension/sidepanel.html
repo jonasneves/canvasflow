@@ -29,7 +29,7 @@
 
   <div class="tab-nav">
     <button class="tab-button active" data-tab="canvas-data">Dashboard</button>
-    <button class="tab-button" data-tab="ai-dashboard">AI Insights</button>
+    <button class="tab-button" data-tab="ai-dashboard">Study Planner</button>
   </div>
 
   <!-- Canvas URL Configuration Banner -->
@@ -106,19 +106,18 @@
     <div class="ai-view-content" id="listViewContent">
       <!-- Header Card (matching calendar view) -->
       <div style="background: white; padding: 16px; border-radius: 12px; border: 1px solid #E5E7EB; margin-bottom: 16px; box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);">
-        <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 12px;">
+        <div style="display: flex; align-items: center; gap: 12px;">
           <div style="background: linear-gradient(135deg, #1e3a5f 0%, #2c4f7c 100%); width: 40px; height: 40px; border-radius: 10px; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
             <i data-lucide="sparkles" style="width: 20px; height: 20px; color: white;"></i>
           </div>
           <div style="flex: 1;">
-            <h3 style="margin: 0; color: #111827; font-size: 15px; font-weight: 600;">AI Insights</h3>
+            <h3 style="margin: 0; color: #111827; font-size: 15px; font-weight: 600;">Insights</h3>
             <p style="margin: 2px 0 0 0; font-size: 12px; color: #6B7280;">Flow to that A+ with smart recommendations</p>
           </div>
+          <button class="btn-icon" id="generateInsightsBtn" title="Refresh insights" style="padding: 8px; background: #F3F4F6; border: 1px solid #E5E7EB; border-radius: 8px;">
+            <i data-lucide="refresh-cw" style="width: 16px; height: 16px; color: #374151;"></i>
+          </button>
         </div>
-        <button class="btn-primary" id="generateInsightsBtn" style="width: 100%; padding: 10px 16px; font-size: 14px; display: flex; align-items: center; justify-content: center; gap: 8px;">
-          <i data-lucide="zap" style="width: 16px; height: 16px;"></i>
-          <span id="generateInsightsBtnText">Generate AI Insights</span>
-        </button>
       </div>
 
       <!-- Insights Content -->
@@ -135,7 +134,7 @@
     <div class="ai-view-content" id="calendarViewContent" style="display: none;">
       <!-- Header Card (matching schedule.html) -->
       <div style="background: white; padding: 16px; border-radius: 12px; border: 1px solid #E5E7EB; margin-bottom: 16px; box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);">
-        <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 12px;">
+        <div style="display: flex; align-items: center; gap: 12px;">
           <div style="background: linear-gradient(135deg, #1e3a5f 0%, #2c4f7c 100%); width: 40px; height: 40px; border-radius: 10px; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
             <i data-lucide="calendar" style="width: 20px; height: 20px; color: white;"></i>
           </div>
@@ -143,11 +142,10 @@
             <h3 style="margin: 0; color: #111827; font-size: 15px; font-weight: 600;">This Week's Schedule</h3>
             <p style="margin: 2px 0 0 0; font-size: 12px; color: #6B7280;">Stay in the flow - master your deadlines!</p>
           </div>
+          <button class="btn-icon" id="generateScheduleBtn" title="Refresh schedule" style="padding: 8px; background: #F3F4F6; border: 1px solid #E5E7EB; border-radius: 8px;">
+            <i data-lucide="refresh-cw" style="width: 16px; height: 16px; color: #374151;"></i>
+          </button>
         </div>
-        <button class="btn-primary" id="generateScheduleBtn" style="width: 100%; padding: 10px 16px; font-size: 14px; display: flex; align-items: center; justify-content: center; gap: 8px;">
-          <i data-lucide="zap" style="width: 16px; height: 16px;"></i>
-          <span id="generateScheduleBtnText">Generate Schedule</span>
-        </button>
       </div>
 
       <!-- Schedule Content -->

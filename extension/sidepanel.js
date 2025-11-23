@@ -495,6 +495,41 @@ async function loadAssignments() {
     if (response && response.success) {
       allAssignments = response.data.allAssignments || [];
 
+      // Check if Canvas has been authenticated (has data from Canvas)
+      const hasCanvasData = response.data.lastUpdate || response.data.userProfile || response.data.courses?.length > 0;
+
+      // If no Canvas data and no assignments, show authentication prompt
+      if (!hasCanvasData && allAssignments.length === 0) {
+        assignmentsList.innerHTML = `
+          <div class="empty-state">
+            <div class="empty-state-icon">
+              <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#3B82F6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
+                <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
+              </svg>
+            </div>
+            <div class="empty-state-text">Canvas Not Connected</div>
+            <div style="font-size: 13px; margin-top: 12px; line-height: 1.6; color: #6B7280; max-width: 320px;">
+              <p style="margin: 0 0 12px 0;">To see your assignments, please open a Canvas page to authenticate and sync your data.</p>
+              <p style="margin: 0; font-weight: 500;">Steps:</p>
+              <ol style="margin: 8px 0 0 0; padding-left: 20px; text-align: left;">
+                <li style="margin-bottom: 6px;">Open your Canvas dashboard or any Canvas page</li>
+                <li style="margin-bottom: 6px;">Log in to Canvas if you haven't already</li>
+                <li style="margin-bottom: 0;">CanvasFlow will automatically sync your assignments</li>
+              </ol>
+            </div>
+          </div>
+        `;
+        // Initialize Lucide icons only in the assignmentsList container
+        initializeLucide(assignmentsList);
+
+        // Set summary cards to show dashes instead of zeros
+        document.getElementById('overdueCount').textContent = '-';
+        document.getElementById('dueTodayCount').textContent = '-';
+        document.getElementById('upcomingCount').textContent = '-';
+        return;
+      }
+
       // Calculate summary counts
       const now = new Date();
       const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate());

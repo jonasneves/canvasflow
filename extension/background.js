@@ -1,3 +1,4 @@
+importScripts('./dashboard-integration.js');
 // CanvasFlow - Background Service Worker
 
 // Store Canvas data

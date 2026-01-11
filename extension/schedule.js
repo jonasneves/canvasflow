@@ -62,7 +62,7 @@ async function refreshCanvasData() {
   }
 }
 
-// Helper to escape HTML
+// Escape HTML to prevent XSS
 function escapeHtml(text) {
   const div = document.createElement('div');
   div.textContent = text;
@@ -257,44 +257,34 @@ function prepareAssignmentsForAI() {
 }
 
 
-// Helper function to find assignment URL by fuzzy matching name with scoring
+// Find assignment URL by fuzzy matching name
 function findAssignmentUrl(assignmentName) {
   if (!canvasData.allAssignments || canvasData.allAssignments.length === 0) {
     return null;
   }
 
   const cleanName = assignmentName.toLowerCase().trim();
-
-  // Calculate match score for each assignment
   const scored = canvasData.allAssignments
     .filter(a => a.name && a.url)
     .map(assignment => {
       const aName = assignment.name.toLowerCase().trim();
       let score = 0;
 
-      // Exact match = 100 points
       if (aName === cleanName) {
         score = 100;
-      }
-      // One contains the other = 80 points
-      else if (aName.includes(cleanName) || cleanName.includes(aName)) {
+      } else if (aName.includes(cleanName) || cleanName.includes(aName)) {
         score = 80;
-      }
-      // Word-based matching with high threshold
-      else {
+      } else {
         const aiWords = cleanName.split(/\s+/).filter(w => w.length > 3);
         const assignmentWords = aName.split(/\s+/).filter(w => w.length > 3);
 
         if (aiWords.length > 0 && assignmentWords.length > 0) {
-          // Count how many AI words appear in the assignment name
           const matchingWords = aiWords.filter(word =>
             assignmentWords.some(aWord => aWord.includes(word) || word.includes(aWord))
           );
-
-          // Require at least 70% of words to match for medium confidence
           const matchRatio = matchingWords.length / aiWords.length;
           if (matchRatio >= 0.7) {
-            score = matchRatio * 60; // Max 60 points for word matching
+            score = matchRatio * 60;
           }
         }
       }
@@ -304,7 +294,6 @@ function findAssignmentUrl(assignmentName) {
     .filter(item => item.score > 0)
     .sort((a, b) => b.score - a.score);
 
-  // Only return if we have a confident match (score >= 70)
   if (scored.length > 0 && scored[0].score >= 70) {
     return scored[0].assignment.url;
   }
@@ -388,4 +377,3 @@ function formatStructuredInsights(insights) {
     </div>
   `;
 }
-

@@ -937,10 +937,6 @@
       vertical-align: middle;
     }
 
-    @keyframes spin {
-      to { transform: rotate(360deg); }
-    }
-
     /* Scrollbar */
     ::-webkit-scrollbar {
       width: 8px;

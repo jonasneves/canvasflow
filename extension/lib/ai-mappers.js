@@ -105,35 +105,6 @@ window.AIMappers.mapWorkloadToColor = function(workloadScore) {
 };
 
 /**
- * Validates that a score is within valid range
- * @param {number} score - Score to validate
- * @param {number} min - Minimum value (default 0)
- * @param {number} max - Maximum value (default 3)
- * @returns {boolean} True if valid
- */
-window.AIMappers.isValidScore = function(score, min = 0, max = 3) {
-  return typeof score === 'number' && score >= min && score <= max && Number.isInteger(score);
-};
-
-/**
- * Validates urgency score specifically
- * @param {number} urgencyScore - Score to validate
- * @returns {boolean} True if valid (0-3)
- */
-window.AIMappers.isValidUrgencyScore = function(urgencyScore) {
-  return window.AIMappers.isValidScore(urgencyScore, 0, 3);
-};
-
-/**
- * Validates intensity score specifically
- * @param {number} intensityScore - Score to validate
- * @returns {boolean} True if valid (0-3)
- */
-window.AIMappers.isValidIntensityScore = function(intensityScore) {
-  return window.AIMappers.isValidScore(intensityScore, 0, 3);
-};
-
-/**
  * Formats a time block from structured start hour and duration
  * @param {number} startHour - Starting hour in 24-hour format (0-23)
  * @param {number} durationHours - Duration in hours (supports decimals like 1.5)
@@ -158,4 +129,3 @@ window.AIMappers.formatTimeBlock = function(startHour, durationHours) {
 
   return `${formatTime(startHour)} - ${formatTime(endHour, endMinutes)}`;
 };
-

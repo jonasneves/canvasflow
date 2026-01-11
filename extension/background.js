@@ -175,6 +175,48 @@ function sendMessageToContent(tabId, message) {
   });
 }
 
+// Refresh Canvas data from a tab
+async function refreshCanvasDataFromTab(tab) {
+  await chrome.scripting.executeScript({
+    target: { tabId: tab.id },
+    files: ['content.js']
+  });
+  await new Promise(resolve => setTimeout(resolve, 500));
+
+  const [
+    coursesResponse,
+    allAssignmentsResponse,
+    calendarEventsResponse,
+    upcomingEventsResponse,
+    userProfileResponse
+  ] = await Promise.all([
+    sendMessageToContent(tab.id, { type: 'FETCH_COURSES' }),
+    sendMessageToContent(tab.id, { type: 'FETCH_ALL_ASSIGNMENTS' }),
+    sendMessageToContent(tab.id, { type: 'FETCH_CALENDAR_EVENTS' }),
+    sendMessageToContent(tab.id, { type: 'FETCH_UPCOMING_EVENTS' }),
+    sendMessageToContent(tab.id, { type: 'FETCH_USER_PROFILE' })
+  ]);
+
+  const data = {
+    courses: coursesResponse?.success ? coursesResponse.data : [],
+    allAssignments: allAssignmentsResponse?.success ? allAssignmentsResponse.data : [],
+    calendarEvents: calendarEventsResponse?.success ? calendarEventsResponse.data : [],
+    upcomingEvents: upcomingEventsResponse?.success ? upcomingEventsResponse.data : [],
+    userProfile: userProfileResponse?.success ? userProfileResponse.data : null,
+    assignments: {}
+  };
+
+  if (data.courses.length > 0) canvasData.courses = data.courses;
+  if (data.allAssignments.length > 0) canvasData.allAssignments = data.allAssignments;
+  if (data.calendarEvents.length > 0) canvasData.calendarEvents = data.calendarEvents;
+  if (data.upcomingEvents.length > 0) canvasData.upcomingEvents = data.upcomingEvents;
+  if (data.userProfile) canvasData.userProfile = data.userProfile;
+  canvasData.lastUpdate = new Date().toISOString();
+
+  saveCanvasDataToStorage();
+  return data;
+}
+
 // Handle messages from content scripts and popup
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
   if (request.type === 'CANVAS_DATA') {
@@ -244,68 +286,9 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
 
   if (request.type === 'REFRESH_DATA') {
     getCanvasTab()
-      .then(async (tab) => {
-        try {
-          await chrome.scripting.executeScript({
-            target: { tabId: tab.id },
-            files: ['content.js']
-          });
-          await new Promise(resolve => setTimeout(resolve, 500));
-
-          // Fetch all data types in parallel
-          const [
-            coursesResponse,
-            allAssignmentsResponse,
-            calendarEventsResponse,
-            upcomingEventsResponse,
-            userProfileResponse
-          ] = await Promise.all([
-            sendMessageToContent(tab.id, { type: 'FETCH_COURSES' }),
-            sendMessageToContent(tab.id, { type: 'FETCH_ALL_ASSIGNMENTS' }),
-            sendMessageToContent(tab.id, { type: 'FETCH_CALENDAR_EVENTS' }),
-            sendMessageToContent(tab.id, { type: 'FETCH_UPCOMING_EVENTS' }),
-            sendMessageToContent(tab.id, { type: 'FETCH_USER_PROFILE' })
-          ]);
-
-          // Build comprehensive response
-          const data = {
-            courses: coursesResponse?.success ? coursesResponse.data : [],
-            allAssignments: allAssignmentsResponse?.success ? allAssignmentsResponse.data : [],
-            calendarEvents: calendarEventsResponse?.success ? calendarEventsResponse.data : [],
-            upcomingEvents: upcomingEventsResponse?.success ? upcomingEventsResponse.data : [],
-            userProfile: userProfileResponse?.success ? userProfileResponse.data : null,
-            assignments: {} // Legacy format for backwards compatibility
-          };
-
-          // Update in-memory cache
-          if (data.courses.length > 0) {
-            canvasData.courses = data.courses;
-          }
-          if (data.allAssignments.length > 0) {
-            canvasData.allAssignments = data.allAssignments;
-          }
-          if (data.calendarEvents.length > 0) {
-            canvasData.calendarEvents = data.calendarEvents;
-          }
-          if (data.upcomingEvents.length > 0) {
-            canvasData.upcomingEvents = data.upcomingEvents;
-          }
-          if (data.userProfile) {
-            canvasData.userProfile = data.userProfile;
-          }
-          canvasData.lastUpdate = new Date().toISOString();
-
-          // Save to persistent storage
-          saveCanvasDataToStorage();
-
-          sendResponse({ success: true, data: data });
-        } catch (error) {
-          sendResponse({ success: false, error: error.message });
-        }
-      })
-      .catch(error => {
-        sendResponse({ success: false, error: error.message });
-      });
+      .then(tab => refreshCanvasDataFromTab(tab))
+      .then(data => sendResponse({ success: true, data }))
+      .catch(error => sendResponse({ success: false, error: error.message }));
     return true;
   }
 
@@ -394,8 +377,6 @@ chrome.storage.onChanged.addListener((changes, namespace) => {
     const newUrl = changes.canvasUrl.newValue;
 
     if (oldUrl !== newUrl && newUrl) {
-      console.log(`Canvas URL changed from ${oldUrl} to ${newUrl} - refreshing data...`);
-
       // Clear existing data since we're switching Canvas instances
       canvasData = {
         courses: [],
@@ -410,60 +391,9 @@ chrome.storage.onChanged.addListener((changes, namespace) => {
         lastUpdate: null
       };
 
-      // Trigger automatic data refresh
       getCanvasTab()
-        .then(async (tab) => {
-          try {
-            await chrome.scripting.executeScript({
-              target: { tabId: tab.id },
-              files: ['content.js']
-            });
-            await new Promise(resolve => setTimeout(resolve, 500));
-
-            // Fetch all data types in parallel
-            const [
-              coursesResponse,
-              allAssignmentsResponse,
-              calendarEventsResponse,
-              upcomingEventsResponse,
-              userProfileResponse
-            ] = await Promise.all([
-              sendMessageToContent(tab.id, { type: 'FETCH_COURSES' }),
-              sendMessageToContent(tab.id, { type: 'FETCH_ALL_ASSIGNMENTS' }),
-              sendMessageToContent(tab.id, { type: 'FETCH_CALENDAR_EVENTS' }),
-              sendMessageToContent(tab.id, { type: 'FETCH_UPCOMING_EVENTS' }),
-              sendMessageToContent(tab.id, { type: 'FETCH_USER_PROFILE' })
-            ]);
-
-            // Update in-memory cache
-            if (coursesResponse?.success && coursesResponse.data.length > 0) {
-              canvasData.courses = coursesResponse.data;
-            }
-            if (allAssignmentsResponse?.success && allAssignmentsResponse.data.length > 0) {
-              canvasData.allAssignments = allAssignmentsResponse.data;
-            }
-            if (calendarEventsResponse?.success && calendarEventsResponse.data.length > 0) {
-              canvasData.calendarEvents = calendarEventsResponse.data;
-            }
-            if (upcomingEventsResponse?.success && upcomingEventsResponse.data.length > 0) {
-              canvasData.upcomingEvents = upcomingEventsResponse.data;
-            }
-            if (userProfileResponse?.success && userProfileResponse.data) {
-              canvasData.userProfile = userProfileResponse.data;
-            }
-            canvasData.lastUpdate = new Date().toISOString();
-
-            // Save to persistent storage
-            saveCanvasDataToStorage();
-
-            console.log(`Data refreshed successfully from new Canvas instance: ${newUrl}`);
-          } catch (error) {
-            console.error(`Failed to refresh data after Canvas URL change: ${error.message}`);
-          }
-        })
-        .catch(error => {
-          console.error(`Failed to get Canvas tab for auto-refresh: ${error.message}`);
-        });
+        .then(tab => refreshCanvasDataFromTab(tab))
+        .catch(error => console.error('Failed to refresh after URL change:', error.message));
     }
   }
 });

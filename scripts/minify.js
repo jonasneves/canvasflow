@@ -54,7 +54,7 @@ const JS_FILES = [
     'lib/ai-router.js',
     'lib/ai-schemas-dashboard.js',
     'lib/ai-schemas-sidepanel.js',
-    'lib/claude-client.js',
+    'lib/ai-client.js',
     'lib/lucide-init.js'
 ];
 

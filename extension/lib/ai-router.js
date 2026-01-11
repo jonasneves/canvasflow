@@ -235,4 +235,3 @@ window.AIRouter.formatFailureTrace = function(failures) {
   if (!failures || failures.length === 0) return '';
   return failures.map(f => `${f.modelName} (${f.status})`).join(' → ');
 };
-

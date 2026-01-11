@@ -254,7 +254,7 @@ async function refreshCanvasDataFromTab(tab) {
     if (data.userProfile) canvasData.userProfile = data.userProfile;
     canvasData.lastUpdate = new Date().toISOString();
 
-    saveCanvasDataToStorage();
+    await saveCanvasDataToStorage();
 
     return { data, failures, partial: failures.length > 0 };
   } finally {

@@ -254,8 +254,7 @@ function renderAssignments() {
     return;
   }
 
-  // If no assignments at all, show a friendly "no assignments" message instead of configuration error
-  // The configuration error is only shown in loadAssignments() when response.success is false
+  // If no assignments at all, show a friendly message with refresh option
   if (allAssignments.length === 0) {
     assignmentsList.innerHTML = `
       <div class="empty-state">
@@ -267,12 +266,16 @@ function renderAssignments() {
         </div>
         <div class="empty-state-text">No assignments found</div>
         <div style="font-size: 13px; margin-top: 12px; color: #6B7280;">
-          Either you have no assignments or they're all completed. Great job!
+          Either you have no assignments or they're all completed.
         </div>
+        <button class="primary" id="refreshAssignmentsBtn" style="margin-top: 16px; display: inline-flex; align-items: center; gap: 6px; padding: 8px 16px; font-size: 13px;">
+          <i data-lucide="refresh-cw" style="width: 16px; height: 16px;"></i>
+          <span>Refresh</span>
+        </button>
       </div>
     `;
-    // Initialize Lucide icons only in the assignmentsList container
     initializeLucide(assignmentsList);
+    document.getElementById('refreshAssignmentsBtn')?.addEventListener('click', () => refreshCanvasData());
     return;
   }
 
@@ -882,27 +885,28 @@ async function openCanvasAndSync() {
 
     if (response?.success) {
       await loadAssignments();
+      // If still no data after first attempt, retry after a delay
+      if (allAssignments.length === 0) {
+        assignmentsList.innerHTML = '<div class="loading"><span class="spinner"></span> Waiting for Canvas to load...</div>';
+        await new Promise(resolve => setTimeout(resolve, 2000));
+        await refreshCanvasData();
+      }
+    } else if (response?.error === 'Refresh already in progress') {
+      await new Promise(resolve => setTimeout(resolve, 2000));
+      await loadAssignments();
     } else {
       throw new Error(response?.error || 'Failed to open Canvas');
     }
   } catch (error) {
-    assignmentsList.innerHTML = `
-      <div class="empty-state">
-        <div class="empty-state-icon">
-          <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#DC2626" stroke-width="2">
-            <circle cx="12" cy="12" r="10"></circle>
-            <line x1="12" y1="8" x2="12" y2="12"></line>
-            <line x1="12" y1="16" x2="12.01" y2="16"></line>
-          </svg>
-        </div>
-        <div class="empty-state-text">${escapeHtml(error.message)}</div>
-      </div>
-    `;
+    showConnectionError(assignmentsList);
   }
 }
 
 // Refresh Canvas data (requires existing Canvas tab)
 async function refreshCanvasData() {
+  const assignmentsList = document.getElementById('assignmentsList');
+  assignmentsList.innerHTML = '<div class="loading"><span class="spinner"></span> Loading assignments...</div>';
+
   try {
     const response = await new Promise((resolve) => {
       chrome.runtime.sendMessage({ type: 'REFRESH_DATA' }, resolve);
@@ -913,9 +917,12 @@ async function refreshCanvasData() {
       if (response.partial) {
         console.warn('Some data failed to load:', response.failures);
       }
+    } else {
+      await loadAssignments();
     }
   } catch (error) {
     console.error('Refresh failed:', error);
+    await loadAssignments();
   }
 }
 
@@ -1443,8 +1450,16 @@ async function initialize() {
     }
   }
 
-  // Load cached data first for instant display
-  await loadAssignments();
+  // Check if Canvas tab is available for fresh data
+  const canvasTabAvailable = await hasCanvasTab();
+
+  if (canvasTabAvailable) {
+    // Canvas tab open - fetch fresh data before displaying
+    await refreshCanvasData();
+  } else {
+    // No Canvas tab - show cached data
+    await loadAssignments();
+  }
 
   // Load saved AI views after assignments are loaded
   await loadSavedInsights();
@@ -1456,12 +1471,6 @@ async function initialize() {
     if (hasToken) {
       await autoGenerateIfStale();
     }
-  }
-
-  // Only refresh if Canvas tab is already open (don't prompt user yet)
-  const canvasTabAvailable = await hasCanvasTab();
-  if (canvasTabAvailable) {
-    refreshCanvasData();
   }
 }
 

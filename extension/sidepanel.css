@@ -79,15 +79,32 @@
       display: block;
     }
 
-    /* Override for grades toggle button (should be gray, not white) */
+    /* Grades toggle button */
+    #toggleGradesBtn {
+      width: 28px;
+      height: 28px;
+      background: transparent;
+      border: 1px solid #E5E7EB;
+      position: relative;
+      padding: 0;
+    }
+
+    #toggleGradesBtn:hover {
+      background: #F3F4F6;
+    }
+
     #toggleGradesBtn svg {
+      width: 16px;
+      height: 16px;
       stroke: #6B7280;
-      color: #6B7280;
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
     }
 
     #toggleGradesBtn:hover svg {
       stroke: #374151;
-      color: #374151;
     }
 
     /* Override for AI view refresh buttons (should be gray on light background) */

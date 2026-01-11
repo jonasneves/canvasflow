@@ -1222,64 +1222,28 @@ function toggleFocusMode() {
 // Focus Mode button click handler
 document.getElementById('focusModeBtn').addEventListener('click', toggleFocusMode);
 
-// Save time range settings
-document.getElementById('saveTimeRange').addEventListener('click', async () => {
-  const weeksBefore = parseInt(document.getElementById('assignmentWeeksBefore').value);
-  const weeksAfter = parseInt(document.getElementById('assignmentWeeksAfter').value);
+// Auto-save time range settings on change
+async function saveTimeRangeSetting(field, value) {
+  const parsed = parseInt(value);
+  if (isNaN(parsed)) return;
 
-  if (isNaN(weeksBefore) || weeksBefore < 0 || weeksBefore > 52) {
-    showStatusMessage('timeRangeStatus', 'Weeks before must be between 0 and 52', 'error');
-    return;
-  }
+  const min = field === 'weeksBefore' ? 0 : 1;
+  const clamped = Math.max(min, Math.min(52, parsed));
 
-  if (isNaN(weeksAfter) || weeksAfter < 1 || weeksAfter > 52) {
-    showStatusMessage('timeRangeStatus', 'Weeks after must be between 1 and 52', 'error');
-    return;
-  }
+  assignmentTimeRange[field] = clamped;
+  await chrome.storage.local.set({
+    assignmentWeeksBefore: assignmentTimeRange.weeksBefore,
+    assignmentWeeksAfter: assignmentTimeRange.weeksAfter
+  });
+  renderAssignments();
+}
 
-  try {
-    await chrome.storage.local.set({
-      assignmentWeeksBefore: weeksBefore,
-      assignmentWeeksAfter: weeksAfter
-    });
-
-    // Update global state
-    assignmentTimeRange = { weeksBefore, weeksAfter };
-
-    showStatusMessage('timeRangeStatus', '✓ Saved', 'success');
-
-    // Re-render assignments with new time range
-    renderAssignments();
-  } catch (error) {
-    showStatusMessage('timeRangeStatus', '✗ Save failed', 'error');
-  }
+document.getElementById('assignmentWeeksBefore').addEventListener('change', (e) => {
+  saveTimeRangeSetting('weeksBefore', e.target.value);
 });
 
-// Reset time range to defaults
-document.getElementById('resetTimeRange').addEventListener('click', async () => {
-  const defaultWeeksBefore = 0;
-  const defaultWeeksAfter = 2;
-
-  try {
-    await chrome.storage.local.set({
-      assignmentWeeksBefore: defaultWeeksBefore,
-      assignmentWeeksAfter: defaultWeeksAfter
-    });
-
-    // Update UI inputs
-    document.getElementById('assignmentWeeksBefore').value = defaultWeeksBefore;
-    document.getElementById('assignmentWeeksAfter').value = defaultWeeksAfter;
-
-    // Update global state
-    assignmentTimeRange = { weeksBefore: defaultWeeksBefore, weeksAfter: defaultWeeksAfter };
-
-    showStatusMessage('timeRangeStatus', '✓ Reset to defaults', 'success');
-
-    // Re-render assignments with new time range
-    renderAssignments();
-  } catch (error) {
-    showStatusMessage('timeRangeStatus', '✗ Reset failed', 'error');
-  }
+document.getElementById('assignmentWeeksAfter').addEventListener('change', (e) => {
+  saveTimeRangeSetting('weeksAfter', e.target.value);
 });
 
 // Load time range settings

@@ -184,7 +184,7 @@
         <div class="settings-card">
           <div class="settings-card-title">Assignment Time Range</div>
           <p style="font-size: 12px; color: #6B7280; margin: 0 0 12px 0;">
-            Control the time window for which assignments are displayed
+            Control the time window for displayed assignments
           </p>
           <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
             <div>
@@ -196,42 +196,23 @@
               <input type="number" id="assignmentWeeksAfter" min="1" max="52" value="2" style="width: 100%; padding: 8px 12px; border: 1px solid #D1D5DB; border-radius: 6px; font-size: 13px;">
             </div>
           </div>
-          <div style="display: flex; gap: 8px; margin-top: 12px;">
-            <button id="saveTimeRange" style="flex: 1; padding: 8px 16px; background: #1e3a5f; color: white; border: none; border-radius: 6px; font-size: 13px; cursor: pointer; font-weight: 500;">
-              Save Time Range
-            </button>
-            <button id="resetTimeRange" style="padding: 8px 16px; background: #F3F4F6; color: #374151; border: 1px solid #E5E7EB; border-radius: 6px; font-size: 13px; cursor: pointer; font-weight: 500;">
-              Reset
-            </button>
-          </div>
-          <div class="status-message" id="timeRangeStatus"></div>
         </div>
 
-        <!-- Course Visibility Card -->
+        <!-- Display Preferences Card -->
         <div class="settings-card">
-          <div class="settings-card-title">Course Visibility</div>
-          <p style="font-size: 12px; color: #6B7280; margin: 0 0 12px 0;">
-            Control which courses appear in your dashboard
-          </p>
-          <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 12px;">
-            <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; flex: 1;">
+          <div class="settings-card-title">Display Preferences</div>
+          <div style="display: flex; flex-direction: column; gap: 12px;">
+            <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
               <input type="checkbox" id="hideEndedTermsToggle" checked style="cursor: pointer;">
               <span style="font-size: 13px; color: #374151;">Auto-hide courses from past semesters</span>
             </label>
-          </div>
-          <div id="coursesList" style="max-height: 200px; overflow-y: auto; border: 1px solid #E5E7EB; border-radius: 6px; padding: 8px;">
-            <div style="font-size: 12px; color: #9CA3AF; text-align: center; padding: 8px;">Loading courses...</div>
-          </div>
-        </div>
-
-        <!-- Auto-Refresh Card -->
-        <div class="settings-card">
-          <div class="settings-card-title">Auto-Refresh</div>
-          <div style="display: flex; align-items: center; gap: 8px;">
-            <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; flex: 1;">
+            <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
               <input type="checkbox" id="autoRefreshToggle" style="cursor: pointer;">
-              <span style="font-size: 13px; color: #374151;">Automatically refresh data every 30 minutes</span>
+              <span style="font-size: 13px; color: #374151;">Auto-refresh data every 30 minutes</span>
             </label>
+          </div>
+          <div id="coursesList" style="max-height: 180px; overflow-y: auto; border: 1px solid #E5E7EB; border-radius: 6px; padding: 8px; margin-top: 12px;">
+            <div style="font-size: 12px; color: #9CA3AF; text-align: center; padding: 8px;">Loading courses...</div>
           </div>
         </div>
 

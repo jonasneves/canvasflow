@@ -20,13 +20,17 @@
   "background": {
     "service_worker": "background.js"
   },
-  "content_scripts": [{
-    "matches": [
-      "*://*.edu/*"
-    ],
-    "js": ["content.js"],
-    "run_at": "document_idle"
-  }],
+  "content_scripts": [
+    {
+      "matches": [
+        "*://*.edu/*"
+      ],
+      "js": [
+        "content.js"
+      ],
+      "run_at": "document_idle"
+    }
+  ],
   "action": {
     "default_title": "CanvasFlow - Canvas Dashboard"
   },
@@ -40,10 +44,17 @@
   },
   "web_accessible_resources": [
     {
-      "resources": ["icon-48.png"],
+      "resources": [
+        "icon-48.png"
+      ],
       "matches": [
         "*://*.edu/*"
       ]
     }
-  ]
+  ],
+  "externally_connectable": {
+    "ids": [
+      "*"
+    ]
+  }
 }

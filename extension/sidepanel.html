@@ -207,6 +207,23 @@
           <div class="status-message" id="timeRangeStatus"></div>
         </div>
 
+        <!-- Course Visibility Card -->
+        <div class="settings-card">
+          <div class="settings-card-title">Course Visibility</div>
+          <p style="font-size: 12px; color: #6B7280; margin: 0 0 12px 0;">
+            Control which courses appear in your dashboard
+          </p>
+          <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 12px;">
+            <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; flex: 1;">
+              <input type="checkbox" id="hideEndedTermsToggle" checked style="cursor: pointer;">
+              <span style="font-size: 13px; color: #374151;">Auto-hide courses from past semesters</span>
+            </label>
+          </div>
+          <div id="coursesList" style="max-height: 200px; overflow-y: auto; border: 1px solid #E5E7EB; border-radius: 6px; padding: 8px;">
+            <div style="font-size: 12px; color: #9CA3AF; text-align: center; padding: 8px;">Loading courses...</div>
+          </div>
+        </div>
+
         <!-- Auto-Refresh Card -->
         <div class="settings-card">
           <div class="settings-card-title">Auto-Refresh</div>

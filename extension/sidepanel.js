@@ -1,11 +1,37 @@
 // Global state
 let allAssignments = [];
+let allCourses = [];
+let hiddenCourseIds = [];
+let hideEndedTerms = true; // Auto-hide courses from past terms
 let currentFilter = 'all';
 let autoRefreshInterval = null;
 let assignmentTimeRange = { weeksBefore: 0, weeksAfter: 2 }; // Default: Show next 2 weeks
 let showGrades = false; // Default to hidden
 let localCompletedIds = []; // Track locally completed assignments
 let focusModeEnabled = false; // Focus Mode: Show only top 3 priorities
+
+// Filter courses to only show current semester
+function getVisibleCourseIds() {
+  const now = new Date();
+  return allCourses
+    .filter(course => {
+      // Check if manually hidden
+      if (hiddenCourseIds.includes(course.id)) return false;
+      // Check if term has ended (auto-hide old semesters)
+      if (hideEndedTerms && course.termEndAt) {
+        const termEnd = new Date(course.termEndAt);
+        if (termEnd < now) return false;
+      }
+      return true;
+    })
+    .map(course => course.id);
+}
+
+// Filter assignments by visible courses
+function filterAssignmentsByVisibleCourses(assignments) {
+  const visibleIds = getVisibleCourseIds();
+  return assignments.filter(a => visibleIds.includes(a.courseId));
+}
 
 // Canvas URL patterns - matches background.js
 const CANVAS_URL_PATTERNS = [
@@ -501,7 +527,12 @@ async function loadAssignments() {
     });
 
     if (response && response.success) {
-      allAssignments = response.data.allAssignments || [];
+      // Store courses for filtering
+      allCourses = response.data.courses || [];
+
+      // Store and filter assignments by visible courses
+      const rawAssignments = response.data.allAssignments || [];
+      allAssignments = filterAssignmentsByVisibleCourses(rawAssignments);
 
       // Check if Canvas has been authenticated (has data from Canvas)
       const hasCanvasData = response.data.lastUpdate || response.data.userProfile || response.data.courses?.length > 0;
@@ -701,6 +732,9 @@ settingsBtn.addEventListener('click', async () => {
   // Load time range settings
   document.getElementById('assignmentWeeksBefore').value = result.assignmentWeeksBefore || 0;
   document.getElementById('assignmentWeeksAfter').value = result.assignmentWeeksAfter || 2;
+
+  // Render courses list
+  renderCoursesList();
 });
 
 closeSettingsModal.addEventListener('click', () => {
@@ -1044,6 +1078,91 @@ document.getElementById('quietHoursStart').addEventListener('change', async (e) 
 document.getElementById('quietHoursEnd').addEventListener('change', async (e) => {
   await chrome.storage.local.set({ quietHoursEnd: e.target.value });
 });
+
+// Course visibility settings
+document.getElementById('hideEndedTermsToggle').addEventListener('change', async (e) => {
+  hideEndedTerms = e.target.checked;
+  await chrome.storage.local.set({ hideEndedTerms });
+  renderCoursesList();
+  await loadAssignments();
+});
+
+// Load course visibility settings
+async function loadCourseVisibilitySettings() {
+  try {
+    const result = await chrome.storage.local.get(['hiddenCourseIds', 'hideEndedTerms']);
+    hiddenCourseIds = result.hiddenCourseIds || [];
+    hideEndedTerms = result.hideEndedTerms !== false; // Default to true
+    document.getElementById('hideEndedTermsToggle').checked = hideEndedTerms;
+  } catch (error) {
+    console.error('Failed to load course visibility settings:', error);
+  }
+}
+
+// Render courses list in settings
+function renderCoursesList() {
+  const container = document.getElementById('coursesList');
+  if (!container) return;
+
+  if (allCourses.length === 0) {
+    container.innerHTML = '<div style="font-size: 12px; color: #9CA3AF; text-align: center; padding: 8px;">No courses available. Open Canvas to sync.</div>';
+    return;
+  }
+
+  const now = new Date();
+  const sortedCourses = [...allCourses].sort((a, b) => {
+    // Sort by term end date (current first, then past)
+    const aEnded = a.termEndAt && new Date(a.termEndAt) < now;
+    const bEnded = b.termEndAt && new Date(b.termEndAt) < now;
+    if (aEnded !== bEnded) return aEnded ? 1 : -1;
+    return a.name.localeCompare(b.name);
+  });
+
+  container.innerHTML = sortedCourses.map(course => {
+    const isHidden = hiddenCourseIds.includes(course.id);
+    const termEnded = course.termEndAt && new Date(course.termEndAt) < now;
+    const autoHidden = hideEndedTerms && termEnded;
+    const effectivelyHidden = isHidden || autoHidden;
+
+    let statusBadge = '';
+    if (termEnded) {
+      statusBadge = '<span style="font-size: 10px; background: #FEE2E2; color: #991B1B; padding: 2px 6px; border-radius: 4px; margin-left: 6px;">Past</span>';
+    }
+
+    return `
+      <label style="display: flex; align-items: center; gap: 8px; padding: 6px 4px; cursor: pointer; border-radius: 4px; ${effectivelyHidden ? 'opacity: 0.5;' : ''}" class="course-item">
+        <input type="checkbox"
+               data-course-id="${course.id}"
+               ${!isHidden ? 'checked' : ''}
+               ${autoHidden && !isHidden ? 'disabled' : ''}
+               style="cursor: pointer;">
+        <span style="font-size: 13px; color: #374151; flex: 1;">${escapeHtml(course.name)}</span>
+        ${statusBadge}
+      </label>
+    `;
+  }).join('');
+
+  // Add event listeners to checkboxes
+  container.querySelectorAll('input[data-course-id]').forEach(checkbox => {
+    checkbox.addEventListener('change', async (e) => {
+      const courseId = e.target.dataset.courseId;
+      await toggleCourseVisibility(courseId, e.target.checked);
+    });
+  });
+}
+
+// Toggle course visibility
+async function toggleCourseVisibility(courseId, visible) {
+  if (visible) {
+    hiddenCourseIds = hiddenCourseIds.filter(id => id !== courseId);
+  } else {
+    if (!hiddenCourseIds.includes(courseId)) {
+      hiddenCourseIds.push(courseId);
+    }
+  }
+  await chrome.storage.local.set({ hiddenCourseIds });
+  await loadAssignments();
+}
 
 // Load notification settings
 async function loadNotificationSettings() {
@@ -1394,6 +1513,9 @@ async function initialize() {
 
   // Load notification settings
   await loadNotificationSettings();
+
+  // Load course visibility settings
+  await loadCourseVisibilitySettings();
 
   // Load focus mode state
   const focusModeResult = await chrome.storage.local.get(['focusModeEnabled']);

@@ -72,6 +72,8 @@
         name: course.name,
         code: course.course_code,
         term: course.term?.name || course.term?.id || null,
+        termStartAt: course.term?.start_at || null,
+        termEndAt: course.term?.end_at || null,
         url: `${window.location.origin}/courses/${course.id}`
       }));
     } catch (error) {

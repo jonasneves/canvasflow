@@ -52,8 +52,7 @@ const JS_FILES = [
     'schedule.js',
     'lib/ai-mappers.js',
     'lib/ai-router.js',
-    'lib/ai-schemas-dashboard.js',
-    'lib/ai-schemas-sidepanel.js',
+    'lib/ai-schemas.js',
     'lib/ai-client.js',
     'lib/lucide-init.js'
 ];

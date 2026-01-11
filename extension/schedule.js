@@ -9,14 +9,92 @@ let canvasData = {
 let autoRefreshInterval = null;
 let assignmentTimeRange = { weeksBefore: 0, weeksAfter: 2 };
 
-// Aliases for shared modules
-const escapeHtml = window.CanvasFlowUtils.escapeHtml;
-const formatTimeAgo = window.CanvasFlowUtils.formatTimeAgo;
-const createLucideIcon = window.CanvasFlowUtils.createLucideIcon;
-const setupDayToggleListeners = window.CanvasFlowUI.setupDayToggleListeners;
-const setupTaskCardClickListeners = window.CanvasFlowUI.setupTaskCardClickListeners;
-const findAssignmentUrl = (name) => window.CanvasFlowAssignments.findAssignmentUrl(name, canvasData.allAssignments);
-const prepareAssignmentsForAI = () => window.CanvasFlowAssignments.prepareAssignmentsForAI(canvasData.allAssignments, assignmentTimeRange);
+// Utility functions
+function escapeHtml(text) {
+  const div = document.createElement('div');
+  div.textContent = text;
+  return div.innerHTML;
+}
+
+function formatTimeAgo(timestamp) {
+  if (!timestamp) return '';
+  const diff = Date.now() - timestamp;
+  const minutes = Math.floor(diff / 60000);
+  const hours = Math.floor(minutes / 60);
+  const days = Math.floor(hours / 24);
+  if (days > 0) return `${days} day${days > 1 ? 's' : ''} ago`;
+  if (hours > 0) return `${hours} hour${hours > 1 ? 's' : ''} ago`;
+  if (minutes > 0) return `${minutes} minute${minutes > 1 ? 's' : ''} ago`;
+  return 'just now';
+}
+
+function createLucideIcon(iconName, size = 16, color = 'currentColor') {
+  const icons = {
+    'lightbulb': '<path d="M15 14c.2-1 .7-1.7 1.5-2.5 1-.9 1.5-2.2 1.5-3.5A6 6 0 0 0 6 8c0 1 .2 2.2 1.5 3.5.7.7 1.3 1.5 1.5 2.5"/><path d="M9 18h6"/><path d="M10 22h4"/>'
+  };
+  const paths = icons[iconName] || '';
+  return `<svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" stroke="${color}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display: inline-block; vertical-align: middle;">${paths}</svg>`;
+}
+
+function setupDayToggleListeners() {
+  document.querySelectorAll('.day-plan-toggle').forEach(btn => {
+    const newBtn = btn.cloneNode(true);
+    btn.parentNode.replaceChild(newBtn, btn);
+    newBtn.addEventListener('click', function() {
+      const dayId = this.dataset.dayId;
+      const dayContent = document.getElementById(dayId);
+      const icon = this.querySelector('.day-icon');
+      if (dayContent.style.display === 'none') {
+        dayContent.style.display = 'block';
+        if (icon) icon.style.transform = 'rotate(180deg)';
+      } else {
+        dayContent.style.display = 'none';
+        if (icon) icon.style.transform = 'rotate(0deg)';
+      }
+    });
+    newBtn.addEventListener('mouseenter', function() { this.style.background = '#F9FAFB'; });
+    newBtn.addEventListener('mouseleave', function() { this.style.background = this.dataset.defaultBg; });
+  });
+}
+
+function setupTaskCardClickListeners() {
+  document.querySelectorAll('.schedule-task-card.clickable').forEach(card => {
+    card.addEventListener('click', function() {
+      const url = this.dataset.url;
+      if (url) window.open(url, '_blank');
+    });
+  });
+}
+
+function findAssignmentUrl(assignmentName) {
+  if (!canvasData.allAssignments || canvasData.allAssignments.length === 0) return null;
+
+  const cleanName = assignmentName.toLowerCase().trim();
+  const scored = canvasData.allAssignments
+    .filter(a => a.name && a.url)
+    .map(assignment => {
+      const aName = assignment.name.toLowerCase().trim();
+      let score = 0;
+      if (aName === cleanName) score = 100;
+      else if (aName.includes(cleanName) || cleanName.includes(aName)) score = 80;
+      else {
+        const aiWords = cleanName.split(/\s+/).filter(w => w.length > 3);
+        const assignmentWords = aName.split(/\s+/).filter(w => w.length > 3);
+        if (aiWords.length > 0 && assignmentWords.length > 0) {
+          const matchingWords = aiWords.filter(word =>
+            assignmentWords.some(aWord => aWord.includes(word) || word.includes(aWord))
+          );
+          const matchRatio = matchingWords.length / aiWords.length;
+          if (matchRatio >= 0.7) score = matchRatio * 60;
+        }
+      }
+      return { assignment, score };
+    })
+    .filter(item => item.score > 0)
+    .sort((a, b) => b.score - a.score);
+
+  return (scored.length > 0 && scored[0].score >= 70) ? scored[0].assignment.url : null;
+}
 
 // Initialize dashboard
 document.addEventListener('DOMContentLoaded', async () => {
@@ -34,7 +112,9 @@ async function initializeDashboard() {
 // Load Canvas data from background script
 async function loadCanvasData() {
   try {
-    const response = await window.CanvasFlowMessaging.getCanvasData();
+    const response = await new Promise((resolve) => {
+      chrome.runtime.sendMessage({ type: 'GET_CANVAS_DATA' }, resolve);
+    });
 
     if (response && response.data) {
       canvasData = {
@@ -52,7 +132,9 @@ async function loadCanvasData() {
 // Refresh Canvas data
 async function refreshCanvasData() {
   try {
-    const response = await window.CanvasFlowMessaging.refreshData();
+    const response = await new Promise((resolve) => {
+      chrome.runtime.sendMessage({ type: 'REFRESH_DATA' }, resolve);
+    });
 
     if (response && response.success) {
       canvasData = {
@@ -69,7 +151,11 @@ async function refreshCanvasData() {
 
 // Load time range settings
 async function loadTimeRangeSettings() {
-  assignmentTimeRange = await window.CanvasFlowStorage.getTimeRange();
+  const result = await chrome.storage.local.get(['assignmentWeeksBefore', 'assignmentWeeksAfter']);
+  assignmentTimeRange = {
+    weeksBefore: result.assignmentWeeksBefore ?? 0,
+    weeksAfter: result.assignmentWeeksAfter ?? 2
+  };
 }
 
 function loadSettings() {
@@ -105,7 +191,7 @@ function setupAutoRefresh(enabled) {
   if (enabled) {
     autoRefreshInterval = setInterval(() => {
       refreshCanvasData();
-    }, 5 * 60 * 1000); // 5 minutes
+    }, 5 * 60 * 1000);
   }
 }
 
@@ -129,13 +215,14 @@ function updateInsightsTimestamp(timestamp) {
   }
 }
 
-// Load saved insights from storage (dashboard-specific)
+// Load saved insights from storage
 async function loadSavedInsights() {
   const insightsContent = document.getElementById('insightsContent');
 
   // Check if Canvas URL is configured
-  const canvasUrl = await window.CanvasFlowStorage.getCanvasUrl();
-  if (!canvasUrl) {
+  const result = await chrome.storage.local.get(['canvasUrl', 'dashboardInsights', 'dashboardInsightsTimestamp']);
+
+  if (!result.canvasUrl) {
     insightsContent.innerHTML = `
       <div class="insights-placeholder">
         <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="#F59E0B" stroke-width="2">
@@ -150,24 +237,23 @@ async function loadSavedInsights() {
     return;
   }
 
-  const { schedule, timestamp } = await window.CanvasFlowStorage.getDashboardSchedule();
-  if (schedule) {
+  if (result.dashboardInsights) {
     insightsContent.innerHTML = `
       <div class="insights-loaded">
-        ${schedule}
+        ${result.dashboardInsights}
       </div>
     `;
 
     setupDayToggleListeners();
     setupTaskCardClickListeners();
 
-    if (timestamp) {
-      updateInsightsTimestamp(timestamp);
+    if (result.dashboardInsightsTimestamp) {
+      updateInsightsTimestamp(result.dashboardInsightsTimestamp);
     }
   }
 }
 
-// Format structured insights for display (Dashboard focuses ONLY on weekly schedule)
+// Format structured insights for display
 function formatStructuredInsights(insights) {
   const weeklyPlanHtml = insights.weekly_plan.map((day, dayIdx) => {
     const tasksHtml = day.tasks.map(task => {
@@ -229,9 +315,5 @@ function formatStructuredInsights(insights) {
     `;
   }).join('');
 
-  return `
-    <div>
-      ${weeklyPlanHtml}
-    </div>
-  `;
+  return `<div>${weeklyPlanHtml}</div>`;
 }

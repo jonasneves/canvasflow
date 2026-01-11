@@ -1,13 +1,9 @@
 /**
  * AI Schema Definitions for Structured Outputs
- *
- * Consolidated schema definitions for AI structured outputs.
- * These schemas guarantee type-safe, valid responses from the AI.
  */
 
 window.AISchemas = window.AISchemas || {};
 
-// Numeric mappings for AI reasoning (used in prompts)
 window.AISchemas.URGENCY_LEVELS = {
   MANAGEABLE: 0,
   MODERATE: 1,
@@ -22,10 +18,6 @@ window.AISchemas.INTENSITY_LEVELS = {
   EXTREME: 3
 };
 
-/**
- * Sidepanel Insights Schema
- * Used for quick AI-generated study insights in the extension sidepanel
- */
 window.AISchemas.SIDEPANEL_INSIGHTS_SCHEMA = {
   type: "json_schema",
   json_schema: {
@@ -111,10 +103,6 @@ window.AISchemas.SIDEPANEL_INSIGHTS_SCHEMA = {
   }
 };
 
-/**
- * Dashboard Schedule Schema
- * Used for detailed 7-day study schedule generation
- */
 window.AISchemas.DASHBOARD_SCHEDULE_SCHEMA = {
   type: "json_schema",
   json_schema: {

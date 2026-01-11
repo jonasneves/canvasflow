@@ -807,20 +807,26 @@ document.getElementById('saveCanvasUrl').addEventListener('click', async () => {
 
   try {
     await chrome.storage.local.set({ canvasUrl: url });
-    showStatusMessage('canvasUrlStatus', '✓ Saved - Refreshing data...', 'success');
 
-    // Hide the configuration banner if it's visible
+    // Hide the configuration banner
     const configBanner = document.getElementById('configBanner');
     if (configBanner) {
       configBanner.style.display = 'none';
     }
 
-    // Wait a moment to allow background script to refresh
-    setTimeout(() => {
-      showStatusMessage('canvasUrlStatus', '✓ Data refresh initiated', 'success');
-    }, 1000);
+    // Check if Canvas tab is available and sync
+    const canvasTabAvailable = await hasCanvasTab();
+    if (canvasTabAvailable) {
+      showStatusMessage('canvasUrlStatus', 'Saved. Syncing...', 'success');
+      await refreshCanvasData();
+      showStatusMessage('canvasUrlStatus', 'Saved and synced', 'success');
+    } else {
+      showStatusMessage('canvasUrlStatus', 'Saved', 'success');
+      // Reload to show "Open Canvas to Sync" button
+      await loadAssignments();
+    }
   } catch (error) {
-    showStatusMessage('canvasUrlStatus', '✗ Save failed', 'error');
+    showStatusMessage('canvasUrlStatus', 'Save failed', 'error');
   }
 });
 

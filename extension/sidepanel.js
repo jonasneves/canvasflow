@@ -960,54 +960,41 @@ async function refreshCanvasData() {
   }
 }
 
-function startAutoRefresh() {
-  if (autoRefreshInterval) {
-    clearInterval(autoRefreshInterval);
-  }
+let autoRefreshMinutes = 30; // Default 30 minutes
 
-  // Refresh every 30 minutes (1800000 ms)
-  autoRefreshInterval = setInterval(() => {
-    refreshCanvasData();
-  }, 1800000);
-}
-
-function stopAutoRefresh() {
+function startAutoRefresh(minutes) {
   if (autoRefreshInterval) {
     clearInterval(autoRefreshInterval);
     autoRefreshInterval = null;
+  }
+
+  if (minutes > 0) {
+    autoRefreshInterval = setInterval(() => {
+      refreshCanvasData();
+    }, minutes * 60 * 1000);
   }
 }
 
 // Load auto-refresh setting
 async function loadAutoRefreshSetting() {
   try {
-    const result = await chrome.storage.local.get(['autoRefreshEnabled']);
-    const enabled = result.autoRefreshEnabled !== false; // Default to true
+    const result = await chrome.storage.local.get(['autoRefreshMinutes']);
+    autoRefreshMinutes = result.autoRefreshMinutes !== undefined ? result.autoRefreshMinutes : 30;
 
-    const toggle = document.getElementById('autoRefreshToggle');
-    if (toggle) {
-      toggle.checked = enabled;
-
-      if (enabled) {
-        startAutoRefresh();
-      }
+    const select = document.getElementById('autoRefreshInterval');
+    if (select) {
+      select.value = String(autoRefreshMinutes);
+      startAutoRefresh(autoRefreshMinutes);
     }
   } catch (error) {
   }
 }
 
 // Save auto-refresh setting
-async function saveAutoRefreshSetting(enabled) {
-  try {
-    await chrome.storage.local.set({ autoRefreshEnabled: enabled });
-
-    if (enabled) {
-      startAutoRefresh();
-    } else {
-      stopAutoRefresh();
-    }
-  } catch (error) {
-  }
+async function saveAutoRefreshSetting(minutes) {
+  autoRefreshMinutes = minutes;
+  await chrome.storage.local.set({ autoRefreshMinutes: minutes });
+  startAutoRefresh(minutes);
 }
 
 // Toggle grades button event listener
@@ -1192,8 +1179,8 @@ async function loadNotificationSettings() {
 }
 
 // Auto-refresh toggle event listener
-document.getElementById('autoRefreshToggle').addEventListener('change', (e) => {
-  saveAutoRefreshSetting(e.target.checked);
+document.getElementById('autoRefreshInterval').addEventListener('change', (e) => {
+  saveAutoRefreshSetting(parseInt(e.target.value));
 });
 
 // Focus Mode toggle

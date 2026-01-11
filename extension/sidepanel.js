@@ -33,6 +33,30 @@ function filterAssignmentsByVisibleCourses(assignments) {
   return assignments.filter(a => visibleIds.includes(a.courseId));
 }
 
+// Helper: Format timestamp as "X ago" string
+function formatTimeAgo(timestamp) {
+  if (!timestamp) return '';
+  const diff = Date.now() - timestamp;
+  const minutes = Math.floor(diff / 60000);
+  const hours = Math.floor(minutes / 60);
+  const days = Math.floor(hours / 24);
+
+  if (days > 0) return `${days} day${days > 1 ? 's' : ''} ago`;
+  if (hours > 0) return `${hours} hour${hours > 1 ? 's' : ''} ago`;
+  if (minutes > 0) return `${minutes} minute${minutes > 1 ? 's' : ''} ago`;
+  return 'just now';
+}
+
+// Helper: Get time range boundaries for filtering
+function getTimeRangeBounds() {
+  const now = new Date();
+  const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  const todayEnd = new Date(todayStart.getTime() + 24 * 60 * 60 * 1000);
+  const timeRangeStart = new Date(now.getTime() - assignmentTimeRange.weeksBefore * 7 * 24 * 60 * 60 * 1000);
+  const timeRangeEnd = new Date(now.getTime() + assignmentTimeRange.weeksAfter * 7 * 24 * 60 * 60 * 1000);
+  return { now, todayStart, todayEnd, timeRangeStart, timeRangeEnd };
+}
+
 // Canvas URL patterns - matches background.js
 const CANVAS_URL_PATTERNS = [
   /^https?:\/\/canvas\.[^\/]*\.edu/i,
@@ -77,6 +101,7 @@ async function updateCanvasUrl() {
       }
     }
   } catch (error) {
+    console.error('Failed to update Canvas URL:', error);
   }
 }
 
@@ -266,13 +291,7 @@ function renderFocusMode(now, todayStart, todayEnd, timeRangeStart, timeRangeEnd
 function renderAssignments() {
   updateSectionHeader();
   const assignmentsList = document.getElementById('assignmentsList');
-  const now = new Date();
-  const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-  const todayEnd = new Date(todayStart.getTime() + 24 * 60 * 60 * 1000);
-
-  // Calculate time range boundaries
-  const timeRangeStart = new Date(now.getTime() - assignmentTimeRange.weeksBefore * 7 * 24 * 60 * 60 * 1000);
-  const timeRangeEnd = new Date(now.getTime() + assignmentTimeRange.weeksAfter * 7 * 24 * 60 * 60 * 1000);
+  const { now, todayStart, todayEnd, timeRangeStart, timeRangeEnd } = getTimeRangeBounds();
 
   // Handle Focus Mode
   if (focusModeEnabled) {
@@ -573,13 +592,7 @@ async function loadAssignments() {
       }
 
       // Calculate summary counts
-      const now = new Date();
-      const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-      const todayEnd = new Date(todayStart.getTime() + 24 * 60 * 60 * 1000);
-
-      // Calculate time range boundaries
-      const timeRangeStart = new Date(now.getTime() - assignmentTimeRange.weeksBefore * 7 * 24 * 60 * 60 * 1000);
-      const timeRangeEnd = new Date(now.getTime() + assignmentTimeRange.weeksAfter * 7 * 24 * 60 * 60 * 1000);
+      const { now, todayStart, todayEnd, timeRangeStart, timeRangeEnd } = getTimeRangeBounds();
 
       // Filter to assignments within time range
       const assignmentsWithDates = allAssignments.filter(a => {
@@ -975,20 +988,6 @@ function startAutoRefresh(minutes) {
   }
 }
 
-// Load auto-refresh setting
-async function loadAutoRefreshSetting() {
-  try {
-    const result = await chrome.storage.local.get(['autoRefreshMinutes']);
-    autoRefreshMinutes = result.autoRefreshMinutes !== undefined ? result.autoRefreshMinutes : 30;
-
-    const select = document.getElementById('autoRefreshInterval');
-    if (select) {
-      select.value = String(autoRefreshMinutes);
-      startAutoRefresh(autoRefreshMinutes);
-    }
-  } catch (error) {
-  }
-}
 
 // Save auto-refresh setting
 async function saveAutoRefreshSetting(minutes) {
@@ -1074,17 +1073,6 @@ document.getElementById('hideEndedTermsToggle').addEventListener('change', async
   await loadAssignments();
 });
 
-// Load course visibility settings
-async function loadCourseVisibilitySettings() {
-  try {
-    const result = await chrome.storage.local.get(['hiddenCourseIds', 'hideEndedTerms']);
-    hiddenCourseIds = result.hiddenCourseIds || [];
-    hideEndedTerms = result.hideEndedTerms !== false; // Default to true
-    document.getElementById('hideEndedTermsToggle').checked = hideEndedTerms;
-  } catch (error) {
-    console.error('Failed to load course visibility settings:', error);
-  }
-}
 
 // Render courses list in settings
 function renderCoursesList() {
@@ -1151,32 +1139,6 @@ async function toggleCourseVisibility(courseId, visible) {
   await loadAssignments();
 }
 
-// Load notification settings
-async function loadNotificationSettings() {
-  try {
-    const result = await chrome.storage.local.get([
-      'notificationsEnabled',
-      'notificationFrequency',
-      'quietHoursStart',
-      'quietHoursEnd'
-    ]);
-
-    const enabled = result.notificationsEnabled || false;
-    const frequency = result.notificationFrequency || 'balanced';
-    const quietStart = result.quietHoursStart || '22:00';
-    const quietEnd = result.quietHoursEnd || '08:00';
-
-    document.getElementById('notificationsEnabled').checked = enabled;
-    document.getElementById('notificationFrequency').value = frequency;
-    document.getElementById('quietHoursStart').value = quietStart;
-    document.getElementById('quietHoursEnd').value = quietEnd;
-
-    if (enabled) {
-      document.getElementById('notificationSettings').style.display = 'block';
-    }
-  } catch (error) {
-  }
-}
 
 // Auto-refresh toggle event listener
 document.getElementById('autoRefreshInterval').addEventListener('change', (e) => {
@@ -1193,6 +1155,11 @@ function toggleFocusMode() {
     focusModeBtn.classList.add('active');
     // Hide summary cards in focus mode
     document.querySelector('.summary-cards').style.display = 'none';
+    // Switch to Dashboard tab where focus mode is displayed
+    document.querySelectorAll('.tab-button').forEach(btn => btn.classList.remove('active'));
+    document.querySelector('.tab-button[data-tab="canvas-data"]').classList.add('active');
+    document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+    document.getElementById('canvas-data').classList.add('active');
   } else {
     focusModeBtn.classList.remove('active');
     // Show summary cards in normal mode
@@ -1233,39 +1200,11 @@ document.getElementById('assignmentWeeksAfter').addEventListener('change', (e) =
   saveTimeRangeSetting('weeksAfter', e.target.value);
 });
 
-// Load time range settings
-async function loadTimeRangeSettings() {
-  try {
-    const result = await chrome.storage.local.get(['assignmentWeeksBefore', 'assignmentWeeksAfter']);
-    assignmentTimeRange = {
-      weeksBefore: result.assignmentWeeksBefore !== undefined ? result.assignmentWeeksBefore : 0,
-      weeksAfter: result.assignmentWeeksAfter !== undefined ? result.assignmentWeeksAfter : 2
-    };
-  } catch (error) {
-  }
-}
 
 // Update insights timestamp display
 function updateInsightsTimestamp(timestamp) {
   if (!timestamp) return '';
-
-  const now = Date.now();
-  const diff = now - timestamp;
-  const minutes = Math.floor(diff / 60000);
-  const hours = Math.floor(minutes / 60);
-  const days = Math.floor(hours / 24);
-
-  let timeAgo;
-  if (days > 0) {
-    timeAgo = `${days} day${days > 1 ? 's' : ''} ago`;
-  } else if (hours > 0) {
-    timeAgo = `${hours} hour${hours > 1 ? 's' : ''} ago`;
-  } else if (minutes > 0) {
-    timeAgo = `${minutes} minute${minutes > 1 ? 's' : ''} ago`;
-  } else {
-    timeAgo = 'just now';
-  }
-
+  const timeAgo = formatTimeAgo(timestamp);
   return `<div style="text-align: center; padding: 16px 0 0 0; border-top: 1px solid #E5E7EB;">
     <div style="font-size: 11px; color: #9CA3AF; margin-bottom: 10px;">Last generated ${timeAgo}</div>
     <div style="display: flex; gap: 8px; justify-content: center;">
@@ -1316,6 +1255,7 @@ async function loadSavedInsights() {
     }
     // Auto-generation is handled by autoGenerateIfStale() in initialize()
   } catch (error) {
+    console.error('Failed to load saved insights:', error);
   }
 }
 
@@ -1433,65 +1373,83 @@ async function checkAndAutoGenerateInsights() {
 
 // Initial load
 async function initialize() {
-  await updateCanvasUrl();
+  // Load all settings in one storage read
+  const settings = await chrome.storage.local.get([
+    'canvasUrl',
+    'assignmentWeeksBefore', 'assignmentWeeksAfter',
+    'autoRefreshMinutes',
+    'notificationsEnabled', 'notificationFrequency', 'quietHoursStart', 'quietHoursEnd',
+    'hiddenCourseIds', 'hideEndedTerms',
+    'focusModeEnabled', 'showGrades', 'ai_metadata', 'openSettingsOnLoad'
+  ]);
+
+  // Apply Canvas URL
+  const canvasUrlInput = document.getElementById('canvasUrlInput');
+  if (canvasUrlInput) {
+    canvasUrlInput.value = settings.canvasUrl || '';
+  }
 
   // Check and show configuration banner if needed
   await checkAndShowConfigBanner();
 
-  // Auto-detect and save Canvas URL if not already configured
-  const result = await chrome.storage.local.get(['canvasUrl']);
-  if (!result.canvasUrl) {
+  // Auto-detect Canvas URL if not configured
+  if (!settings.canvasUrl) {
     const detected = await autoDetectCanvasUrl(false);
     if (detected) {
       await chrome.storage.local.set({ canvasUrl: detected });
-      const canvasUrlInput = document.getElementById('canvasUrlInput');
-      if (canvasUrlInput) {
-        canvasUrlInput.value = detected;
-      }
-      // Hide config banner since URL is now set
-      const configBanner = document.getElementById('configBanner');
-      if (configBanner) {
-        configBanner.style.display = 'none';
-      }
+      if (canvasUrlInput) canvasUrlInput.value = detected;
+      document.getElementById('configBanner')?.style.setProperty('display', 'none');
     }
   }
 
-  // Load time range settings
-  await loadTimeRangeSettings();
+  // Apply time range settings
+  assignmentTimeRange = {
+    weeksBefore: settings.assignmentWeeksBefore ?? 0,
+    weeksAfter: settings.assignmentWeeksAfter ?? 2
+  };
 
-  // Load auto-refresh setting
-  await loadAutoRefreshSetting();
+  // Apply auto-refresh setting
+  autoRefreshMinutes = settings.autoRefreshMinutes ?? 30;
+  const refreshSelect = document.getElementById('autoRefreshInterval');
+  if (refreshSelect) {
+    refreshSelect.value = String(autoRefreshMinutes);
+    startAutoRefresh(autoRefreshMinutes);
+  }
 
-  // Load notification settings
-  await loadNotificationSettings();
+  // Apply notification settings
+  const notifEnabled = settings.notificationsEnabled || false;
+  document.getElementById('notificationsEnabled').checked = notifEnabled;
+  document.getElementById('notificationFrequency').value = settings.notificationFrequency || 'balanced';
+  document.getElementById('quietHoursStart').value = settings.quietHoursStart || '22:00';
+  document.getElementById('quietHoursEnd').value = settings.quietHoursEnd || '08:00';
+  if (notifEnabled) {
+    document.getElementById('notificationSettings').style.display = 'block';
+  }
 
-  // Load course visibility settings
-  await loadCourseVisibilitySettings();
+  // Apply course visibility settings
+  hiddenCourseIds = settings.hiddenCourseIds || [];
+  hideEndedTerms = settings.hideEndedTerms !== false;
+  document.getElementById('hideEndedTermsToggle').checked = hideEndedTerms;
 
-  // Load focus mode state
-  const focusModeResult = await chrome.storage.local.get(['focusModeEnabled']);
-  focusModeEnabled = focusModeResult.focusModeEnabled || false;
+  // Apply focus mode state
+  focusModeEnabled = settings.focusModeEnabled || false;
   if (focusModeEnabled) {
     document.getElementById('focusModeBtn').classList.add('active');
     document.querySelector('.summary-cards').style.display = 'none';
   }
 
-  // Load grade visibility setting
-  const gradesResult = await chrome.storage.local.get(['showGrades']);
-  showGrades = gradesResult.showGrades || false;
+  // Apply grade visibility
+  showGrades = settings.showGrades || false;
   updateGradesIcon();
 
-  // Update AI insights button text
-  await updateInsightsButtonText();
+  // Apply AI metadata
+  window.currentAIMetadata = settings.ai_metadata || {};
 
-  // Update schedule button text (Phase 3.1)
+  // Update AI button texts
+  await updateInsightsButtonText();
   await updateScheduleButtonText();
 
-  // Load AI metadata (tags) from storage
-  const metadataResult = await chrome.storage.local.get(['ai_metadata']);
-  window.currentAIMetadata = metadataResult.ai_metadata || {};
-
-  // Load local completion state
+  // Load local completion state (uses chrome.storage.sync, separate call)
   await loadLocalCompletionState();
 
   // Set up event delegation for checkboxes
@@ -1504,23 +1462,16 @@ async function initialize() {
         e.stopPropagation();
         const wrapper = checkbox.closest('[data-assignment-id]');
         if (wrapper) {
-          const assignmentId = wrapper.getAttribute('data-assignment-id');
-          toggleAssignmentDone(assignmentId, e);
+          toggleAssignmentDone(wrapper.getAttribute('data-assignment-id'), e);
         }
       }
     });
   }
 
   // Check if we need to open settings (from dashboard)
-  const settingsFlag = await chrome.storage.local.get(['openSettingsOnLoad']);
-  if (settingsFlag.openSettingsOnLoad) {
-    // Clear the flag
+  if (settings.openSettingsOnLoad) {
     await chrome.storage.local.remove('openSettingsOnLoad');
-    // Open settings modal
-    const settingsModal = document.getElementById('settingsModal');
-    if (settingsModal) {
-      settingsModal.classList.add('show');
-    }
+    document.getElementById('settingsModal')?.classList.add('show');
   }
 
   // Check if Canvas tab is available for fresh data
@@ -2188,23 +2139,7 @@ function formatScheduleForDisplay(schedule) {
 
 // Helper function to create insights footer (updated to support schedule)
 function createInsightsFooter(timestamp, type = 'insights') {
-  const now = Date.now();
-  const diff = now - timestamp;
-  const minutes = Math.floor(diff / 60000);
-  const hours = Math.floor(minutes / 60);
-  const days = Math.floor(hours / 24);
-
-  let timeAgo;
-  if (days > 0) {
-    timeAgo = `${days} day${days > 1 ? 's' : ''} ago`;
-  } else if (hours > 0) {
-    timeAgo = `${hours} hour${hours > 1 ? 's' : ''} ago`;
-  } else if (minutes > 0) {
-    timeAgo = `${minutes} minute${minutes > 1 ? 's' : ''} ago`;
-  } else {
-    timeAgo = 'just now';
-  }
-
+  const timeAgo = formatTimeAgo(timestamp);
   const btnId = type === 'schedule' ? 'regenerateScheduleBtn' : 'regenerateInsightsBtn';
   const viewBtnHtml = type === 'insights' ? `
     <button class="btn-secondary" id="viewScheduleFromInsights" style="padding: 8px 16px; font-size: 13px; display: inline-flex; align-items: center; justify-content: center; gap: 6px; border: 1px solid #E5E7EB;">

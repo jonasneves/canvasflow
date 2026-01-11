@@ -708,8 +708,10 @@
     }
 
     .insights-placeholder-note {
-      font-size: 12px !important;
+      font-size: 13px !important;
       color: #6B7280;
+      line-height: 1.5;
+      margin-top: 12px;
     }
 
     .insights-loading {
@@ -1336,4 +1338,104 @@
 
     .day-content {
       transition: all 0.2s ease;
+    }
+
+    /* AI View Tabs */
+    .ai-view-tabs {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 16px;
+      background: #F3F4F6;
+      padding: 4px;
+      border-radius: 8px;
+    }
+
+    .ai-view-tab {
+      flex: 1;
+      padding: 8px 12px;
+      background: transparent;
+      border: none;
+      border-radius: 6px;
+      font-size: 13px;
+      font-weight: 600;
+      color: #6B7280;
+      cursor: pointer;
+      transition: all 0.2s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+    }
+
+    .ai-view-tab.active {
+      background: white;
+      color: #111827;
+    }
+
+    .ai-view-tab i {
+      width: 16px;
+      height: 16px;
+    }
+
+    /* AI Header Card */
+    .ai-header-card {
+      background: white;
+      padding: 16px;
+      border-radius: 12px;
+      border: 1px solid #E5E7EB;
+      margin-bottom: 16px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+    }
+
+    .ai-header-card-inner {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .ai-header-icon {
+      background: linear-gradient(135deg, #1e3a5f 0%, #2c4f7c 100%);
+      width: 40px;
+      height: 40px;
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+
+    .ai-header-icon i {
+      width: 20px;
+      height: 20px;
+      color: white;
+    }
+
+    .ai-header-text {
+      flex: 1;
+    }
+
+    .ai-header-text h3 {
+      margin: 0;
+      color: #111827;
+      font-size: 15px;
+      font-weight: 600;
+    }
+
+    .ai-header-text p {
+      margin: 2px 0 0 0;
+      font-size: 12px;
+      color: #6B7280;
+    }
+
+    .ai-refresh-btn {
+      padding: 8px;
+      background: #F3F4F6;
+      border: 1px solid #E5E7EB;
+      border-radius: 8px;
+    }
+
+    .ai-refresh-btn i {
+      width: 16px;
+      height: 16px;
+      color: #374151;
     }

@@ -117,7 +117,7 @@ async function detectAndSaveCanvasUrl(url) {
 
     await chrome.storage.local.set({ detectedCanvasUrls: trimmedUrls });
   } catch (error) {
-    // Silent error handling
+    console.error('Failed to detect Canvas URL:', error);
   }
 }
 
@@ -413,7 +413,7 @@ if (chrome.alarms) {
       // Keep alive ping
     });
   } catch (error) {
-    // Silent error handling
+    console.warn('Failed to create keepAlive alarm:', error);
   }
 }
 

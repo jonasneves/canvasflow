@@ -46,7 +46,6 @@ async function updateCanvasUrl() {
   }
 }
 
-
 // Update section header based on current filter
 function updateSectionHeader() {
   const iconEl = document.getElementById('assignmentsSectionIcon');
@@ -276,7 +275,6 @@ function renderAssignments() {
     return dueDate >= timeRangeStart && dueDate <= timeRangeEnd;
   });
 
-
   // Filter assignments based on currentFilter
   let filteredAssignments;
 
@@ -338,7 +336,6 @@ function renderAssignments() {
     // Limit to 20 assignments for filtered views
     filteredAssignments = filteredAssignments.slice(0, 20);
   }
-
 
   if (filteredAssignments.length === 0) {
     const filterText = currentFilter === 'all' ? 'with due dates' :
@@ -643,6 +640,51 @@ function escapeHtml(text) {
   return div.innerHTML;
 }
 
+// Helper to create Lucide icon SVG
+function createLucideIcon(iconName, size = 16, color = 'currentColor') {
+  const icons = {
+    'activity': '<polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>',
+    'target': '<circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/>',
+    'lightbulb': '<path d="M15 14c.2-1 .7-1.7 1.5-2.5 1-.9 1.5-2.2 1.5-3.5A6 6 0 0 0 6 8c0 1 .2 2.2 1.5 3.5.7.7 1.3 1.5 1.5 2.5"/><path d="M9 18h6"/><path d="M10 22h4"/>',
+    'chevron-right': '<polyline points="9 18 15 12 9 6"/>',
+    'layers': '<polygon points="12 2 2 7 12 12 22 7 12 2"/><polyline points="2 17 12 22 22 17"/><polyline points="2 12 12 17 22 12"/>'
+  };
+  const paths = icons[iconName] || '';
+  return `<svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" stroke="${color}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display: inline-block; vertical-align: middle;">${paths}</svg>`;
+}
+
+// Setup day toggle listeners for schedule cards
+function setupDayToggleListeners() {
+  document.querySelectorAll('.day-plan-toggle').forEach(btn => {
+    const newBtn = btn.cloneNode(true);
+    btn.parentNode.replaceChild(newBtn, btn);
+    newBtn.addEventListener('click', function() {
+      const dayId = this.dataset.dayId;
+      const dayContent = document.getElementById(dayId);
+      const icon = this.querySelector('.day-icon');
+      if (dayContent.style.display === 'none') {
+        dayContent.style.display = 'block';
+        if (icon) icon.style.transform = 'rotate(180deg)';
+      } else {
+        dayContent.style.display = 'none';
+        if (icon) icon.style.transform = 'rotate(0deg)';
+      }
+    });
+    newBtn.addEventListener('mouseenter', function() { this.style.background = '#F9FAFB'; });
+    newBtn.addEventListener('mouseleave', function() { this.style.background = this.dataset.defaultBg; });
+  });
+}
+
+// Setup task card click listeners
+function setupTaskCardClickListeners() {
+  document.querySelectorAll('.schedule-task-card.clickable').forEach(card => {
+    card.addEventListener('click', function() {
+      const url = this.dataset.url;
+      if (url) window.open(url, '_blank');
+    });
+  });
+}
+
 // Show status message
 function showStatusMessage(elementId, message, type) {
   const statusEl = document.getElementById(elementId);
@@ -683,7 +725,6 @@ settingsModal.addEventListener('click', (e) => {
     settingsModal.classList.remove('show');
   }
 });
-
 
 // Summary card filters
 document.querySelectorAll('.summary-card').forEach(card => {
@@ -1549,7 +1590,6 @@ function prepareAssignmentsForAI() {
     return dueDate >= timeRangeStart && dueDate <= timeRangeEnd;
   });
 
-
   return {
     totalAssignments: assignments.length,
     courses: [...new Set(assignments.map(a => a.courseName))],
@@ -1617,24 +1657,6 @@ async function callClaudeWithStructuredOutput(apiKey, assignmentsData) {
   window.lastAIFailures = result.failures;
 
   return result.data;
-}
-
-// Helper function to create Lucide icon SVG
-function createLucideIcon(iconName, size = 16, color = 'currentColor') {
-  return `<svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" stroke="${color}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display: inline-block; vertical-align: middle;">
-    ${getLucideIconPaths(iconName)}
-  </svg>`;
-}
-
-function getLucideIconPaths(iconName) {
-  const icons = {
-    'activity': '<polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>',
-    'target': '<circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/>',
-    'lightbulb': '<path d="M15 14c.2-1 .7-1.7 1.5-2.5 1-.9 1.5-2.2 1.5-3.5A6 6 0 0 0 6 8c0 1 .2 2.2 1.5 3.5.7.7 1.3 1.5 1.5 2.5"/><path d="M9 18h6"/><path d="M10 22h4"/>',
-    'chevron-right': '<polyline points="9 18 15 12 9 6"/>',
-    'layers': '<polygon points="12 2 2 7 12 12 22 7 12 2"/><polyline points="2 17 12 22 22 17"/><polyline points="2 12 12 17 22 12"/>'
-  };
-  return icons[iconName] || '';
 }
 
 function formatStructuredInsights(insights) {
@@ -1736,12 +1758,6 @@ function formatStructuredInsights(insights) {
       ${studyTipsHtml}
     </div>
   `;
-}
-
-function escapeHtml(text) {
-  const div = document.createElement('div');
-  div.textContent = text;
-  return div.innerHTML;
 }
 
 // Generate Insights Button
@@ -2080,60 +2096,6 @@ function createInsightsFooter(timestamp, type = 'insights') {
       ${viewBtnHtml}
     </div>
   </div>`;
-}
-
-// Setup day toggle listeners
-function setupDayToggleListeners() {
-  document.querySelectorAll('.day-plan-toggle').forEach(btn => {
-    // Remove existing listeners
-    const newBtn = btn.cloneNode(true);
-    btn.parentNode.replaceChild(newBtn, btn);
-
-    newBtn.addEventListener('click', function() {
-      const dayId = this.dataset.dayId;
-      const dayContent = document.getElementById(dayId);
-      const icon = this.querySelector('.day-icon');
-
-      if (dayContent.style.display === 'none') {
-        dayContent.style.display = 'block';
-        if (icon) icon.style.transform = 'rotate(180deg)';
-      } else {
-        dayContent.style.display = 'none';
-        if (icon) icon.style.transform = 'rotate(0deg)';
-      }
-    });
-
-    // Hover effects
-    newBtn.addEventListener('mouseenter', function() {
-      this.style.background = '#F9FAFB';
-    });
-    newBtn.addEventListener('mouseleave', function() {
-      this.style.background = this.dataset.defaultBg;
-    });
-  });
-}
-
-// Setup task card click listeners using event delegation
-function setupTaskCardClickListeners() {
-  const scheduleContent = document.getElementById('scheduleContent');
-  if (!scheduleContent) return;
-
-  // Skip if already set up (avoid duplicate listeners)
-  if (scheduleContent.dataset.taskClickListener) return;
-  scheduleContent.dataset.taskClickListener = 'true';
-
-  // Use event delegation - one listener handles all task card clicks
-  scheduleContent.addEventListener('click', function(e) {
-    const card = e.target.closest('.schedule-task-card.clickable');
-    if (card) {
-      const url = card.dataset.url;
-      if (url) {
-        e.preventDefault();
-        e.stopPropagation();
-        window.open(url, '_blank');
-      }
-    }
-  });
 }
 
 // Helper function to find assignment URL by fuzzy matching name with scoring

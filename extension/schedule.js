@@ -13,24 +13,13 @@ let assignmentTimeRange = { weeksBefore: 2, weeksAfter: 2 }; // Default 2 weeks 
 document.addEventListener('DOMContentLoaded', async () => {
   await loadTimeRangeSettings();
   initializeDashboard();
-  setupEventListeners();
   loadSettings();
 });
 
 async function initializeDashboard() {
-  // Stale-while-revalidate: Load cached data first for instant display
   await loadCanvasData();
-  renderDashboard();
-
-  // Then trigger background refresh to get fresh data (don't await)
   refreshCanvasData();
-
   await loadSavedInsights();
-}
-
-// Event Listeners
-function setupEventListeners() {
-  // No buttons to set up - schedule is generated from sidepanel
 }
 
 // Load Canvas data from background script
@@ -48,10 +37,8 @@ async function loadCanvasData() {
         upcomingEvents: response.data.upcomingEvents || []
       };
     }
-
-    updateStatus(response);
   } catch (error) {
-    updateStatus({ error: error.message });
+    console.error('Failed to load Canvas data:', error.message);
   }
 }
 
@@ -69,46 +56,81 @@ async function refreshCanvasData() {
         calendarEvents: response.data.calendarEvents || [],
         upcomingEvents: response.data.upcomingEvents || []
       };
-      renderDashboard();
-      updateStatus({ success: true, lastUpdate: new Date() });
-    } else {
-      updateStatus({ error: response?.error || 'Failed to refresh data' });
     }
   } catch (error) {
-    updateStatus({ error: error.message });
+    console.error('Failed to refresh Canvas data:', error.message);
   }
 }
 
-// Update status indicator
-function updateStatus(response) {
-  // Status indicators have been removed for a cleaner header
-  // This function is kept for compatibility but does nothing
-  if (response?.error) {
-  }
-}
-
-// Render dashboard
-function renderDashboard() {
-  // Dashboard now focuses only on Weekly Battle Plan - no summary cards or assignments list
-}
-
-// Escape HTML
+// Helper to escape HTML
 function escapeHtml(text) {
   const div = document.createElement('div');
   div.textContent = text;
   return div.innerHTML;
 }
 
+// Helper to create Lucide icon SVG
+function createLucideIcon(iconName, size = 16, color = 'currentColor') {
+  const icons = {
+    'lightbulb': '<path d="M15 14c.2-1 .7-1.7 1.5-2.5 1-.9 1.5-2.2 1.5-3.5A6 6 0 0 0 6 8c0 1 .2 2.2 1.5 3.5.7.7 1.3 1.5 1.5 2.5"/><path d="M9 18h6"/><path d="M10 22h4"/>'
+  };
+  const paths = icons[iconName] || '';
+  return `<svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" stroke="${color}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display: inline-block; vertical-align: middle;">${paths}</svg>`;
+}
+
+// Format relative time ago
+function formatTimeAgo(timestamp) {
+  if (!timestamp) return '';
+  const now = Date.now();
+  const diff = now - timestamp;
+  const minutes = Math.floor(diff / 60000);
+  const hours = Math.floor(minutes / 60);
+  const days = Math.floor(hours / 24);
+  if (days > 0) return `${days} day${days > 1 ? 's' : ''} ago`;
+  if (hours > 0) return `${hours} hour${hours > 1 ? 's' : ''} ago`;
+  if (minutes > 0) return `${minutes} minute${minutes > 1 ? 's' : ''} ago`;
+  return 'just now';
+}
+
+// Setup day toggle listeners for schedule cards
+function setupDayToggleListeners() {
+  document.querySelectorAll('.day-plan-toggle').forEach(btn => {
+    const newBtn = btn.cloneNode(true);
+    btn.parentNode.replaceChild(newBtn, btn);
+    newBtn.addEventListener('click', function() {
+      const dayId = this.dataset.dayId;
+      const dayContent = document.getElementById(dayId);
+      const icon = this.querySelector('.day-icon');
+      if (dayContent.style.display === 'none') {
+        dayContent.style.display = 'block';
+        if (icon) icon.style.transform = 'rotate(180deg)';
+      } else {
+        dayContent.style.display = 'none';
+        if (icon) icon.style.transform = 'rotate(0deg)';
+      }
+    });
+    newBtn.addEventListener('mouseenter', function() { this.style.background = '#F9FAFB'; });
+    newBtn.addEventListener('mouseleave', function() { this.style.background = this.dataset.defaultBg; });
+  });
+}
+
+// Setup task card click listeners
+function setupTaskCardClickListeners() {
+  document.querySelectorAll('.schedule-task-card.clickable').forEach(card => {
+    card.addEventListener('click', function() {
+      const url = this.dataset.url;
+      if (url) window.open(url, '_blank');
+    });
+  });
+}
+
 // Load time range settings
 async function loadTimeRangeSettings() {
-  try {
-    const result = await chrome.storage.local.get(['assignmentWeeksBefore', 'assignmentWeeksAfter']);
-    assignmentTimeRange = {
-      weeksBefore: result.assignmentWeeksBefore || 1,
-      weeksAfter: result.assignmentWeeksAfter || 1
-    };
-  } catch (error) {
-  }
+  const result = await chrome.storage.local.get(['assignmentWeeksBefore', 'assignmentWeeksAfter']);
+  assignmentTimeRange = {
+    weeksBefore: result.assignmentWeeksBefore || 1,
+    weeksAfter: result.assignmentWeeksAfter || 1
+  };
 }
 
 function loadSettings() {
@@ -118,34 +140,17 @@ function loadSettings() {
     }
   });
 
-  // Listen for time range setting changes
   chrome.storage.onChanged.addListener((changes, namespace) => {
     if (namespace === 'local') {
       if (changes.assignmentWeeksBefore || changes.assignmentWeeksAfter) {
-        // Reload time range settings and re-render
-        loadTimeRangeSettings().then(() => {
-          renderDashboard();
-        });
+        loadTimeRangeSettings();
       }
 
       if (changes.canvasUrl) {
-        // Canvas URL changed - refresh data and re-render
         const oldUrl = changes.canvasUrl.oldValue;
         const newUrl = changes.canvasUrl.newValue;
-
         if (oldUrl !== newUrl && newUrl) {
-          console.log('Canvas URL changed - refreshing dashboard data');
-
-          // Show loading state
-          const container = document.querySelector('.schedule-dashboard');
-          if (container) {
-            container.innerHTML = '<div class="loading-spinner"><div class="spinner"></div><div>Loading data from new Canvas instance...</div></div>';
-          }
-
-          // Wait for background script to refresh, then reload
-          setTimeout(() => {
-            loadAllData();
-          }, 2000);
+          setTimeout(() => refreshCanvasData(), 2000);
         }
       }
     }
@@ -173,23 +178,7 @@ function updateInsightsTimestamp(timestamp) {
   if (!timestampEl) return;
 
   if (timestamp) {
-    const now = Date.now();
-    const diff = now - timestamp;
-    const minutes = Math.floor(diff / 60000);
-    const hours = Math.floor(minutes / 60);
-    const days = Math.floor(hours / 24);
-
-    let timeAgo;
-    if (days > 0) {
-      timeAgo = `${days} day${days > 1 ? 's' : ''} ago`;
-    } else if (hours > 0) {
-      timeAgo = `${hours} hour${hours > 1 ? 's' : ''} ago`;
-    } else if (minutes > 0) {
-      timeAgo = `${minutes} minute${minutes > 1 ? 's' : ''} ago`;
-    } else {
-      timeAgo = 'just now';
-    }
-
+    const timeAgo = formatTimeAgo(timestamp);
     timestampEl.innerHTML = `
       <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="opacity: 0.7;">
         <circle cx="12" cy="12" r="10"></circle>
@@ -205,26 +194,22 @@ function updateInsightsTimestamp(timestamp) {
 
 // Load saved insights from storage (dashboard-specific)
 async function loadSavedInsights() {
-  try {
-    const result = await chrome.storage.local.get(['dashboardInsights', 'dashboardInsightsTimestamp']);
-    if (result.dashboardInsights) {
-      const insightsContent = document.getElementById('insightsContent');
-      insightsContent.innerHTML = `
-        <div class="insights-loaded">
-          ${result.dashboardInsights}
-        </div>
-      `;
+  const result = await chrome.storage.local.get(['dashboardInsights', 'dashboardInsightsTimestamp']);
+  if (result.dashboardInsights) {
+    const insightsContent = document.getElementById('insightsContent');
+    insightsContent.innerHTML = `
+      <div class="insights-loaded">
+        ${result.dashboardInsights}
+      </div>
+    `;
 
-      // Setup event listeners AFTER HTML is inserted into DOM
-      setupDayToggleListeners();
-      setupTaskCardClickListeners();
+    // Setup event listeners AFTER HTML is inserted into DOM
+    setupDayToggleListeners();
+    setupTaskCardClickListeners();
 
-      // Update timestamp if available
-      if (result.dashboardInsightsTimestamp) {
-        updateInsightsTimestamp(result.dashboardInsightsTimestamp);
-      }
+    if (result.dashboardInsightsTimestamp) {
+      updateInsightsTimestamp(result.dashboardInsightsTimestamp);
     }
-  } catch (error) {
   }
 }
 
@@ -235,13 +220,11 @@ function prepareAssignmentsForAI() {
   const timeRangeStart = new Date(now.getTime() - assignmentTimeRange.weeksBefore * 7 * 24 * 60 * 60 * 1000);
   const timeRangeEnd = new Date(now.getTime() + assignmentTimeRange.weeksAfter * 7 * 24 * 60 * 60 * 1000);
 
-  // Filter assignments to only those within the configured time range
   const assignments = (canvasData.allAssignments || []).filter(a => {
-    if (!a.dueDate) return true; // Include assignments without due dates
+    if (!a.dueDate) return true;
     const dueDate = new Date(a.dueDate);
     return dueDate >= timeRangeStart && dueDate <= timeRangeEnd;
   });
-
 
   return {
     totalAssignments: assignments.length,
@@ -273,81 +256,6 @@ function prepareAssignmentsForAI() {
   };
 }
 
-// Use AI client with router for model selection and fallback
-async function callClaudeWithStructuredOutput(apiKey, assignmentsData) {
-  const result = await window.ClaudeClient.callClaudeWithRouter(
-    apiKey,
-    assignmentsData,
-    window.AISchemas.DASHBOARD_SCHEDULE_SCHEMA,
-    'dashboard'
-  );
-
-  // Store model info for display
-  window.lastAIModelUsed = result.model;
-  window.lastAIDuration = result.duration;
-  window.lastAIFailures = result.failures;
-
-  return result.data;
-}
-
-// Helper function to create Lucide icon SVG
-function createLucideIcon(iconName, size = 16, color = 'currentColor') {
-  return `<svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" stroke="${color}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display: inline-block; vertical-align: middle; flex-shrink: 0;">
-    ${getLucideIconPaths(iconName)}
-  </svg>`;
-}
-
-function getLucideIconPaths(iconName) {
-  const icons = {
-    'activity': '<polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>',
-    'target': '<circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/>',
-    'lightbulb': '<path d="M15 14c.2-1 .7-1.7 1.5-2.5 1-.9 1.5-2.2 1.5-3.5A6 6 0 0 0 6 8c0 1 .2 2.2 1.5 3.5.7.7 1.3 1.5 1.5 2.5"/><path d="M9 18h6"/><path d="M10 22h4"/>',
-    'chevron-right': '<polyline points="9 18 15 12 9 6"/>',
-    'calendar': '<rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/>',
-    'layers': '<polygon points="12 2 2 7 12 12 22 7 12 2"/><polyline points="2 17 12 22 22 17"/><polyline points="2 12 12 17 22 12"/>'
-  };
-  return icons[iconName] || '';
-}
-
-// Setup task card click listeners (must be called AFTER HTML is in DOM)
-function setupTaskCardClickListeners() {
-  document.querySelectorAll('.schedule-task-card.clickable').forEach(card => {
-    card.addEventListener('click', function() {
-      const url = this.dataset.url;
-      if (url) {
-        window.open(url, '_blank');
-      }
-    });
-  });
-}
-
-// Setup day toggle event listeners (must be called AFTER HTML is in DOM)
-function setupDayToggleListeners() {
-  document.querySelectorAll('.day-plan-toggle').forEach(btn => {
-    btn.addEventListener('click', function() {
-      const dayId = this.dataset.dayId;
-      const defaultBg = this.dataset.defaultBg;
-      const dayContent = document.getElementById(dayId);
-      const icon = this.querySelector('.day-icon');
-
-      if (dayContent.style.display === 'none') {
-        dayContent.style.display = 'block';
-        icon.style.transform = 'rotate(180deg)';
-      } else {
-        dayContent.style.display = 'none';
-        icon.style.transform = 'rotate(0deg)';
-      }
-    });
-
-    // Hover effects
-    btn.addEventListener('mouseenter', function() {
-      this.style.background = '#F9FAFB';
-    });
-    btn.addEventListener('mouseleave', function() {
-      this.style.background = this.dataset.defaultBg;
-    });
-  });
-}
 
 // Helper function to find assignment URL by fuzzy matching name with scoring
 function findAssignmentUrl(assignmentName) {

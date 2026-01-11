@@ -17,6 +17,17 @@ let canvasData = {
 // Storage key for cached Canvas data
 const CANVAS_DATA_CACHE_KEY = 'cachedCanvasData';
 
+// Request deduplication - track in-flight refresh
+let refreshInProgress = false;
+
+// Canvas URL patterns - single source of truth
+const CANVAS_URL_PATTERNS = [
+  /^https?:\/\/canvas\.[^\/]*\.edu/i,
+  /^https?:\/\/[^\/]*\.edu\/.*canvas/i,
+  /^https?:\/\/[^\/]*\.instructure\.com/i,
+  /^https?:\/\/[^\/]*\.canvaslms\.com/i
+];
+
 // Save Canvas data to persistent storage
 async function saveCanvasDataToStorage() {
   try {
@@ -72,15 +83,7 @@ async function getConfiguredCanvasUrl() {
 // Helper function to detect if a URL is a Canvas instance
 function isCanvasUrl(url) {
   if (!url) return false;
-
-  const canvasPatterns = [
-    // Match canvas.*.edu (e.g., canvas.university.edu)
-    /^https?:\/\/canvas\.[^\/]*\.edu/i,
-    // Match *.edu/canvas (e.g., university.edu/canvas)
-    /^https?:\/\/[^\/]*\.edu\/.*canvas/i,
-  ];
-
-  return canvasPatterns.some(pattern => pattern.test(url));
+  return CANVAS_URL_PATTERNS.some(pattern => pattern.test(url));
 }
 
 // Auto-detect and save Canvas URLs from visited tabs
@@ -118,48 +121,69 @@ async function detectAndSaveCanvasUrl(url) {
   }
 }
 
-// Helper function to get active Canvas tab
-async function getCanvasTab() {
-  return new Promise(async (resolve, reject) => {
-    // Get configured Canvas URL
-    const result = await chrome.storage.local.get(['canvasUrl']);
-    const configuredUrl = result.canvasUrl;
+// Find an existing Canvas tab (does NOT create one)
+async function findCanvasTab() {
+  const result = await chrome.storage.local.get(['canvasUrl']);
+  const configuredUrl = result.canvasUrl;
 
-    // If no URL is configured yet, don't create a tab with default value
-    if (!configuredUrl) {
-      reject(new Error('No Canvas URL configured'));
-      return;
-    }
+  if (!configuredUrl) {
+    return null;
+  }
 
-    const configuredDomain = new URL(configuredUrl).hostname;
+  const configuredDomain = new URL(configuredUrl).hostname;
+  const queryPatterns = [
+    `*://${configuredDomain}/*`,
+    '*://*.instructure.com/*',
+    '*://*.canvaslms.com/*'
+  ];
 
-    // Build query patterns - include configured domain and common Canvas domains
-    const queryPatterns = [
-      `*://${configuredDomain}/*`,
-      '*://*.instructure.com/*',
-      '*://*.canvaslms.com/*'
-    ];
-
-    // First try to find any open Canvas tab
+  return new Promise((resolve) => {
     chrome.tabs.query({ url: queryPatterns }, (tabs) => {
       if (tabs && tabs.length > 0) {
-        // Prefer configured domain if available
         const preferredTab = tabs.find(tab => tab.url && tab.url.includes(configuredDomain));
         resolve(preferredTab || tabs[0]);
       } else {
-        // No Canvas tab found, create one with configured URL
-        chrome.tabs.create({ url: configuredUrl, active: false }, (tab) => {
-          const listener = (tabId, changeInfo) => {
-            if (tabId === tab.id && changeInfo.status === 'complete') {
-              chrome.tabs.onUpdated.removeListener(listener);
-              resolve(tab);
-            }
-          };
-          chrome.tabs.onUpdated.addListener(listener);
-        });
+        resolve(null);
       }
     });
   });
+}
+
+// Open Canvas tab (user-initiated) and wait for it to load
+async function openCanvasTab() {
+  const result = await chrome.storage.local.get(['canvasUrl']);
+  const configuredUrl = result.canvasUrl;
+
+  if (!configuredUrl) {
+    throw new Error('No Canvas URL configured');
+  }
+
+  return new Promise((resolve, reject) => {
+    chrome.tabs.create({ url: configuredUrl, active: true }, (tab) => {
+      const listener = (tabId, changeInfo) => {
+        if (tabId === tab.id && changeInfo.status === 'complete') {
+          chrome.tabs.onUpdated.removeListener(listener);
+          resolve(tab);
+        }
+      };
+      chrome.tabs.onUpdated.addListener(listener);
+
+      // Timeout after 30 seconds
+      setTimeout(() => {
+        chrome.tabs.onUpdated.removeListener(listener);
+        reject(new Error('Tab load timeout'));
+      }, 30000);
+    });
+  });
+}
+
+// Legacy alias for compatibility
+async function getCanvasTab() {
+  const tab = await findCanvasTab();
+  if (!tab) {
+    throw new Error('No Canvas tab open. Please open Canvas to sync.');
+  }
+  return tab;
 }
 
 // Helper function to send message to content script
@@ -175,46 +199,67 @@ function sendMessageToContent(tabId, message) {
   });
 }
 
-// Refresh Canvas data from a tab
+// Refresh Canvas data from a tab (with deduplication and partial failure handling)
 async function refreshCanvasDataFromTab(tab) {
-  await chrome.scripting.executeScript({
-    target: { tabId: tab.id },
-    files: ['content.js']
-  });
-  await new Promise(resolve => setTimeout(resolve, 500));
+  // Prevent concurrent refreshes
+  if (refreshInProgress) {
+    throw new Error('Refresh already in progress');
+  }
 
-  const [
-    coursesResponse,
-    allAssignmentsResponse,
-    calendarEventsResponse,
-    upcomingEventsResponse,
-    userProfileResponse
-  ] = await Promise.all([
-    sendMessageToContent(tab.id, { type: 'FETCH_COURSES' }),
-    sendMessageToContent(tab.id, { type: 'FETCH_ALL_ASSIGNMENTS' }),
-    sendMessageToContent(tab.id, { type: 'FETCH_CALENDAR_EVENTS' }),
-    sendMessageToContent(tab.id, { type: 'FETCH_UPCOMING_EVENTS' }),
-    sendMessageToContent(tab.id, { type: 'FETCH_USER_PROFILE' })
-  ]);
+  refreshInProgress = true;
 
-  const data = {
-    courses: coursesResponse?.success ? coursesResponse.data : [],
-    allAssignments: allAssignmentsResponse?.success ? allAssignmentsResponse.data : [],
-    calendarEvents: calendarEventsResponse?.success ? calendarEventsResponse.data : [],
-    upcomingEvents: upcomingEventsResponse?.success ? upcomingEventsResponse.data : [],
-    userProfile: userProfileResponse?.success ? userProfileResponse.data : null,
-    assignments: {}
-  };
+  try {
+    await chrome.scripting.executeScript({
+      target: { tabId: tab.id },
+      files: ['content.js']
+    });
+    await new Promise(resolve => setTimeout(resolve, 500));
 
-  if (data.courses.length > 0) canvasData.courses = data.courses;
-  if (data.allAssignments.length > 0) canvasData.allAssignments = data.allAssignments;
-  if (data.calendarEvents.length > 0) canvasData.calendarEvents = data.calendarEvents;
-  if (data.upcomingEvents.length > 0) canvasData.upcomingEvents = data.upcomingEvents;
-  if (data.userProfile) canvasData.userProfile = data.userProfile;
-  canvasData.lastUpdate = new Date().toISOString();
+    // Use Promise.allSettled for partial data on failures
+    const results = await Promise.allSettled([
+      sendMessageToContent(tab.id, { type: 'FETCH_COURSES' }),
+      sendMessageToContent(tab.id, { type: 'FETCH_ALL_ASSIGNMENTS' }),
+      sendMessageToContent(tab.id, { type: 'FETCH_CALENDAR_EVENTS' }),
+      sendMessageToContent(tab.id, { type: 'FETCH_UPCOMING_EVENTS' }),
+      sendMessageToContent(tab.id, { type: 'FETCH_USER_PROFILE' })
+    ]);
 
-  saveCanvasDataToStorage();
-  return data;
+    // Extract successful responses
+    const getValue = (result) => {
+      if (result.status === 'fulfilled' && result.value?.success) {
+        return result.value.data;
+      }
+      return null;
+    };
+
+    const data = {
+      courses: getValue(results[0]) || [],
+      allAssignments: getValue(results[1]) || [],
+      calendarEvents: getValue(results[2]) || [],
+      upcomingEvents: getValue(results[3]) || [],
+      userProfile: getValue(results[4]),
+      assignments: {}
+    };
+
+    // Track what succeeded/failed
+    const failures = results
+      .map((r, i) => ({ index: i, reason: r.status === 'rejected' ? r.reason?.message : null }))
+      .filter(r => r.reason);
+
+    // Update cache with any successful data
+    if (data.courses.length > 0) canvasData.courses = data.courses;
+    if (data.allAssignments.length > 0) canvasData.allAssignments = data.allAssignments;
+    if (data.calendarEvents.length > 0) canvasData.calendarEvents = data.calendarEvents;
+    if (data.upcomingEvents.length > 0) canvasData.upcomingEvents = data.upcomingEvents;
+    if (data.userProfile) canvasData.userProfile = data.userProfile;
+    canvasData.lastUpdate = new Date().toISOString();
+
+    saveCanvasDataToStorage();
+
+    return { data, failures, partial: failures.length > 0 };
+  } finally {
+    refreshInProgress = false;
+  }
 }
 
 // Handle messages from content scripts and popup
@@ -287,7 +332,31 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
   if (request.type === 'REFRESH_DATA') {
     getCanvasTab()
       .then(tab => refreshCanvasDataFromTab(tab))
-      .then(data => sendResponse({ success: true, data }))
+      .then(result => sendResponse({
+        success: true,
+        data: result.data,
+        partial: result.partial,
+        failures: result.failures
+      }))
+      .catch(error => sendResponse({ success: false, error: error.message }));
+    return true;
+  }
+
+  if (request.type === 'FIND_CANVAS_TAB') {
+    findCanvasTab()
+      .then(tab => sendResponse({ success: true, hasTab: !!tab, tab }))
+      .catch(error => sendResponse({ success: false, error: error.message }));
+    return true;
+  }
+
+  if (request.type === 'OPEN_CANVAS_TAB') {
+    openCanvasTab()
+      .then(tab => refreshCanvasDataFromTab(tab))
+      .then(result => sendResponse({
+        success: true,
+        data: result.data,
+        partial: result.partial
+      }))
       .catch(error => sendResponse({ success: false, error: error.message }));
     return true;
   }
@@ -390,9 +459,15 @@ chrome.storage.onChanged.addListener((changes, namespace) => {
         userProfile: null,
         lastUpdate: null
       };
+      saveCanvasDataToStorage();
 
-      getCanvasTab()
-        .then(tab => refreshCanvasDataFromTab(tab))
+      // Only refresh if a Canvas tab is already open (don't auto-create)
+      findCanvasTab()
+        .then(tab => {
+          if (tab) {
+            return refreshCanvasDataFromTab(tab);
+          }
+        })
         .catch(error => console.error('Failed to refresh after URL change:', error.message));
     }
   }

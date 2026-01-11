@@ -7,6 +7,14 @@ let showGrades = false; // Default to hidden
 let localCompletedIds = []; // Track locally completed assignments
 let focusModeEnabled = false; // Focus Mode: Show only top 3 priorities
 
+// Canvas URL patterns - matches background.js
+const CANVAS_URL_PATTERNS = [
+  /^https?:\/\/canvas\.[^\/]*\.edu/i,
+  /^https?:\/\/[^\/]*\.edu\/.*canvas/i,
+  /^https?:\/\/[^\/]*\.instructure\.com/i,
+  /^https?:\/\/[^\/]*\.canvaslms\.com/i
+];
+
 // Tab switching
 const tabButtons = document.querySelectorAll('.tab-button');
 const tabContents = document.querySelectorAll('.tab-content');
@@ -495,32 +503,35 @@ async function loadAssignments() {
       // Check if Canvas has been authenticated (has data from Canvas)
       const hasCanvasData = response.data.lastUpdate || response.data.userProfile || response.data.courses?.length > 0;
 
-      // If no Canvas data and no assignments, show authentication prompt
+      // If no Canvas data and no assignments, show appropriate prompt
       if (!hasCanvasData && allAssignments.length === 0) {
-        assignmentsList.innerHTML = `
-          <div class="empty-state">
-            <div class="empty-state-icon">
-              <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#3B82F6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
-                <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
-              </svg>
-            </div>
-            <div class="empty-state-text">Canvas Not Connected</div>
-            <div style="font-size: 13px; margin-top: 12px; line-height: 1.6; color: #6B7280; max-width: 320px;">
-              <p style="margin: 0 0 12px 0;">To see your assignments, please open a Canvas page to authenticate and sync your data.</p>
-              <p style="margin: 0; font-weight: 500;">Steps:</p>
-              <ol style="margin: 8px 0 0 0; padding-left: 20px; text-align: left;">
-                <li style="margin-bottom: 6px;">Open your Canvas dashboard or any Canvas page</li>
-                <li style="margin-bottom: 6px;">Log in to Canvas if you haven't already</li>
-                <li style="margin-bottom: 0;">CanvasFlow will automatically sync your assignments</li>
-              </ol>
-            </div>
-          </div>
-        `;
-        // Initialize Lucide icons only in the assignmentsList container
-        initializeLucide(assignmentsList);
+        const urlResult = await chrome.storage.local.get(['canvasUrl']);
 
-        // Set summary cards to show dashes instead of zeros
+        if (urlResult.canvasUrl) {
+          // URL configured but no data - show sync button
+          assignmentsList.innerHTML = `
+            <div class="empty-state">
+              <div class="empty-state-icon">
+                <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#1e3a5f" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path>
+                  <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path>
+                </svg>
+              </div>
+              <div class="empty-state-text">Open Canvas to Sync</div>
+              <div style="font-size: 13px; margin-top: 12px; color: #6B7280;">
+                Click below to open Canvas and sync your assignments.
+              </div>
+              <button id="openCanvasBtn" class="primary" style="margin-top: 16px; padding: 12px 24px;">
+                Open Canvas & Sync
+              </button>
+            </div>
+          `;
+          document.getElementById('openCanvasBtn').addEventListener('click', openCanvasAndSync);
+        } else {
+          // No URL configured - clear loading, banner handles the prompt
+          assignmentsList.innerHTML = '';
+        }
+
         document.getElementById('overdueCount').textContent = '-';
         document.getElementById('dueTodayCount').textContent = '-';
         document.getElementById('upcomingCount').textContent = '-';
@@ -776,15 +787,21 @@ function isValidCanvasUrl(url) {
 // Save Canvas URL
 document.getElementById('saveCanvasUrl').addEventListener('click', async () => {
   const canvasUrlInput = document.getElementById('canvasUrlInput');
-  const url = canvasUrlInput.value.trim();
+  let url = canvasUrlInput.value.trim();
 
   if (!url) {
     showStatusMessage('canvasUrlStatus', 'Please enter a Canvas URL', 'error');
     return;
   }
 
+  // Auto-add https:// if no protocol specified
+  if (!url.startsWith('http://') && !url.startsWith('https://')) {
+    url = 'https://' + url;
+    canvasUrlInput.value = url;
+  }
+
   if (!isValidCanvasUrl(url)) {
-    showStatusMessage('canvasUrlStatus', 'Please enter a valid HTTPS URL', 'error');
+    showStatusMessage('canvasUrlStatus', 'Invalid URL format', 'error');
     return;
   }
 
@@ -815,17 +832,10 @@ async function autoDetectCanvasUrl(showMessages = true) {
 
   try {
     const tabs = await chrome.tabs.query({});
-    const canvasPatterns = [
-      // Match canvas.*.edu (e.g., canvas.university.edu)
-      /^https?:\/\/canvas\.[^\/]*\.edu/i,
-      // Match *.edu/canvas (e.g., university.edu/canvas)
-      /^https?:\/\/[^\/]*\.edu\/.*canvas/i,
-    ];
-
     const detectedUrls = [];
 
     for (const tab of tabs) {
-      if (tab.url && canvasPatterns.some(pattern => pattern.test(tab.url))) {
+      if (tab.url && CANVAS_URL_PATTERNS.some(pattern => pattern.test(tab.url))) {
         try {
           const url = new URL(tab.url);
           const baseUrl = `${url.protocol}//${url.host}`;
@@ -839,7 +849,7 @@ async function autoDetectCanvasUrl(showMessages = true) {
 
     if (detectedUrls.length === 0) {
       if (showMessages) {
-        showStatusMessage('canvasUrlStatus', '✗ No Canvas URLs found in open tabs', 'error');
+        showStatusMessage('canvasUrlStatus', 'No Canvas tabs found. Open Canvas first.', 'error');
       }
       return null;
     }
@@ -850,20 +860,19 @@ async function autoDetectCanvasUrl(showMessages = true) {
     }
     await chrome.storage.local.set({ canvasUrl: detectedUrls[0] });
 
-    // Hide the configuration banner if it's visible
     const configBanner = document.getElementById('configBanner');
     if (configBanner) {
       configBanner.style.display = 'none';
     }
 
     if (showMessages) {
-      showStatusMessage('canvasUrlStatus', `✓ Detected: ${detectedUrls[0]}`, 'success');
+      showStatusMessage('canvasUrlStatus', `Detected: ${detectedUrls[0]}`, 'success');
     }
 
     return detectedUrls[0];
   } catch (error) {
     if (showMessages) {
-      showStatusMessage('canvasUrlStatus', '✗ Detection failed', 'error');
+      showStatusMessage('canvasUrlStatus', 'Detection failed', 'error');
     }
     return null;
   }
@@ -874,17 +883,60 @@ document.getElementById('autoDetectUrl').addEventListener('click', async () => {
   await autoDetectCanvasUrl(true);
 });
 
-// Auto-refresh functionality
+// Check if Canvas tab is available
+async function hasCanvasTab() {
+  const response = await new Promise((resolve) => {
+    chrome.runtime.sendMessage({ type: 'FIND_CANVAS_TAB' }, resolve);
+  });
+  return response?.success && response?.hasTab;
+}
+
+// Open Canvas and sync data (user-initiated)
+async function openCanvasAndSync() {
+  const assignmentsList = document.getElementById('assignmentsList');
+  assignmentsList.innerHTML = '<div class="loading"><span class="spinner"></span> Opening Canvas and syncing...</div>';
+
+  try {
+    const response = await new Promise((resolve) => {
+      chrome.runtime.sendMessage({ type: 'OPEN_CANVAS_TAB' }, resolve);
+    });
+
+    if (response?.success) {
+      await loadAssignments();
+    } else {
+      throw new Error(response?.error || 'Failed to open Canvas');
+    }
+  } catch (error) {
+    assignmentsList.innerHTML = `
+      <div class="empty-state">
+        <div class="empty-state-icon">
+          <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#DC2626" stroke-width="2">
+            <circle cx="12" cy="12" r="10"></circle>
+            <line x1="12" y1="8" x2="12" y2="12"></line>
+            <line x1="12" y1="16" x2="12.01" y2="16"></line>
+          </svg>
+        </div>
+        <div class="empty-state-text">${escapeHtml(error.message)}</div>
+      </div>
+    `;
+  }
+}
+
+// Refresh Canvas data (requires existing Canvas tab)
 async function refreshCanvasData() {
   try {
     const response = await new Promise((resolve) => {
       chrome.runtime.sendMessage({ type: 'REFRESH_DATA' }, resolve);
     });
 
-    if (response && response.success) {
+    if (response?.success) {
       await loadAssignments();
+      if (response.partial) {
+        console.warn('Some data failed to load:', response.failures);
+      }
     }
   } catch (error) {
+    console.error('Refresh failed:', error);
   }
 }
 
@@ -1404,14 +1456,14 @@ async function initialize() {
     }
   }
 
-  // Stale-while-revalidate: Load cached data first for instant display
+  // Load cached data first for instant display
   await loadAssignments();
 
-  // Load saved AI views after assignments are loaded (so AI has data to work with)
+  // Load saved AI views after assignments are loaded
   await loadSavedInsights();
   await loadSavedSchedule();
 
-  // Auto-generate AI content if it hasn't run today and we have data
+  // Auto-generate AI content if stale and we have data
   if (allAssignments.length > 0) {
     const hasToken = await window.AIRouter.hasToken();
     if (hasToken) {
@@ -1419,8 +1471,11 @@ async function initialize() {
     }
   }
 
-  // Then trigger background refresh to get fresh data
-  refreshCanvasData();
+  // Only refresh if Canvas tab is already open (don't prompt user yet)
+  const canvasTabAvailable = await hasCanvasTab();
+  if (canvasTabAvailable) {
+    refreshCanvasData();
+  }
 }
 
 // Check if timestamp is from today

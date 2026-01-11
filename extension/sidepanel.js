@@ -579,69 +579,42 @@ async function loadAssignments() {
       renderAssignments();
 
     } else {
-      assignmentsList.innerHTML = `
-        <div class="empty-state">
-          <div class="empty-state-icon">
-            <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#F59E0B" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <circle cx="12" cy="12" r="10"></circle>
-              <line x1="12" y1="8" x2="12" y2="12"></line>
-              <line x1="12" y1="16" x2="12.01" y2="16"></line>
-            </svg>
-          </div>
-          <div class="empty-state-text">Cannot Connect to Canvas</div>
-          <div style="font-size: 13px; margin-top: 12px; line-height: 1.6; color: #6B7280; max-width: 320px;">
-            <p style="margin: 0 0 8px 0;">Unable to load Canvas data. Please check:</p>
-            <ul style="margin: 0; padding-left: 20px; text-align: left;">
-              <li style="margin-bottom: 6px;">Canvas URL is configured correctly</li>
-              <li style="margin-bottom: 6px;">You're logged into Canvas</li>
-              <li style="margin-bottom: 0;">You're on a Canvas page</li>
-            </ul>
-          </div>
-          <button class="primary open-settings-btn-2" style="margin-top: 16px; display: inline-flex; align-items: center; gap: 6px; padding: 8px 16px; font-size: 13px;">
-            <i data-lucide="settings" style="width: 16px; height: 16px;"></i>
-            <span>Configure Canvas URL</span>
-          </button>
-        </div>
-      `;
-      // Initialize Lucide icons only in the assignmentsList container
-      initializeLucide(assignmentsList);
-      // Add event listener
-      document.querySelector('.open-settings-btn-2')?.addEventListener('click', () => {
-        document.getElementById('settingsBtn')?.click();
-      });
+      showConnectionError(assignmentsList);
     }
   } catch (error) {
-    assignmentsList.innerHTML = `
-      <div class="empty-state">
-        <div class="empty-state-icon">
-          <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#DC2626" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <circle cx="12" cy="12" r="10"></circle>
-            <line x1="12" y1="8" x2="12" y2="12"></line>
-            <line x1="12" y1="16" x2="12.01" y2="16"></line>
-          </svg>
-        </div>
-        <div class="empty-state-text">Connection Error</div>
-        <div style="font-size: 13px; margin-top: 12px; line-height: 1.6; color: #6B7280; max-width: 320px;">
-          <p style="margin: 0 0 8px 0;">Cannot connect to Canvas. Please:</p>
-          <ul style="margin: 0; padding-left: 20px; text-align: left;">
-            <li style="margin-bottom: 6px;">Go to your Canvas page</li>
-            <li style="margin-bottom: 6px;">Click Settings and use "Auto-Detect"</li>
-            <li style="margin-bottom: 0;">Or manually enter Canvas URL</li>
-          </ul>
-        </div>
-        <button class="primary open-settings-btn-3" style="margin-top: 16px; display: inline-flex; align-items: center; gap: 6px; padding: 8px 16px; font-size: 13px;">
-          <i data-lucide="settings" style="width: 16px; height: 16px;"></i>
-          <span>Open Settings</span>
-        </button>
-      </div>
-    `;
-    // Initialize Lucide icons only in the assignmentsList container
-    initializeLucide(assignmentsList);
-    // Add event listener
-    document.querySelector('.open-settings-btn-3')?.addEventListener('click', () => {
-      document.getElementById('settingsBtn')?.click();
-    });
+    showConnectionError(assignmentsList);
   }
+}
+
+function showConnectionError(container) {
+  container.innerHTML = `
+    <div class="empty-state">
+      <div class="empty-state-icon">
+        <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#F59E0B" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="10"></circle>
+          <line x1="12" y1="8" x2="12" y2="12"></line>
+          <line x1="12" y1="16" x2="12.01" y2="16"></line>
+        </svg>
+      </div>
+      <div class="empty-state-text">Cannot Connect to Canvas</div>
+      <div style="font-size: 13px; margin-top: 12px; line-height: 1.6; color: #6B7280; max-width: 320px;">
+        <p style="margin: 0 0 8px 0;">Unable to load Canvas data. Please check:</p>
+        <ul style="margin: 0; padding-left: 20px; text-align: left;">
+          <li style="margin-bottom: 6px;">Canvas URL is configured correctly</li>
+          <li style="margin-bottom: 6px;">You're logged into Canvas</li>
+          <li style="margin-bottom: 0;">You have a Canvas tab open</li>
+        </ul>
+      </div>
+      <button class="primary connection-error-settings-btn" style="margin-top: 16px; display: inline-flex; align-items: center; gap: 6px; padding: 8px 16px; font-size: 13px;">
+        <i data-lucide="settings" style="width: 16px; height: 16px;"></i>
+        <span>Open Settings</span>
+      </button>
+    </div>
+  `;
+  initializeLucide(container);
+  container.querySelector('.connection-error-settings-btn')?.addEventListener('click', () => {
+    document.getElementById('settingsBtn')?.click();
+  });
 }
 
 // Escape HTML to prevent XSS
@@ -997,10 +970,11 @@ async function saveAutoRefreshSetting(enabled) {
 }
 
 // Toggle grades button event listener
-document.getElementById('toggleGradesBtn').addEventListener('click', () => {
+document.getElementById('toggleGradesBtn').addEventListener('click', async () => {
   showGrades = !showGrades;
+  await chrome.storage.local.set({ showGrades });
   updateGradesIcon();
-  renderAssignments(); // Re-render to show/hide grades
+  renderAssignments();
 });
 
 // Update grades icon based on state
@@ -1387,15 +1361,20 @@ async function initialize() {
   // Check and show configuration banner if needed
   await checkAndShowConfigBanner();
 
-  // Auto-detect Canvas URL if not already configured
+  // Auto-detect and save Canvas URL if not already configured
   const result = await chrome.storage.local.get(['canvasUrl']);
   if (!result.canvasUrl) {
     const detected = await autoDetectCanvasUrl(false);
     if (detected) {
-      // Update the input field with detected URL
+      await chrome.storage.local.set({ canvasUrl: detected });
       const canvasUrlInput = document.getElementById('canvasUrlInput');
       if (canvasUrlInput) {
         canvasUrlInput.value = detected;
+      }
+      // Hide config banner since URL is now set
+      const configBanner = document.getElementById('configBanner');
+      if (configBanner) {
+        configBanner.style.display = 'none';
       }
     }
   }
@@ -1417,7 +1396,9 @@ async function initialize() {
     document.querySelector('.summary-cards').style.display = 'none';
   }
 
-  // Initialize grade visibility icon (always starts hidden)
+  // Load grade visibility setting
+  const gradesResult = await chrome.storage.local.get(['showGrades']);
+  showGrades = gradesResult.showGrades || false;
   updateGradesIcon();
 
   // Update AI insights button text
@@ -2227,25 +2208,21 @@ document.getElementById('openConfigSettings').addEventListener('click', () => {
   }
 });
 
-document.getElementById('closeConfigBanner').addEventListener('click', async () => {
-  // Hide the banner and remember the dismissal
+document.getElementById('closeConfigBanner').addEventListener('click', () => {
   const configBanner = document.getElementById('configBanner');
   if (configBanner) {
     configBanner.style.display = 'none';
   }
-  // Store dismissal state
-  await chrome.storage.local.set({ configBannerDismissed: true });
 });
 
 // Function to check and show configuration banner
 async function checkAndShowConfigBanner() {
-  const result = await chrome.storage.local.get(['canvasUrl', 'configBannerDismissed']);
+  const result = await chrome.storage.local.get(['canvasUrl']);
   const configBanner = document.getElementById('configBanner');
 
-  // Show banner if Canvas URL is not configured and banner hasn't been dismissed
-  if (!result.canvasUrl && !result.configBannerDismissed && configBanner) {
+  // Show banner if Canvas URL is not configured
+  if (!result.canvasUrl && configBanner) {
     configBanner.style.display = 'block';
-    // Initialize Lucide icons only within the banner element (scoped to avoid re-processing all icons)
     if (typeof initializeLucide === 'function') {
       initializeLucide(configBanner);
     }

@@ -7,7 +7,7 @@ let canvasData = {
 };
 
 let autoRefreshInterval = null;
-let assignmentTimeRange = { weeksBefore: 2, weeksAfter: 2 }; // Default 2 weeks before and after
+let assignmentTimeRange = { weeksBefore: 0, weeksAfter: 2 };
 
 // Initialize dashboard
 document.addEventListener('DOMContentLoaded', async () => {
@@ -128,8 +128,8 @@ function setupTaskCardClickListeners() {
 async function loadTimeRangeSettings() {
   const result = await chrome.storage.local.get(['assignmentWeeksBefore', 'assignmentWeeksAfter']);
   assignmentTimeRange = {
-    weeksBefore: result.assignmentWeeksBefore || 1,
-    weeksAfter: result.assignmentWeeksAfter || 1
+    weeksBefore: result.assignmentWeeksBefore ?? 0,
+    weeksAfter: result.assignmentWeeksAfter ?? 2
   };
 }
 
@@ -147,9 +147,9 @@ function loadSettings() {
       }
 
       if (changes.canvasUrl) {
-        const oldUrl = changes.canvasUrl.oldValue;
         const newUrl = changes.canvasUrl.newValue;
-        if (oldUrl !== newUrl && newUrl) {
+        if (newUrl) {
+          loadSavedInsights();
           setTimeout(() => refreshCanvasData(), 2000);
         }
       }
@@ -194,16 +194,33 @@ function updateInsightsTimestamp(timestamp) {
 
 // Load saved insights from storage (dashboard-specific)
 async function loadSavedInsights() {
+  const insightsContent = document.getElementById('insightsContent');
+
+  // Check if Canvas URL is configured
+  const urlResult = await chrome.storage.local.get(['canvasUrl']);
+  if (!urlResult.canvasUrl) {
+    insightsContent.innerHTML = `
+      <div class="insights-placeholder">
+        <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="#F59E0B" stroke-width="2">
+          <circle cx="12" cy="12" r="10"></circle>
+          <line x1="12" y1="8" x2="12" y2="12"></line>
+          <line x1="12" y1="16" x2="12.01" y2="16"></line>
+        </svg>
+        <p style="font-weight: 600; color: #111827;">Canvas URL Not Configured</p>
+        <p class="insights-placeholder-note">Open the CanvasFlow sidepanel and configure your Canvas URL in Settings to get started</p>
+      </div>
+    `;
+    return;
+  }
+
   const result = await chrome.storage.local.get(['dashboardInsights', 'dashboardInsightsTimestamp']);
   if (result.dashboardInsights) {
-    const insightsContent = document.getElementById('insightsContent');
     insightsContent.innerHTML = `
       <div class="insights-loaded">
         ${result.dashboardInsights}
       </div>
     `;
 
-    // Setup event listeners AFTER HTML is inserted into DOM
     setupDayToggleListeners();
     setupTaskCardClickListeners();
 

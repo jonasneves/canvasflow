@@ -9,6 +9,15 @@ let canvasData = {
 let autoRefreshInterval = null;
 let assignmentTimeRange = { weeksBefore: 0, weeksAfter: 2 };
 
+// Aliases for shared modules
+const escapeHtml = window.CanvasFlowUtils.escapeHtml;
+const formatTimeAgo = window.CanvasFlowUtils.formatTimeAgo;
+const createLucideIcon = window.CanvasFlowUtils.createLucideIcon;
+const setupDayToggleListeners = window.CanvasFlowUI.setupDayToggleListeners;
+const setupTaskCardClickListeners = window.CanvasFlowUI.setupTaskCardClickListeners;
+const findAssignmentUrl = (name) => window.CanvasFlowAssignments.findAssignmentUrl(name, canvasData.allAssignments);
+const prepareAssignmentsForAI = () => window.CanvasFlowAssignments.prepareAssignmentsForAI(canvasData.allAssignments, assignmentTimeRange);
+
 // Initialize dashboard
 document.addEventListener('DOMContentLoaded', async () => {
   await loadTimeRangeSettings();
@@ -25,9 +34,7 @@ async function initializeDashboard() {
 // Load Canvas data from background script
 async function loadCanvasData() {
   try {
-    const response = await new Promise((resolve) => {
-      chrome.runtime.sendMessage({ type: 'GET_CANVAS_DATA' }, resolve);
-    });
+    const response = await window.CanvasFlowMessaging.getCanvasData();
 
     if (response && response.data) {
       canvasData = {
@@ -45,9 +52,7 @@ async function loadCanvasData() {
 // Refresh Canvas data
 async function refreshCanvasData() {
   try {
-    const response = await new Promise((resolve) => {
-      chrome.runtime.sendMessage({ type: 'REFRESH_DATA' }, resolve);
-    });
+    const response = await window.CanvasFlowMessaging.refreshData();
 
     if (response && response.success) {
       canvasData = {
@@ -62,75 +67,9 @@ async function refreshCanvasData() {
   }
 }
 
-// Escape HTML to prevent XSS
-function escapeHtml(text) {
-  const div = document.createElement('div');
-  div.textContent = text;
-  return div.innerHTML;
-}
-
-// Helper to create Lucide icon SVG
-function createLucideIcon(iconName, size = 16, color = 'currentColor') {
-  const icons = {
-    'lightbulb': '<path d="M15 14c.2-1 .7-1.7 1.5-2.5 1-.9 1.5-2.2 1.5-3.5A6 6 0 0 0 6 8c0 1 .2 2.2 1.5 3.5.7.7 1.3 1.5 1.5 2.5"/><path d="M9 18h6"/><path d="M10 22h4"/>'
-  };
-  const paths = icons[iconName] || '';
-  return `<svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" stroke="${color}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display: inline-block; vertical-align: middle;">${paths}</svg>`;
-}
-
-// Format relative time ago
-function formatTimeAgo(timestamp) {
-  if (!timestamp) return '';
-  const now = Date.now();
-  const diff = now - timestamp;
-  const minutes = Math.floor(diff / 60000);
-  const hours = Math.floor(minutes / 60);
-  const days = Math.floor(hours / 24);
-  if (days > 0) return `${days} day${days > 1 ? 's' : ''} ago`;
-  if (hours > 0) return `${hours} hour${hours > 1 ? 's' : ''} ago`;
-  if (minutes > 0) return `${minutes} minute${minutes > 1 ? 's' : ''} ago`;
-  return 'just now';
-}
-
-// Setup day toggle listeners for schedule cards
-function setupDayToggleListeners() {
-  document.querySelectorAll('.day-plan-toggle').forEach(btn => {
-    const newBtn = btn.cloneNode(true);
-    btn.parentNode.replaceChild(newBtn, btn);
-    newBtn.addEventListener('click', function() {
-      const dayId = this.dataset.dayId;
-      const dayContent = document.getElementById(dayId);
-      const icon = this.querySelector('.day-icon');
-      if (dayContent.style.display === 'none') {
-        dayContent.style.display = 'block';
-        if (icon) icon.style.transform = 'rotate(180deg)';
-      } else {
-        dayContent.style.display = 'none';
-        if (icon) icon.style.transform = 'rotate(0deg)';
-      }
-    });
-    newBtn.addEventListener('mouseenter', function() { this.style.background = '#F9FAFB'; });
-    newBtn.addEventListener('mouseleave', function() { this.style.background = this.dataset.defaultBg; });
-  });
-}
-
-// Setup task card click listeners
-function setupTaskCardClickListeners() {
-  document.querySelectorAll('.schedule-task-card.clickable').forEach(card => {
-    card.addEventListener('click', function() {
-      const url = this.dataset.url;
-      if (url) window.open(url, '_blank');
-    });
-  });
-}
-
 // Load time range settings
 async function loadTimeRangeSettings() {
-  const result = await chrome.storage.local.get(['assignmentWeeksBefore', 'assignmentWeeksAfter']);
-  assignmentTimeRange = {
-    weeksBefore: result.assignmentWeeksBefore ?? 0,
-    weeksAfter: result.assignmentWeeksAfter ?? 2
-  };
+  assignmentTimeRange = await window.CanvasFlowStorage.getTimeRange();
 }
 
 function loadSettings() {
@@ -158,13 +97,11 @@ function loadSettings() {
 }
 
 function setupAutoRefresh(enabled) {
-  // Clear existing interval
   if (autoRefreshInterval) {
     clearInterval(autoRefreshInterval);
     autoRefreshInterval = null;
   }
 
-  // Set up new interval if enabled
   if (enabled) {
     autoRefreshInterval = setInterval(() => {
       refreshCanvasData();
@@ -197,8 +134,8 @@ async function loadSavedInsights() {
   const insightsContent = document.getElementById('insightsContent');
 
   // Check if Canvas URL is configured
-  const urlResult = await chrome.storage.local.get(['canvasUrl']);
-  if (!urlResult.canvasUrl) {
+  const canvasUrl = await window.CanvasFlowStorage.getCanvasUrl();
+  if (!canvasUrl) {
     insightsContent.innerHTML = `
       <div class="insights-placeholder">
         <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="#F59E0B" stroke-width="2">
@@ -213,122 +150,28 @@ async function loadSavedInsights() {
     return;
   }
 
-  const result = await chrome.storage.local.get(['dashboardInsights', 'dashboardInsightsTimestamp']);
-  if (result.dashboardInsights) {
+  const { schedule, timestamp } = await window.CanvasFlowStorage.getDashboardSchedule();
+  if (schedule) {
     insightsContent.innerHTML = `
       <div class="insights-loaded">
-        ${result.dashboardInsights}
+        ${schedule}
       </div>
     `;
 
     setupDayToggleListeners();
     setupTaskCardClickListeners();
 
-    if (result.dashboardInsightsTimestamp) {
-      updateInsightsTimestamp(result.dashboardInsightsTimestamp);
+    if (timestamp) {
+      updateInsightsTimestamp(timestamp);
     }
   }
 }
 
-function prepareAssignmentsForAI() {
-  const now = new Date();
-
-  // Apply the SAME time range filter as Dashboard display
-  const timeRangeStart = new Date(now.getTime() - assignmentTimeRange.weeksBefore * 7 * 24 * 60 * 60 * 1000);
-  const timeRangeEnd = new Date(now.getTime() + assignmentTimeRange.weeksAfter * 7 * 24 * 60 * 60 * 1000);
-
-  const assignments = (canvasData.allAssignments || []).filter(a => {
-    if (!a.dueDate) return true;
-    const dueDate = new Date(a.dueDate);
-    return dueDate >= timeRangeStart && dueDate <= timeRangeEnd;
-  });
-
-  return {
-    totalAssignments: assignments.length,
-    courses: [...new Set(assignments.map(a => a.courseName))],
-    upcoming: assignments.filter(a => {
-      if (!a.dueDate) return false;
-      const dueDate = new Date(a.dueDate);
-      const weekFromNow = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000);
-      return dueDate >= now && dueDate <= weekFromNow && !a.submission?.submitted;
-    }).map(a => ({
-      name: a.name,
-      course: a.courseName,
-      dueDate: a.dueDate,
-      points: a.pointsPossible
-    })),
-    overdue: assignments.filter(a => {
-      if (!a.dueDate) return false;
-      const dueDate = new Date(a.dueDate);
-      return dueDate < now && !a.submission?.submitted;
-    }).map(a => ({
-      name: a.name,
-      course: a.courseName,
-      dueDate: a.dueDate,
-      points: a.pointsPossible
-    })),
-    completed: assignments.filter(a =>
-      a.submission?.submitted || a.submission?.workflowState === 'graded'
-    ).length
-  };
-}
-
-
-// Find assignment URL by fuzzy matching name
-function findAssignmentUrl(assignmentName) {
-  if (!canvasData.allAssignments || canvasData.allAssignments.length === 0) {
-    return null;
-  }
-
-  const cleanName = assignmentName.toLowerCase().trim();
-  const scored = canvasData.allAssignments
-    .filter(a => a.name && a.url)
-    .map(assignment => {
-      const aName = assignment.name.toLowerCase().trim();
-      let score = 0;
-
-      if (aName === cleanName) {
-        score = 100;
-      } else if (aName.includes(cleanName) || cleanName.includes(aName)) {
-        score = 80;
-      } else {
-        const aiWords = cleanName.split(/\s+/).filter(w => w.length > 3);
-        const assignmentWords = aName.split(/\s+/).filter(w => w.length > 3);
-
-        if (aiWords.length > 0 && assignmentWords.length > 0) {
-          const matchingWords = aiWords.filter(word =>
-            assignmentWords.some(aWord => aWord.includes(word) || word.includes(aWord))
-          );
-          const matchRatio = matchingWords.length / aiWords.length;
-          if (matchRatio >= 0.7) {
-            score = matchRatio * 60;
-          }
-        }
-      }
-
-      return { assignment, score };
-    })
-    .filter(item => item.score > 0)
-    .sort((a, b) => b.score - a.score);
-
-  if (scored.length > 0 && scored[0].score >= 70) {
-    return scored[0].assignment.url;
-  }
-
-  return null;
-}
-
 // Format structured insights for display (Dashboard focuses ONLY on weekly schedule)
 function formatStructuredInsights(insights) {
-  // Phase 3: Removed hardcoded color maps - using mappers instead
-
-  // Generate Weekly Plan HTML
   const weeklyPlanHtml = insights.weekly_plan.map((day, dayIdx) => {
     const tasksHtml = day.tasks.map(task => {
-      // Phase 3: Format time blocks from structured start_hour + duration_hours
       const timeBlock = window.AIMappers.formatTimeBlock(task.start_hour, task.duration_hours);
-
-      // Find assignment URL for clickable link
       const assignmentUrl = findAssignmentUrl(task.assignment);
       const clickableClass = assignmentUrl ? ' clickable' : '';
       const dataUrlAttr = assignmentUrl ? ` data-url="${escapeHtml(assignmentUrl)}"` : '';
@@ -351,7 +194,6 @@ function formatStructuredInsights(insights) {
     const dayId = `day-${dayIdx}`;
     const defaultBg = dayIdx === 0 || dayIdx === 1 ? '#FAFAFA' : 'white';
 
-    // Phase 3: Map workload_score (0-3) to label and color
     const workloadLabel = window.AIMappers.mapWorkloadToLabel(day.workload_score);
     const workloadColor = window.AIMappers.mapWorkloadToColor(day.workload_score);
 
@@ -387,7 +229,6 @@ function formatStructuredInsights(insights) {
     `;
   }).join('');
 
-  // Dashboard only shows the daily schedule - other insights are in the sidepanel
   return `
     <div>
       ${weeklyPlanHtml}

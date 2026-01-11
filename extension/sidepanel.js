@@ -2,13 +2,29 @@
 let allAssignments = [];
 let allCourses = [];
 let hiddenCourseIds = [];
-let hideEndedTerms = true; // Auto-hide courses from past terms
+let hideEndedTerms = true;
 let currentFilter = 'all';
 let autoRefreshInterval = null;
-let assignmentTimeRange = { weeksBefore: 0, weeksAfter: 2 }; // Default: Show next 2 weeks
-let showGrades = false; // Default to hidden
-let localCompletedIds = []; // Track locally completed assignments
-let focusModeEnabled = false; // Focus Mode: Show only top 3 priorities
+let assignmentTimeRange = { weeksBefore: 0, weeksAfter: 2 };
+let showGrades = false;
+let localCompletedIds = [];
+let focusModeEnabled = false;
+
+// Aliases for shared modules
+const escapeHtml = window.CanvasFlowUtils.escapeHtml;
+const formatTimeAgo = window.CanvasFlowUtils.formatTimeAgo;
+const createLucideIcon = window.CanvasFlowUtils.createLucideIcon;
+const isValidCanvasUrl = window.CanvasFlowUtils.isValidCanvasUrl;
+const isFromToday = window.CanvasFlowUtils.isFromToday;
+const setupDayToggleListeners = window.CanvasFlowUI.setupDayToggleListeners;
+const setupTaskCardClickListeners = window.CanvasFlowUI.setupTaskCardClickListeners;
+const showStatusMessage = window.CanvasFlowUI.showStatusMessage;
+const showToast = window.CanvasFlowUI.showToast;
+const createInsightsFooter = window.CanvasFlowUI.createInsightsFooter;
+const calculateImpactScore = window.CanvasFlowAssignments.calculateImpactScore;
+const getAssignmentBadges = window.CanvasFlowAssignments.getAssignmentBadges;
+const hasCanvasTab = window.CanvasFlowMessaging.hasCanvasTab;
+const CANVAS_URL_PATTERNS = window.CanvasFlowConstants.CANVAS_URL_PATTERNS;
 
 // Filter courses to only show current semester
 function getVisibleCourseIds() {
@@ -33,20 +49,6 @@ function filterAssignmentsByVisibleCourses(assignments) {
   return assignments.filter(a => visibleIds.includes(a.courseId));
 }
 
-// Helper: Format timestamp as "X ago" string
-function formatTimeAgo(timestamp) {
-  if (!timestamp) return '';
-  const diff = Date.now() - timestamp;
-  const minutes = Math.floor(diff / 60000);
-  const hours = Math.floor(minutes / 60);
-  const days = Math.floor(hours / 24);
-
-  if (days > 0) return `${days} day${days > 1 ? 's' : ''} ago`;
-  if (hours > 0) return `${hours} hour${hours > 1 ? 's' : ''} ago`;
-  if (minutes > 0) return `${minutes} minute${minutes > 1 ? 's' : ''} ago`;
-  return 'just now';
-}
-
 // Helper: Get time range boundaries for filtering
 function getTimeRangeBounds() {
   const now = new Date();
@@ -56,14 +58,6 @@ function getTimeRangeBounds() {
   const timeRangeEnd = new Date(now.getTime() + assignmentTimeRange.weeksAfter * 7 * 24 * 60 * 60 * 1000);
   return { now, todayStart, todayEnd, timeRangeStart, timeRangeEnd };
 }
-
-// Canvas URL patterns - matches background.js
-const CANVAS_URL_PATTERNS = [
-  /^https?:\/\/canvas\.[^\/]*\.edu/i,
-  /^https?:\/\/[^\/]*\.edu\/.*canvas/i,
-  /^https?:\/\/[^\/]*\.instructure\.com/i,
-  /^https?:\/\/[^\/]*\.canvaslms\.com/i
-];
 
 // Tab switching
 const tabButtons = document.querySelectorAll('.tab-button');
@@ -141,37 +135,6 @@ function updateSectionHeader() {
     iconEl.style.color = config.color;
     textEl.textContent = config.text;
   }
-}
-
-// Render assignments based on current filter
-// Calculate Impact Score for priority-based sorting
-function calculateImpactScore(assignment) {
-  const now = new Date();
-  const due = new Date(assignment.dueDate);
-  const points = assignment.pointsPossible || 10; // Default to 10 if null
-
-  // Hours until due (minimum 1 to avoid division by zero)
-  const hoursUntilDue = Math.max(1, (due - now) / (1000 * 60 * 60));
-
-  // Time urgency factor (exponential decay for closer deadlines)
-  let timeMultiplier;
-  if (hoursUntilDue <= 0) {
-    timeMultiplier = 20; // Overdue = highest priority
-  } else if (hoursUntilDue <= 24) {
-    timeMultiplier = 10; // Due today
-  } else if (hoursUntilDue <= 48) {
-    timeMultiplier = 5;  // Due tomorrow
-  } else if (hoursUntilDue <= 168) {
-    timeMultiplier = 2;  // Due this week
-  } else {
-    timeMultiplier = 1;  // Due later
-  }
-
-  // Raw score: points weighted by urgency, divided by days remaining
-  const rawScore = (points * timeMultiplier) / (hoursUntilDue / 24);
-
-  // Normalize to 0-100 using logarithmic scaling
-  return Math.min(100, Math.log10(rawScore + 1) * 30);
 }
 
 // Render Focus Mode: Show only top 3 priorities
@@ -664,73 +627,6 @@ function showConnectionError(container) {
   });
 }
 
-// Escape HTML to prevent XSS
-function escapeHtml(text) {
-  const div = document.createElement('div');
-  div.textContent = text;
-  return div.innerHTML;
-}
-
-// Helper to create Lucide icon SVG
-function createLucideIcon(iconName, size = 16, color = 'currentColor') {
-  const icons = {
-    'activity': '<polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>',
-    'target': '<circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/>',
-    'lightbulb': '<path d="M15 14c.2-1 .7-1.7 1.5-2.5 1-.9 1.5-2.2 1.5-3.5A6 6 0 0 0 6 8c0 1 .2 2.2 1.5 3.5.7.7 1.3 1.5 1.5 2.5"/><path d="M9 18h6"/><path d="M10 22h4"/>',
-    'chevron-right': '<polyline points="9 18 15 12 9 6"/>',
-    'layers': '<polygon points="12 2 2 7 12 12 22 7 12 2"/><polyline points="2 17 12 22 22 17"/><polyline points="2 12 12 17 22 12"/>'
-  };
-  const paths = icons[iconName] || '';
-  return `<svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" stroke="${color}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display: inline-block; vertical-align: middle;">${paths}</svg>`;
-}
-
-// Setup day toggle listeners for schedule cards
-function setupDayToggleListeners() {
-  document.querySelectorAll('.day-plan-toggle').forEach(btn => {
-    const newBtn = btn.cloneNode(true);
-    btn.parentNode.replaceChild(newBtn, btn);
-    newBtn.addEventListener('click', function() {
-      const dayId = this.dataset.dayId;
-      const dayContent = document.getElementById(dayId);
-      const icon = this.querySelector('.day-icon');
-      if (dayContent.style.display === 'none') {
-        dayContent.style.display = 'block';
-        if (icon) icon.style.transform = 'rotate(180deg)';
-      } else {
-        dayContent.style.display = 'none';
-        if (icon) icon.style.transform = 'rotate(0deg)';
-      }
-    });
-    newBtn.addEventListener('mouseenter', function() { this.style.background = '#F9FAFB'; });
-    newBtn.addEventListener('mouseleave', function() { this.style.background = this.dataset.defaultBg; });
-  });
-}
-
-// Setup task card click listeners
-function setupTaskCardClickListeners() {
-  document.querySelectorAll('.schedule-task-card.clickable').forEach(card => {
-    card.addEventListener('click', function() {
-      const url = this.dataset.url;
-      if (url) window.open(url, '_blank');
-    });
-  });
-}
-
-// Show status message
-function showStatusMessage(elementId, message, type) {
-  const statusEl = document.getElementById(elementId);
-  if (!statusEl) return;
-
-  statusEl.textContent = message;
-  statusEl.className = `status-message show ${type}`;
-
-  if (type === 'success') {
-    setTimeout(() => {
-      statusEl.classList.remove('show');
-    }, 3000);
-  }
-}
-
 // Settings Modal
 const settingsModal = document.getElementById('settingsModal');
 const settingsBtn = document.getElementById('settingsBtn');
@@ -790,22 +686,6 @@ chrome.storage.onChanged.addListener(async (changes, namespace) => {
     await refreshCanvasData();
   }
 });
-
-// Canvas URL validation
-function isValidCanvasUrl(url) {
-  try {
-    const parsed = new URL(url);
-    if (!['https:', 'http:'].includes(parsed.protocol)) {
-      return false;
-    }
-    if (!parsed.hostname) {
-      return false;
-    }
-    return true;
-  } catch (e) {
-    return false;
-  }
-}
 
 // Save Canvas URL
 document.getElementById('saveCanvasUrl').addEventListener('click', async () => {
@@ -911,14 +791,6 @@ async function autoDetectCanvasUrl(showMessages = true) {
 document.getElementById('autoDetectUrl').addEventListener('click', async () => {
   await autoDetectCanvasUrl(true);
 });
-
-// Check if Canvas tab is available
-async function hasCanvasTab() {
-  const response = await new Promise((resolve) => {
-    chrome.runtime.sendMessage({ type: 'FIND_CANVAS_TAB' }, resolve);
-  });
-  return response?.success && response?.hasTab;
-}
 
 // Open Canvas and sync data (user-initiated)
 async function openCanvasAndSync() {
@@ -1307,39 +1179,6 @@ async function toggleAssignmentDone(assignmentId, event) {
   await chrome.storage.sync.set({ localCompletedIds });
 }
 
-function showToast(message, actionText = null, actionCallback = null) {
-  // Remove existing toast if any
-  const existingToast = document.querySelector('.toast-notification');
-  if (existingToast) existingToast.remove();
-
-  const toast = document.createElement('div');
-  toast.className = 'toast-notification';
-  toast.setAttribute('role', 'status');
-  toast.setAttribute('aria-live', 'polite');
-
-  toast.innerHTML = `
-    <span class="toast-message">${escapeHtml(message)}</span>
-    ${actionText ? `<button class="toast-action">${escapeHtml(actionText)}</button>` : ''}
-  `;
-
-  document.body.appendChild(toast);
-
-  if (actionText && actionCallback) {
-    const actionBtn = toast.querySelector('.toast-action');
-    if (actionBtn) {
-      actionBtn.addEventListener('click', () => {
-        actionCallback();
-        toast.remove();
-      });
-    }
-  }
-
-  // Auto-remove after 4 seconds
-  setTimeout(() => {
-    if (toast.parentElement) toast.remove();
-  }, 4000);
-}
-
 // Check and auto-generate insights if needed
 async function checkAndAutoGenerateInsights() {
   try {
@@ -1496,14 +1335,6 @@ async function initialize() {
       await autoGenerateIfStale();
     }
   }
-}
-
-// Check if timestamp is from today
-function isFromToday(timestamp) {
-  if (!timestamp) return false;
-  const today = new Date();
-  const date = new Date(timestamp);
-  return date.toDateString() === today.toDateString();
 }
 
 // Auto-generate AI content if it hasn't run today
@@ -2135,34 +1966,6 @@ function formatScheduleForDisplay(schedule) {
   }).join('');
 
   return `<div>${weeklyPlanHtml}</div>`;
-}
-
-// Helper function to create insights footer (updated to support schedule)
-function createInsightsFooter(timestamp, type = 'insights') {
-  const timeAgo = formatTimeAgo(timestamp);
-  const btnId = type === 'schedule' ? 'regenerateScheduleBtn' : 'regenerateInsightsBtn';
-  const viewBtnHtml = type === 'insights' ? `
-    <button class="btn-secondary" id="viewScheduleFromInsights" style="padding: 8px 16px; font-size: 13px; display: inline-flex; align-items: center; justify-content: center; gap: 6px; border: 1px solid #E5E7EB;">
-      <i data-lucide="calendar" style="width: 14px; height: 14px;"></i>
-      <span>View Schedule</span>
-    </button>
-  ` : `
-    <button class="btn-secondary" id="openFullPageSchedule" style="padding: 8px 16px; font-size: 13px; display: inline-flex; align-items: center; justify-content: center; gap: 6px; border: 1px solid #E5E7EB;">
-      <i data-lucide="external-link" style="width: 14px; height: 14px;"></i>
-      <span>Full Page</span>
-    </button>
-  `;
-
-  return `<div style="text-align: center; padding: 16px 0 0 0; border-top: 1px solid #E5E7EB;">
-    <div style="font-size: 11px; color: #9CA3AF; margin-bottom: 10px;">Last generated ${timeAgo}</div>
-    <div style="display: flex; gap: 8px; justify-content: center;">
-      <button class="btn-primary" id="${btnId}" style="padding: 8px 16px; font-size: 13px; display: inline-flex; align-items: center; justify-content: center; gap: 6px;">
-        <i data-lucide="refresh-cw" style="width: 14px; height: 14px;"></i>
-        <span>Regenerate</span>
-      </button>
-      ${viewBtnHtml}
-    </div>
-  </div>`;
 }
 
 // Find assignment URL by fuzzy matching name

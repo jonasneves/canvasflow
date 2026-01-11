@@ -165,6 +165,8 @@ zip -r "$OUTPUT_DIR/canvasflow-extension-v$NEW_VERSION$PACKAGE_SUFFIX.zip" \
     content.js \
     sidepanel.html \
     sidepanel.js \
+    sidepanel.css \
+    colors.css \
     schedule.html \
     schedule.js \
     schedule.css \

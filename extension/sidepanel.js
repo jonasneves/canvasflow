@@ -9,6 +9,12 @@ let assignmentTimeRange = { weeksBefore: 0, weeksAfter: 2 };
 let showGrades = false;
 let localCompletedIds = [];
 let focusModeEnabled = false;
+let lastDataUpdate = null;
+
+function updateDataStatus(status) {
+  const el = document.getElementById('dataStatus');
+  if (el) el.textContent = status;
+}
 
 // Canvas URL patterns
 const CANVAS_URL_PATTERNS = [
@@ -660,6 +666,11 @@ async function loadAssignments() {
       const rawAssignments = response.data.allAssignments || [];
       allAssignments = filterAssignmentsByVisibleCourses(rawAssignments);
 
+      // Track last update time
+      if (response.data.lastUpdate) {
+        lastDataUpdate = new Date(response.data.lastUpdate).getTime();
+      }
+
       // Check if Canvas has been authenticated (has data from Canvas)
       const hasCanvasData = response.data.lastUpdate || response.data.userProfile || response.data.courses?.length > 0;
 
@@ -799,6 +810,9 @@ settingsModal.addEventListener('click', (e) => {
     settingsModal.classList.remove('show');
   }
 });
+
+// Refresh button
+document.getElementById('refreshBtn').addEventListener('click', refreshCanvasData);
 
 // Summary card filters
 document.querySelectorAll('.summary-card').forEach(card => {
@@ -968,7 +982,15 @@ async function openCanvasAndSync() {
 // Refresh Canvas data (requires existing Canvas tab)
 async function refreshCanvasData() {
   const assignmentsList = document.getElementById('assignmentsList');
-  assignmentsList.innerHTML = '<div class="loading"><span class="spinner"></span> Loading assignments...</div>';
+  const hasExistingData = allAssignments.length > 0;
+  const refreshBtn = document.getElementById('refreshBtn');
+
+  if (hasExistingData) {
+    refreshBtn?.classList.add('refreshing');
+    updateDataStatus('Refreshing...');
+  } else {
+    assignmentsList.innerHTML = '<div class="loading"><span class="spinner"></span> Loading assignments...</div>';
+  }
 
   try {
     const response = await new Promise((resolve) => {
@@ -986,6 +1008,9 @@ async function refreshCanvasData() {
   } catch (error) {
     console.error('Refresh failed:', error);
     await loadAssignments();
+  } finally {
+    refreshBtn?.classList.remove('refreshing');
+    updateDataStatus(lastDataUpdate ? `Updated ${formatTimeAgo(lastDataUpdate)}` : '');
   }
 }
 
@@ -1457,15 +1482,15 @@ async function initialize() {
     document.getElementById('settingsModal')?.classList.add('show');
   }
 
-  // Check if Canvas tab is available for fresh data
-  const canvasTabAvailable = await hasCanvasTab();
+  // Always show cached data first for instant feedback
+  await loadAssignments();
 
+  // If Canvas tab available, refresh in background
+  const canvasTabAvailable = await hasCanvasTab();
   if (canvasTabAvailable) {
-    // Canvas tab open - fetch fresh data before displaying
     await refreshCanvasData();
-  } else {
-    // No Canvas tab - show cached data
-    await loadAssignments();
+  } else if (lastDataUpdate) {
+    updateDataStatus(`Updated ${formatTimeAgo(lastDataUpdate)} · Open Canvas to refresh`);
   }
 
   // Load saved AI views after assignments are loaded

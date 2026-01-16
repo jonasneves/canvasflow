@@ -79,6 +79,11 @@
       display: block;
     }
 
+    .btn-icon.refreshing svg,
+    .btn-icon.refreshing i {
+      animation: spin 1s linear infinite;
+    }
+
     /* Grades toggle button */
     #toggleGradesBtn {
       width: 28px;
@@ -346,7 +351,19 @@
       display: grid;
       grid-template-columns: repeat(3, 1fr);
       gap: 12px;
-      margin-bottom: 20px;
+      margin-bottom: 12px;
+    }
+
+    .data-status {
+      font-size: 11px;
+      color: #9CA3AF;
+      text-align: center;
+      margin-bottom: 12px;
+      min-height: 16px;
+    }
+
+    .data-status:empty {
+      display: none;
     }
 
     .summary-card {

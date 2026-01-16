@@ -1,57 +1,44 @@
-.PHONY: help release release-dev package minify clean test install-deps
+.PHONY: help release release-dev minify clean test install-deps
 
 # Default target
 help:
 	@echo "CanvasFlow - Chrome Web Store Release Automation"
 	@echo ""
 	@echo "Available commands:"
-	@echo "  make release       - Create minified release packages (default)"
+	@echo "  make release       - Create minified release packages"
 	@echo "  make release-dev   - Create unminified release (for debugging)"
 	@echo "  make minify        - Minify JavaScript files only"
-	@echo "  make package       - Same as release"
 	@echo "  make test          - Verify extension structure"
 	@echo "  make clean         - Remove build artifacts"
 	@echo "  make install-deps  - Install Node.js dependencies"
 	@echo ""
 	@echo "Examples:"
-	@echo "  make release           # Creates minified release with current version"
-	@echo "  make release-dev       # Creates unminified release for debugging"
-	@echo "  VERSION=1.0.1 make release  # Creates minified release with specific version"
+	@echo "  make release                    # Release with current version"
+	@echo "  VERSION=1.0.1 make release      # Release with specific version"
 
 # Create release packages
 release:
-	@echo "Creating release packages..."
 	@if [ -n "$(VERSION)" ]; then \
 		./scripts/release.sh $(VERSION); \
 	else \
 		./scripts/release.sh; \
 	fi
 
-# Alias for release
-package: release
-
 # Create unminified release packages (for debugging)
 release-dev:
-	@echo "Creating unminified release packages..."
 	@if [ -n "$(VERSION)" ]; then \
 		./scripts/release.sh --no-minify $(VERSION); \
 	else \
 		./scripts/release.sh --no-minify; \
 	fi
 
-# Minify JavaScript files only (without creating release)
+# Minify JavaScript files only
 minify: install-deps
-	@echo "Minifying JavaScript files..."
 	@node scripts/minify.js
 
 # Install Node.js dependencies
 install-deps:
-	@if [ ! -d "node_modules" ]; then \
-		echo "Installing dependencies..."; \
-		npm install; \
-	else \
-		echo "Dependencies already installed"; \
-	fi
+	@[ -d "node_modules" ] || npm install
 
 # Test extension structure
 test:
@@ -96,19 +83,6 @@ test:
 
 # Clean build artifacts
 clean:
-	@echo "Cleaning build artifacts..."
 	@rm -rf dist/
 	@rm -rf build/
 	@rm -rf screenshots/*.png
-	@echo "✓ Cleaned dist/, build/, and screenshots/"
-
-# Quick start guide
-quickstart:
-	@echo "CanvasFlow Quick Start"
-	@echo ""
-	@echo "1. Create release packages:"
-	@echo "   make release"
-	@echo ""
-	@echo "2. Follow the checklist in:"
-	@echo "   dist/submission-checklist-vX.X.X.md"
-	@echo ""

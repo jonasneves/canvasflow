@@ -72,10 +72,35 @@
       justify-content: center;
       transition: all 0.15s ease;
       color: white;
+      position: relative;
     }
 
     .btn-icon:hover {
       background: rgba(255, 255, 255, 0.2);
+    }
+
+    .btn-icon[data-tooltip]::after {
+      content: attr(data-tooltip);
+      position: absolute;
+      top: 100%;
+      left: 50%;
+      transform: translateX(-50%);
+      margin-top: 6px;
+      padding: 4px 8px;
+      background: rgba(0, 0, 0, 0.85);
+      color: white;
+      font-size: 11px;
+      font-weight: 500;
+      border-radius: 4px;
+      white-space: nowrap;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.1s ease;
+      z-index: 100;
+    }
+
+    .btn-icon[data-tooltip]:hover::after {
+      opacity: 1;
     }
 
     .btn-icon.active {

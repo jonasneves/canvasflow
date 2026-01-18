@@ -883,8 +883,16 @@ settingsModal.addEventListener('click', (e) => {
   }
 });
 
-// Logo click - go to dashboard
+// Logo click - go to dashboard and exit any modes
 document.getElementById('logoHome')?.addEventListener('click', () => {
+  // Exit focus mode if active
+  if (focusModeEnabled) {
+    focusModeEnabled = false;
+    document.getElementById('focusModeBtn').classList.remove('active');
+    document.querySelector('.summary-cards').style.display = 'grid';
+    chrome.storage.local.set({ focusModeEnabled });
+    renderAssignments();
+  }
   showView('canvas-data');
 });
 

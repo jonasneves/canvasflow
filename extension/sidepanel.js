@@ -234,27 +234,21 @@ function getTimeRangeBounds() {
   return { now, todayStart, todayEnd, timeRangeStart, timeRangeEnd };
 }
 
-// Tab switching
-const tabButtons = document.querySelectorAll('.tab-button');
+// View switching
 const tabContents = document.querySelectorAll('.tab-content');
 
-tabButtons.forEach(button => {
-  button.addEventListener('click', async () => {
-    const targetTab = button.getAttribute('data-tab');
+function showView(viewId) {
+  tabContents.forEach(content => content.classList.remove('active'));
+  document.getElementById(viewId)?.classList.add('active');
 
-    // Update buttons
-    tabButtons.forEach(btn => btn.classList.remove('active'));
-    button.classList.add('active');
+  // Update header button active states
+  document.getElementById('plannerBtn')?.classList.toggle('active', viewId === 'ai-dashboard');
+}
 
-    // Update content
-    tabContents.forEach(content => content.classList.remove('active'));
-    document.getElementById(targetTab).classList.add('active');
-
-    // Auto-generate insights when AI Dashboard tab is opened
-    if (targetTab === 'ai-dashboard') {
-      await checkAndAutoGenerateInsights();
-    }
-  });
+// Planner button - show Study Planner
+document.getElementById('plannerBtn')?.addEventListener('click', async () => {
+  showView('ai-dashboard');
+  await checkAndAutoGenerateInsights();
 });
 
 // Load and display the current Canvas URL
@@ -751,6 +745,84 @@ async function loadAssignments() {
   }
 }
 
+// Load and display announcements
+async function loadAnnouncements() {
+  const announcementsList = document.getElementById('announcementsList');
+  const announcementCount = document.getElementById('announcementCount');
+  const announcementsSection = document.getElementById('announcementsSection');
+
+  if (!announcementsList) return;
+
+  try {
+    const response = await new Promise((resolve) => {
+      chrome.runtime.sendMessage({ type: 'GET_CANVAS_DATA' }, resolve);
+    });
+
+    if (response && response.success) {
+      const announcements = response.data.announcements || [];
+
+      // Update badge count
+      announcementCount.textContent = announcements.length;
+      announcementCount.setAttribute('data-count', announcements.length);
+
+      if (announcements.length === 0) {
+        announcementsList.innerHTML = '<div class="announcements-empty">No recent announcements</div>';
+        return;
+      }
+
+      // Sort by date (most recent first) and take top 5
+      const sortedAnnouncements = announcements
+        .sort((a, b) => new Date(b.postedAt) - new Date(a.postedAt))
+        .slice(0, 5);
+
+      announcementsList.innerHTML = sortedAnnouncements.map(ann => `
+        <div class="announcement-item" data-url="${ann.url}" title="${escapeHtml(ann.title)}">
+          <div class="announcement-course">${escapeHtml(ann.courseName)}</div>
+          <div class="announcement-title">${escapeHtml(ann.title)}</div>
+          <div class="announcement-meta">${formatTimeAgo(ann.postedAt)} by ${escapeHtml(ann.authorName)}</div>
+        </div>
+      `).join('');
+
+      // Add click handlers
+      announcementsList.querySelectorAll('.announcement-item').forEach(item => {
+        item.addEventListener('click', () => {
+          const url = item.dataset.url;
+          if (url) {
+            chrome.tabs.create({ url });
+          }
+        });
+      });
+
+    } else {
+      announcementsList.innerHTML = '<div class="announcements-empty">Unable to load announcements</div>';
+    }
+  } catch (error) {
+    console.error('Error loading announcements:', error);
+    announcementsList.innerHTML = '<div class="announcements-empty">Unable to load announcements</div>';
+  }
+}
+
+// Setup announcements section collapse toggle
+function setupAnnouncementsToggle() {
+  const header = document.getElementById('announcementsHeader');
+  const section = document.getElementById('announcementsSection');
+
+  if (header && section) {
+    header.addEventListener('click', () => {
+      section.classList.toggle('collapsed');
+      // Save collapsed state
+      chrome.storage.local.set({ announcementsCollapsed: section.classList.contains('collapsed') });
+    });
+
+    // Restore collapsed state
+    chrome.storage.local.get(['announcementsCollapsed'], (result) => {
+      if (result.announcementsCollapsed) {
+        section.classList.add('collapsed');
+      }
+    });
+  }
+}
+
 function showConnectionError(container) {
   container.innerHTML = `
     <div class="empty-state">
@@ -809,6 +881,11 @@ settingsModal.addEventListener('click', (e) => {
   if (e.target === settingsModal) {
     settingsModal.classList.remove('show');
   }
+});
+
+// Logo click - go to dashboard
+document.getElementById('logoHome')?.addEventListener('click', () => {
+  showView('canvas-data');
 });
 
 // Refresh button
@@ -999,15 +1076,18 @@ async function refreshCanvasData() {
 
     if (response?.success) {
       await loadAssignments();
+      await loadAnnouncements();
       if (response.partial) {
         console.warn('Some data failed to load:', response.failures);
       }
     } else {
       await loadAssignments();
+      await loadAnnouncements();
     }
   } catch (error) {
     console.error('Refresh failed:', error);
     await loadAssignments();
+    await loadAnnouncements();
   } finally {
     refreshBtn?.classList.remove('refreshing');
     updateDataStatus(lastDataUpdate ? `Updated ${formatTimeAgo(lastDataUpdate)}` : '');
@@ -1196,11 +1276,8 @@ function toggleFocusMode() {
     focusModeBtn.classList.add('active');
     // Hide summary cards in focus mode
     document.querySelector('.summary-cards').style.display = 'none';
-    // Switch to Dashboard tab where focus mode is displayed
-    document.querySelectorAll('.tab-button').forEach(btn => btn.classList.remove('active'));
-    document.querySelector('.tab-button[data-tab="canvas-data"]').classList.add('active');
-    document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
-    document.getElementById('canvas-data').classList.add('active');
+    // Switch to Dashboard view where focus mode is displayed
+    showView('canvas-data');
   } else {
     focusModeBtn.classList.remove('active');
     // Show summary cards in normal mode
@@ -1482,8 +1559,12 @@ async function initialize() {
     document.getElementById('settingsModal')?.classList.add('show');
   }
 
+  // Setup announcements toggle
+  setupAnnouncementsToggle();
+
   // Always show cached data first for instant feedback
   await loadAssignments();
+  await loadAnnouncements();
 
   // If Canvas tab available, refresh in background
   const canvasTabAvailable = await hasCanvasTab();

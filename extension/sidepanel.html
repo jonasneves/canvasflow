@@ -8,7 +8,7 @@
 </head>
 <body>
   <div class="header">
-    <div class="header-left">
+    <div class="header-left" id="logoHome" title="Dashboard">
       <div class="header-icon">
         <img src="icon-48.png" alt="CanvasFlow" style="width: 35px; height: 35px;">
       </div>
@@ -17,6 +17,9 @@
     <div class="header-right">
       <button class="btn-icon" id="focusModeBtn" title="Focus Mode: Show only top 3 priorities">
         <i data-lucide="target"></i>
+      </button>
+      <button class="btn-icon" id="plannerBtn" title="Study Planner">
+        <i data-lucide="sparkles"></i>
       </button>
       <button class="btn-icon" id="refreshBtn" title="Refresh data">
         <i data-lucide="refresh-cw"></i>
@@ -28,11 +31,6 @@
         <i data-lucide="settings"></i>
       </button>
     </div>
-  </div>
-
-  <div class="tab-nav">
-    <button class="tab-button active" data-tab="canvas-data">Dashboard</button>
-    <button class="tab-button" data-tab="ai-dashboard">Study Planner</button>
   </div>
 
   <!-- Canvas URL Configuration Banner -->
@@ -73,6 +71,24 @@
     </div>
 
     <div id="dataStatus" class="data-status"></div>
+
+    <!-- Announcements Section -->
+    <div class="announcements-section" id="announcementsSection">
+      <div class="section-header collapsible" id="announcementsHeader">
+        <span style="display: flex; align-items: center; gap: 8px;">
+          <i data-lucide="megaphone" style="width: 18px; height: 18px;"></i>
+          <span>Announcements</span>
+          <span class="announcement-badge" id="announcementCount">0</span>
+        </span>
+        <i data-lucide="chevron-down" class="collapse-icon" id="announcementsChevron"></i>
+      </div>
+      <div class="announcements-list" id="announcementsList">
+        <div class="loading">
+          <span class="spinner"></span>
+          Loading announcements...
+        </div>
+      </div>
+    </div>
 
     <div class="assignments-section">
       <div class="section-header">

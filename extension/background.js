@@ -7,6 +7,7 @@ let canvasData = {
   allAssignments: [],
   calendarEvents: [],
   upcomingEvents: [],
+  announcements: [],
   submissions: {},
   modules: {},
   analytics: {},
@@ -55,6 +56,7 @@ async function loadCanvasDataFromStorage() {
         allAssignments: cached.allAssignments || [],
         calendarEvents: cached.calendarEvents || [],
         upcomingEvents: cached.upcomingEvents || [],
+        announcements: cached.announcements || [],
         submissions: cached.submissions || {},
         modules: cached.modules || {},
         analytics: cached.analytics || {},
@@ -221,7 +223,8 @@ async function refreshCanvasDataFromTab(tab) {
       sendMessageToContent(tab.id, { type: 'FETCH_ALL_ASSIGNMENTS' }),
       sendMessageToContent(tab.id, { type: 'FETCH_CALENDAR_EVENTS' }),
       sendMessageToContent(tab.id, { type: 'FETCH_UPCOMING_EVENTS' }),
-      sendMessageToContent(tab.id, { type: 'FETCH_USER_PROFILE' })
+      sendMessageToContent(tab.id, { type: 'FETCH_USER_PROFILE' }),
+      sendMessageToContent(tab.id, { type: 'FETCH_ANNOUNCEMENTS' })
     ]);
 
     // Extract successful responses
@@ -238,6 +241,7 @@ async function refreshCanvasDataFromTab(tab) {
       calendarEvents: getValue(results[2]) || [],
       upcomingEvents: getValue(results[3]) || [],
       userProfile: getValue(results[4]),
+      announcements: getValue(results[5]) || [],
       assignments: {}
     };
 
@@ -251,6 +255,7 @@ async function refreshCanvasDataFromTab(tab) {
     if (data.allAssignments.length > 0) canvasData.allAssignments = data.allAssignments;
     if (data.calendarEvents.length > 0) canvasData.calendarEvents = data.calendarEvents;
     if (data.upcomingEvents.length > 0) canvasData.upcomingEvents = data.upcomingEvents;
+    if (data.announcements.length > 0) canvasData.announcements = data.announcements;
     if (data.userProfile) canvasData.userProfile = data.userProfile;
     canvasData.lastUpdate = new Date().toISOString();
 
@@ -311,6 +316,10 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     }
     if (request.data.userProfile) {
       canvasData.userProfile = request.data.userProfile;
+      canvasData.lastUpdate = new Date().toISOString();
+    }
+    if (request.data.announcements) {
+      canvasData.announcements = request.data.announcements;
       canvasData.lastUpdate = new Date().toISOString();
     }
 

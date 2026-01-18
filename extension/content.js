@@ -337,6 +337,38 @@
     }
   }
 
+  async function fetchAnnouncements() {
+    try {
+      // First get active courses to build context codes
+      const courses = await fetchCourses();
+      if (!courses || courses.length === 0) {
+        return [];
+      }
+
+      // Build context_codes parameter (course_123, course_456, etc.)
+      const contextCodes = courses.map(c => `course_${c.id}`).join('&context_codes[]=');
+      const url = `${API_BASE}/announcements?context_codes[]=${contextCodes}&per_page=20&active_only=true`;
+
+      const announcements = await fetchJsonWithPagination(url, 20);
+
+      return announcements.map(ann => ({
+        id: String(ann.id),
+        title: ann.title,
+        message: ann.message,
+        postedAt: ann.posted_at,
+        contextCode: ann.context_code,
+        courseName: courses.find(c => `course_${c.id}` === ann.context_code)?.name || 'Unknown Course',
+        courseId: ann.context_code?.replace('course_', ''),
+        url: ann.html_url,
+        authorName: ann.author?.display_name || 'Unknown',
+        read: ann.read_state === 'read'
+      }));
+    } catch (error) {
+      console.error('Error fetching announcements:', error);
+      return [];
+    }
+  }
+
   // Add CanvasFlow button to Canvas navigation
   function injectCanvasFlowButton() {
     // Wait for Canvas navigation to load
@@ -458,6 +490,9 @@
         case 'FETCH_USER_PROFILE':
           promise = fetchUserProfile();
           break;
+        case 'FETCH_ANNOUNCEMENTS':
+          promise = fetchAnnouncements();
+          break;
         case 'FETCH_ALL_DATA':
           promise = (async () => {
             const courses = await fetchCourses();
@@ -510,6 +545,9 @@
               break;
             case 'FETCH_USER_PROFILE':
               canvasDataPayload = { userProfile: data };
+              break;
+            case 'FETCH_ANNOUNCEMENTS':
+              canvasDataPayload = { announcements: data };
               break;
             case 'FETCH_ALL_DATA':
               canvasDataPayload = data; // Already structured correctly

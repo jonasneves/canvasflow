@@ -404,8 +404,8 @@
     /* Announcements Section */
     .announcements-section {
       margin-bottom: 20px;
-      background: #FFFBEB;
-      border: 1px solid #FDE68A;
+      background: #FFFDF8;
+      border: 1px solid #F5E6C8;
       border-radius: 10px;
       overflow: hidden;
     }
@@ -420,7 +420,7 @@
     }
 
     .announcements-section .section-header:hover {
-      background: rgba(251, 191, 36, 0.1);
+      background: rgba(180, 130, 60, 0.06);
     }
 
     .announcements-section .section-header.collapsible {
@@ -430,7 +430,7 @@
     .collapse-icon {
       width: 18px;
       height: 18px;
-      color: #92400E;
+      color: #A68A5B;
       transition: transform 0.2s ease;
     }
 
@@ -439,7 +439,7 @@
     }
 
     .announcement-badge {
-      background: #F59E0B;
+      background: #B45309;
       color: white;
       font-size: 11px;
       font-weight: 600;
@@ -467,7 +467,7 @@
       background: white;
       border-radius: 8px;
       margin-bottom: 8px;
-      border: 1px solid #FDE68A;
+      border: 1px solid #F0E4D0;
       cursor: pointer;
       transition: all 0.15s ease;
     }
@@ -477,13 +477,13 @@
     }
 
     .announcement-item:hover {
-      background: #FFFEF5;
-      border-color: #F59E0B;
+      background: #FFFDF8;
+      border-color: #D4A853;
     }
 
     .announcement-course {
       font-size: 11px;
-      color: #92400E;
+      color: #92640A;
       font-weight: 600;
       text-transform: uppercase;
       letter-spacing: 0.3px;
@@ -506,7 +506,7 @@
     .announcements-empty {
       text-align: center;
       padding: 16px;
-      color: #92400E;
+      color: #A68A5B;
       font-size: 13px;
     }
 
